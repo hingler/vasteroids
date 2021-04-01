@@ -4,7 +4,9 @@
   "description": "your whole life your whole fucking life",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rm -rf ./ts-out && node-gyp rebuild && tsc",
+    "test": "mocha ts-out/test/*",
+    "start": "node ./ts-out/index.js"
   },
   "repository": {
     "type": "git",
@@ -18,6 +20,14 @@
   "homepage": "https://github.com/jamieboy1337/vasteroids#readme",
   "dependencies": {
     "bindings": "^1.5.0",
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2",
     "node-addon-api": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.15",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^14.14.37",
+    "typescript": "^4.2.3"
   }
 }
