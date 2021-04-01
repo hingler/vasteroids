@@ -26,7 +26,8 @@ Asteroid GenerateAsteroid(float radius, int32_t points) {
   return res;
 }
 
-Napi::Value GenerateAsteroidNode(const Napi::CallbackInfo& info) {
+#ifdef ASTEROIDS_TEST
+static Napi::Value GenerateAsteroidNode(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
 
   if (info.Length() < 2) {
@@ -38,19 +39,7 @@ Napi::Value GenerateAsteroidNode(const Napi::CallbackInfo& info) {
   int32_t points = info[1].As<Napi::Number>().Int32Value();
   Asteroid a = GenerateAsteroid(radius, points);
 
-  Napi::Object res = Napi::Object::New(env);
-  Napi::Array arr = Napi::Array::New(env, a.geometry.size());
-  int i = 0;
-  for (auto&& point : a.geometry) {
-    arr[i++] = point.NodeObjectFromPoint(env);
-  }
-
-  res.Set("geometry", arr);
-  res.Set("rotation", a.rotation);
-  res.Set("velocity", a.velocity.NodeObjectFromPoint(env));
-  res.Set("rotation_velocity", a.rotation_velocity);
-
-  return res;
+  return a.AsNodeObject(env);
 }
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports) {
@@ -59,5 +48,6 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports) {
 }
 
 NODE_API_MODULE(asteroidGenerator, Init);
+#endif
 
 }

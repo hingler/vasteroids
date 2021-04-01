@@ -13,12 +13,6 @@ namespace vasteroids {
  */
 Asteroid GenerateAsteroid(float radius, int32_t points);
 
-/**
- *  Generates an asteroid and returns it to Node.
- *  @param info - callback info.
- */
-Napi::Value GenerateAsteroidNode(const Napi::CallbackInfo& info);
-
 }
 
 #endif

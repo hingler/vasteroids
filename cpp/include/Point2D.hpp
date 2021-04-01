@@ -10,7 +10,7 @@ struct Point2D {
   double x;
   double y;
 
-  Napi::Object NodeObjectFromPoint(Napi::Env env) {
+  Napi::Object NodeObjectFromPoint(Napi::Env env) const {
     Napi::Object obj = Napi::Object::New(env);
     obj.Set("x", x);
     obj.Set("y", y);
