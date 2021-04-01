@@ -27,8 +27,9 @@ struct Asteroid {
 
   /**
    *  Returns this Asteroid as a node object.
+   *  @param env - the environment this node object is being constructed in.
    */
-  Napi::Object AsNodeObject();
+  Napi::Object AsNodeObject(Napi::Env env);
 };
 
 }
