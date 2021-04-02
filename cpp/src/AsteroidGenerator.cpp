@@ -23,6 +23,7 @@ Asteroid GenerateAsteroid(float radius, int32_t points) {
   res.rotation = 0.0f;
   res.rotation_velocity = 0.0f;
   res.velocity = {0.0f, 0.0f};
+  res.position = {0.0f, 0.0f};
   return res;
 }
 

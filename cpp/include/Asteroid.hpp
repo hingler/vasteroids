@@ -19,6 +19,9 @@ struct Asteroid {
   // velocity of the asteroid.
   Point2D velocity;
 
+  // position of the asteroid.
+  Point2D position;
+
   // rotation of the asteroid.
   float rotation;
 

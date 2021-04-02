@@ -13,6 +13,7 @@ Napi::Object Asteroid::AsNodeObject(Napi::Env env) {
 
   res.Set("geometry", arr);
   res.Set("rotation", rotation);
+  res.Set("position", position.NodeObjectFromPoint(env));
   res.Set("velocity", velocity.NodeObjectFromPoint(env));
   res.Set("rotation_velocity", rotation_velocity);
 
