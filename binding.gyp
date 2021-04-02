@@ -18,7 +18,7 @@
        ]
     },
     {
-      "target_name": "asteroidscollidertest",
+      "target_name": "collidertest",
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
       "sources": [
