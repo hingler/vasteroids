@@ -48,7 +48,7 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports) {
   return exports;
 }
 
-NODE_API_MODULE(asteroidGenerator, Init);
+NODE_API_MODULE(asteroidstest, Init);
 #endif
 
 }
