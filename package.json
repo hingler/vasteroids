@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf ./ts-out && node-gyp rebuild && tsc",
+    "tsc-only": "rm -rf ./ts-out && tsc",
     "test": "mocha ts-out/test/*",
     "start": "node ./ts-out/index.js"
   },

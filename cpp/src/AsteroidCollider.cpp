@@ -1,5 +1,7 @@
 #include <AsteroidCollider.hpp>
 
+#include <iostream>
+
 #define PI 3.1415926535897932384626
 
 namespace vasteroids {
@@ -12,24 +14,27 @@ bool Collide(const Asteroid& asteroid, const Point2D& point) {
   float rot_cos = cos(-asteroid.rotation);
   float rot_sin = sin(-asteroid.rotation);
   // point_rel is relative to asteroid center, but not rotated to account for asteroid's rotation.
-  point_rel = { point_rel.x * rot_cos + point_rel.y * rot_sin,
-                point_rel.x * -rot_sin + point_rel.y * rot_cos };
+  point_rel = { (point_rel.x * rot_cos) + (point_rel.y * rot_sin),
+                (point_rel.x * -rot_sin) + (point_rel.y * rot_cos) };
   Point2D delta = asteroid.geometry[asteroid.geometry.size() - 1] - point_rel;
   theta_last = atan2(delta.y, delta.x);
   for (int i = 0; i < asteroid.geometry.size(); i++) {
     delta = asteroid.geometry[i] - point_rel;
     delta_theta = atan2(delta.y, delta.x) - theta_last;
+    // std::cout << "delta before: " << delta_theta << " -- ";
     if (delta_theta > PI) {
       delta_theta = delta_theta - (2 * PI);
     } else if (delta_theta < -PI) {
       delta_theta = (2 * PI) + delta_theta;
     }
 
+    // std::cout << "delta after: " << delta_theta << std::endl;
+
     wind_distance += delta_theta;
     theta_last = atan2(delta.y, delta.x);
   }
 
-  if (wind_distance > PI) {
+  if (wind_distance > PI || wind_distance < -PI) {
     return true;
   }
 
@@ -51,7 +56,7 @@ static Napi::Value CollideNode(const Napi::CallbackInfo& info) {
 
   Asteroid a = Asteroid::FromNodeObject(asteroid);
   Point2D c = Point2D::FromNodeObject(point);
-  Napi::Boolean ret(env, Collide(a, c));
+  Napi::Boolean ret = Napi::Boolean::New(env, Collide(a, c));
 
   return ret;
 }

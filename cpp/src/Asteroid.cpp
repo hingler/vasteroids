@@ -9,11 +9,11 @@ Asteroid Asteroid::FromNodeObject(Napi::Object obj) {
   if (geom.IsUndefined() || !geom.IsArray()) {
     // something is wrong
     Napi::TypeError::New(env, "'geometry' field of asteroid not present").ThrowAsJavaScriptException();
-    return;
+    return res;
   }
 
   Napi::Array arr = geom.As<Napi::Array>();
-  for (int i = 0; i < arr.Length(); i++) {
+  for (uint32_t i = 0; i < arr.Length(); i++) {
     Napi::Value val = arr[i];
     if (!val.IsObject()) {
       Napi::TypeError::New(env, "indices of 'geometry' field are not object").ThrowAsJavaScriptException();
@@ -26,6 +26,7 @@ Asteroid Asteroid::FromNodeObject(Napi::Object obj) {
   Napi::Value pos = obj.Get("position");
   if (!pos.IsObject()) {
     Napi::TypeError::New(env, "'position' not present").ThrowAsJavaScriptException();
+    return res;
   }
 
   res.position = Point2D::FromNodeObject(pos.As<Napi::Object>());

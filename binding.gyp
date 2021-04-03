@@ -6,7 +6,8 @@
       "cflags_cc!": [ "-fno-exceptions" ],
       "sources": [
         "cpp/src/AsteroidGenerator.cpp",
-        "cpp/src/Asteroid.cpp"
+        "cpp/src/Asteroid.cpp",
+        "cpp/src/Point2D.cpp"
       ],
       "include_dirs": [
         '<!@(node -p "require(\'node-addon-api\').include")',
@@ -24,7 +25,8 @@
       "sources": [
         "cpp/src/AsteroidGenerator.cpp",
         "cpp/src/Asteroid.cpp",
-        "cpp/src/AsteroidCollider.cpp"
+        "cpp/src/AsteroidCollider.cpp",
+        "cpp/src/Point2D.cpp"
       ],
       "include_dirs": [
         '<!@(node -p "require(\'node-addon-api\').include")',
@@ -33,7 +35,7 @@
       "defines": [ 
         'NAPI_DISABLE_CPP_EXCEPTIONS',
         'COLLIDER_TEST'
-       ]
+      ]
     }
   ]
 }

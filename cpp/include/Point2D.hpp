@@ -20,6 +20,7 @@ struct Point2D {
 
     res.x = obj.Get("x").As<Napi::Number>().DoubleValue();
     res.y = obj.Get("y").As<Napi::Number>().DoubleValue();
+    return res;
   }
 
   Napi::Object NodeObjectFromPoint(Napi::Env env) const {
@@ -30,13 +31,10 @@ struct Point2D {
   }
 };
 
-Point2D operator+(const Point2D& lhs, const Point2D& rhs) {
-  return { lhs.x + rhs.x, lhs.y + rhs.y };
-}
+Point2D operator+(const Point2D& lhs, const Point2D& rhs);
 
-Point2D operator-(const Point2D& lhs, const Point2D& rhs) {
-  return { rhs.x - lhs.x, rhs.y - lhs.y };
-}
+Point2D operator-(const Point2D& lhs, const Point2D& rhs);
+
 }
 
 #endif
