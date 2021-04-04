@@ -1,6 +1,7 @@
 #include <AsteroidGenerator.hpp>
 #include <cinttypes>
 #include <cstdlib>
+#include <cmath>
 
 #define PI 3.1415926535897932384626
 

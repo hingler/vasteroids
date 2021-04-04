@@ -1,6 +1,7 @@
 #include <AsteroidCollider.hpp>
 
 #include <iostream>
+#include <cmath>
 
 #define PI 3.1415926535897932384626
 
@@ -18,7 +19,7 @@ bool Collide(const Asteroid& asteroid, const Point2D& point) {
                 (point_rel.x * -rot_sin) + (point_rel.y * rot_cos) };
   Point2D delta = asteroid.geometry[asteroid.geometry.size() - 1] - point_rel;
   theta_last = atan2(delta.y, delta.x);
-  for (int i = 0; i < asteroid.geometry.size(); i++) {
+  for (size_t i = 0; i < asteroid.geometry.size(); i++) {
     delta = asteroid.geometry[i] - point_rel;
     delta_theta = atan2(delta.y, delta.x) - theta_last;
     // std::cout << "delta before: " << delta_theta << " -- ";
