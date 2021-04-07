@@ -5,6 +5,9 @@ namespace vasteroids {
 Asteroid Asteroid::FromNodeObject(Napi::Object obj) {
   Asteroid res;
   Napi::Env env = obj.Env();
+
+  dynamic_cast<Instance&>(res) = Instance::FromNodeObject(obj);
+
   Napi::Value geom = obj.Get("geometry");
   if (geom.IsUndefined() || !geom.IsArray()) {
     // something is wrong
@@ -20,37 +23,22 @@ Asteroid Asteroid::FromNodeObject(Napi::Object obj) {
     }
 
     Napi::Object pt = val.As<Napi::Object>();
-    res.geometry.push_back(Point2D::FromNodeObject(pt));
+    res.geometry.push_back(Point2D<float>::FromNodeObject(pt));
   }
 
-  Napi::Value pos = obj.Get("position");
-  if (!pos.IsObject()) {
-    Napi::TypeError::New(env, "'position' not present").ThrowAsJavaScriptException();
-    return res;
-  }
-
-  res.position = Point2D::FromNodeObject(pos.As<Napi::Object>());
-
-  res.rotation = obj.Get("rotation").As<Napi::Number>().FloatValue();
-  res.rotation_velocity = obj.Get("rotation_velocity").As<Napi::Number>().FloatValue();
-  res.velocity = Point2D::FromNodeObject(obj.Get("velocity").As<Napi::Object>());
   return res;
 }
 
-Napi::Object Asteroid::AsNodeObject(Napi::Env env) {
-  Napi::Object res = Napi::Object::New(env);
+Napi::Object Asteroid::ToNodeObject(Napi::Env env) {
+  Napi::Object res = Instance::ToNodeObject(env);
   Napi::Array arr = Napi::Array::New(env, geometry.size());
   
   int i = 0;
   for (const auto& point : this->geometry) {
-    arr[i++] = point.NodeObjectFromPoint(env);
+    arr[i++] = point.ToNodeObject(env);
   }
 
   res.Set("geometry", arr);
-  res.Set("rotation", rotation);
-  res.Set("position", position.NodeObjectFromPoint(env));
-  res.Set("velocity", velocity.NodeObjectFromPoint(env));
-  res.Set("rotation_velocity", rotation_velocity);
 
   return res;
 }

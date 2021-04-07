@@ -7,7 +7,7 @@
       "sources": [
         "cpp/src/AsteroidGenerator.cpp",
         "cpp/src/Asteroid.cpp",
-        "cpp/src/Point2D.cpp"
+        "cpp/src/GameTypes.cpp"
       ],
       "include_dirs": [
         '<!@(node -p "require(\'node-addon-api\').include")',
@@ -26,7 +26,7 @@
         "cpp/src/AsteroidGenerator.cpp",
         "cpp/src/Asteroid.cpp",
         "cpp/src/AsteroidCollider.cpp",
-        "cpp/src/Point2D.cpp"
+        "cpp/src/GameTypes.cpp"
       ],
       "include_dirs": [
         '<!@(node -p "require(\'node-addon-api\').include")',

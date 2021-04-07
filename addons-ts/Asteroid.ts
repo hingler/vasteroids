@@ -1,14 +1,7 @@
-interface Point2D {
-  x: number;
-  y: number;
-}
+import { Point2D, Instance } from "./GameTypes"
 
-interface Asteroid {
+interface Asteroid extends Instance {
   geometry: Array<Point2D>;
-  velocity: Point2D;
-  position: Point2D;
-  rotation: number;
-  rotation_velocity: number;
 }
 
-export { Point2D, Asteroid };
+export { Asteroid };

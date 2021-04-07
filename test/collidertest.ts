@@ -1,13 +1,17 @@
 const ColliderTest = require("bindings")("collidertest");
 import { expect } from "chai";
-import { Asteroid, Point2D } from "../addons-ts/Asteroid";
+import { WorldPosition, Point2D } from "../addons-ts/GameTypes"
+import { Asteroid } from "../addons-ts/Asteroid";
 
 describe("ColliderFunction", function() {
   it("Should return correctly when a collision occurs", function() {
     // manually describe an asteroid
     let a = {} as Asteroid;
     a.geometry = [];
-    a.position = {x: 0, y: 0};
+    a.position = {
+      chunk: { x: 0, y: 0 },
+      position: {x: 0, y: 0 }
+    };
     a.rotation = 0;
     a.rotation_velocity = 0;
     a.velocity = {x: 0, y: 0};
@@ -19,51 +23,59 @@ describe("ColliderFunction", function() {
       });
     }
 
-    let point = {
+    let worldpos = {
+      chunk: { x: 0, y: 0 },
+      position: { x: 0, y: 0 }
+    } as WorldPosition;
+
+    worldpos.position = {
       x: 1.0,
       y: 1.0
-    } as Point2D;
+    };
 
-    let res = ColliderTest.collide(a, point);
+    let res = ColliderTest.collide(a, worldpos);
     expect(res).is.true;
 
-    point = {
+    worldpos.position = {
       x: 1.5,
       y: 1.5
-    } as Point2D;
+    };
 
-    res = ColliderTest.collide(a, point);
+    res = ColliderTest.collide(a, worldpos);
     expect(res).is.false;
 
-    point = {
+    worldpos.position = {
       x: 1.0,
       y: 0.0
-    } as Point2D;
+    };
 
-    res = ColliderTest.collide(a, point);
+    res = ColliderTest.collide(a, worldpos);
     expect(res).is.true;
 
-    point = {
+    worldpos.position = {
       x: 0.0,
       y: 0.0
     };
 
-    res = ColliderTest.collide(a, point);
+    res = ColliderTest.collide(a, worldpos);
     expect(res).is.true;
 
-    point = {
+    worldpos.position = {
       x: 2.001,
       y: 0.0
     }
 
-    res = ColliderTest.collide(a, point);
+    res = ColliderTest.collide(a, worldpos);
     expect(res).is.false;
   });
 
   it("Should account for rotation", function() {
     let a = {} as Asteroid;
     a.geometry = [];
-    a.position = {x: 0, y: 0};
+    a.position = {
+      position: { x: 0, y: 0 },
+      chunk: { x: 0, y: 0 }
+    };
     a.rotation = 0;
     a.rotation_velocity = 0;
     a.velocity = {x: 0, y: 0};
@@ -77,9 +89,9 @@ describe("ColliderFunction", function() {
     }
 
     let point = {
-      x: 1.0,
-      y: 0.0
-    } as Point2D;
+      chunk: { x: 0, y: 0 },
+      position: { x: 1.0, y: 0.0 }
+    } as WorldPosition;
 
     let res : boolean; 
     for (let i = 0; i < 12; i++) {

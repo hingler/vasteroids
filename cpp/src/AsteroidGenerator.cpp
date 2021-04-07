@@ -9,7 +9,7 @@ namespace vasteroids {
 
 Asteroid GenerateAsteroid(float radius, int32_t points) {
   Asteroid res;
-  Point2D temp;
+  Point2D<float> temp;
 
   double r, theta;
   for (int32_t i = 0; i < points; i++) {
@@ -23,8 +23,8 @@ Asteroid GenerateAsteroid(float radius, int32_t points) {
 
   res.rotation = 0.0f;
   res.rotation_velocity = 0.0f;
-  res.velocity = {0.0, 0.0};
-  res.position = {0.0, 0.0};
+  res.velocity = { 0.0f, 0.0f };
+  res.position = { { 0, 0 }, { 0.0f, 0.0f } };
   return res;
 }
 
@@ -41,7 +41,7 @@ static Napi::Value GenerateAsteroidNode(const Napi::CallbackInfo& info) {
   int32_t points = info[1].As<Napi::Number>().Int32Value();
   Asteroid a = GenerateAsteroid(radius, points);
 
-  return a.AsNodeObject(env);
+  return a.ToNodeObject(env);
 }
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports) {
