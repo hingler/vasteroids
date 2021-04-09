@@ -8,6 +8,18 @@
 #define TYPEERROR(env, x) Napi::TypeError::New(env, x).ThrowAsJavaScriptException()
 
 namespace vasteroids {
+
+  enum class InstanceType {
+    ASTEROID,
+    SHIP,
+    PROJECTILE
+  };
+
+  /**
+   *  Converts an InstanceType to a string, where it can be interpreted in TS.
+   */ 
+  std::string InstanceToString(const InstanceType& type);
+
   template <typename T = float>
   struct Point2D {
     T x;

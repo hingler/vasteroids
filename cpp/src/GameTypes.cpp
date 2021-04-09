@@ -2,6 +2,19 @@
 
 namespace vasteroids {
 
+std::string InstanceToString(const InstanceType& type) {
+  switch (type) {
+    case InstanceType::ASTEROID:
+      return "asteroid";
+    case InstanceType::SHIP:
+      return "ship";
+    case InstanceType::PROJECTILE:
+      return "projectile";
+    default:
+      return "unknown";
+  }
+}
+
 Napi::Object WorldPosition::ToNodeObject(Napi::Env env) const {
   Napi::Object res = Napi::Object::New(env);
   res.Set("chunk", chunk.ToNodeObject(env));
