@@ -3,11 +3,11 @@
 
 #include <napi.h>
 
-// TODO: remove this later :)
-#define CHUNK_SIZE 128.0f
 #define TYPEERROR(env, x) Napi::TypeError::New(env, x).ThrowAsJavaScriptException()
 
 namespace vasteroids {
+
+  constexpr float chunk_size { 128.0f };
 
   enum class InstanceType {
     ASTEROID,

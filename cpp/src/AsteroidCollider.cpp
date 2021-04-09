@@ -20,7 +20,7 @@ bool Collide(const Asteroid& asteroid, const WorldPosition& point) {
   // position of point relative to its chunk
   Point2D<float> pointPos = point.position;
   // position of asteroid relative to point's chunk
-  Point2D<float> asteroidPos = asteroid.position.position - Point2D<float>{ dist.x * CHUNK_SIZE, dist.y * CHUNK_SIZE };
+  Point2D<float> asteroidPos = asteroid.position.position - Point2D<float>{ dist.x * chunk_size, dist.y * chunk_size };
   // position of point relative to asteroid
   Point2D<float> point_rel = (pointPos - asteroidPos);
   // transform point based on rotation

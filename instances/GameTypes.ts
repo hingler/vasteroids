@@ -37,4 +37,6 @@ interface Instance {
   id: number;
 }
 
-export { InstanceType, Point2D, WorldPosition, Instance }
+const chunkSize = 128.0;
+
+export { InstanceType, Point2D, WorldPosition, Instance, chunkSize }
