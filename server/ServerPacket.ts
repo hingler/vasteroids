@@ -9,4 +9,4 @@ interface ServerPacket {
   instances: Array<InstanceInfo>;
 }
 
-export { ServerPacket };
+export { ServerPacket, InstanceInfo };
