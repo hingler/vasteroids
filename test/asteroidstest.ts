@@ -1,6 +1,6 @@
 const AsteroidsTest = require("bindings")("asteroidstest");
 import { expect } from "chai";
-import { Asteroid } from "../addons-ts/Asteroid"
+import { Asteroid } from "../instances/Asteroid"
 
 describe("Asteroids", function() {
   it("Should return an asteroid on valid input", function() {
@@ -10,5 +10,7 @@ describe("Asteroids", function() {
     for (let point of ast.geometry) {
       expect(Math.sqrt(point.x * point.x + point.y * point.y)).to.be.lessThan(1.5);
     }
+    
+    console.log(ast);
   });
 });

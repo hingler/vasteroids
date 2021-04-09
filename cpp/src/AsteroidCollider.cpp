@@ -67,8 +67,8 @@ static Napi::Value CollideNode(const Napi::CallbackInfo& info) {
   Napi::Object asteroid = info[0].As<Napi::Object>();
   Napi::Object point = info[1].As<Napi::Object>();
 
-  Asteroid a = Asteroid::FromNodeObject(asteroid);
-  WorldPosition c = WorldPosition::FromNodeObject(point);
+  Asteroid a = Asteroid(asteroid);
+  WorldPosition c = WorldPosition(point);
   Napi::Boolean ret = Napi::Boolean::New(env, Collide(a, c));
 
   return ret;

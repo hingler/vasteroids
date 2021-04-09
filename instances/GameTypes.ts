@@ -1,3 +1,9 @@
+enum InstanceType {
+  ASTEROID = "asteroid",
+  SHIP = "ship",
+  PROJECTILE = "projectile"
+};
+
 interface Point2D {
   x: number;
   y: number;
@@ -23,6 +29,12 @@ interface Instance {
   rotation: number;
 
   rotation_velocity: number;
+
+  // the time at which this instance was created, rel. to the server.
+  creation_time: number;
+
+  // a unique identifier for this instance.
+  id: number;
 }
 
-export { Point2D, WorldPosition, Instance }
+export { InstanceType, Point2D, WorldPosition, Instance }

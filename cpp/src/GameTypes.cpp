@@ -1,7 +1,5 @@
 #include <GameTypes.hpp>
 
-#define TYPEERROR(env, x) Napi::TypeError::New(env, x).ThrowAsJavaScriptException()
-
 namespace vasteroids {
 
 Napi::Object WorldPosition::ToNodeObject(Napi::Env env) const {
@@ -11,24 +9,52 @@ Napi::Object WorldPosition::ToNodeObject(Napi::Env env) const {
   return res;
 }
 
-WorldPosition WorldPosition::FromNodeObject(Napi::Object obj) {
-  WorldPosition res;
-
+WorldPosition::WorldPosition(Napi::Object obj) {
   Napi::Env env = obj.Env();
   Napi::Value chunkObj = obj.Get("chunk");
   if (!chunkObj.IsObject()) {
     TYPEERROR(env, "no point2d 'chunk' field on provided object");
   }
 
-  res.chunk = Point2D<int>::FromNodeObject(chunkObj.As<Napi::Object>());
+  chunk = Point2D<int>(chunkObj.As<Napi::Object>());
 
   Napi::Value posObj = obj.Get("position");
   if (!posObj.IsObject()) {
     TYPEERROR(env, "no point2d 'position' field on provided object");
   }
 
-  res.position = Point2D<float>::FromNodeObject(posObj.As<Napi::Object>());
-  return res;
+  position = Point2D<float>(posObj.As<Napi::Object>());
+}
+
+Instance::Instance(Napi::Object obj) {
+  Napi::Env env = obj.Env();
+  Napi::Value posObj = obj.Get("position");
+  if (!posObj.IsObject()) {
+    TYPEERROR(env, "no worldposition 'position' on provided object");
+  }
+
+  position = WorldPosition(posObj.As<Napi::Object>());
+  
+  Napi::Value velObj = obj.Get("velocity");
+  if (!velObj.IsObject()) {
+    TYPEERROR(env, "no point2d 'velocity' on provided object");
+  }
+
+  velocity = Point2D<float>(velObj.As<Napi::Object>());
+
+  Napi::Value rotObj = obj.Get("rotation");
+  if (!rotObj.IsNumber()) {
+    TYPEERROR(env, "rotation field is missing");
+  }
+
+  rotation = rotObj.As<Napi::Number>().FloatValue();
+
+  Napi::Value rot_velo = obj.Get("rotation_velocity");
+  if (!rot_velo.IsNumber()) {
+    TYPEERROR(env, "rotation_velocity field is missing");
+  }
+
+  rotation_velocity = rot_velo.As<Napi::Number>().FloatValue();
 }
 
 Napi::Object Instance::ToNodeObject(Napi::Env env) const {
@@ -37,41 +63,6 @@ Napi::Object Instance::ToNodeObject(Napi::Env env) const {
   res.Set("velocity", velocity.ToNodeObject(env));
   res.Set("rotation", Napi::Number::New(env, rotation));
   res.Set("rotation_velocity", Napi::Number::New(env, rotation_velocity));
-
-  return res;
-}
-
-Instance Instance::FromNodeObject(Napi::Object obj) {
-  Instance res;
-
-  Napi::Env env = obj.Env();
-  Napi::Value posObj = obj.Get("position");
-  if (!posObj.IsObject()) {
-    TYPEERROR(env, "no worldposition 'position' on provided object");
-  }
-
-  res.position = WorldPosition::FromNodeObject(posObj.As<Napi::Object>());
-  
-  Napi::Value velObj = obj.Get("velocity");
-  if (!velObj.IsObject()) {
-    TYPEERROR(env, "no point2d 'velocity' on provided object");
-  }
-
-  res.velocity = Point2D<float>::FromNodeObject(velObj.As<Napi::Object>());
-
-  Napi::Value rotation = obj.Get("rotation");
-  if (!rotation.IsNumber()) {
-    TYPEERROR(env, "rotation field is missing");
-  }
-
-  res.rotation = rotation.As<Napi::Number>().FloatValue();
-
-  Napi::Value rot_velo = obj.Get("rotation_velocity");
-  if (!rot_velo.IsNumber()) {
-    TYPEERROR(env, "rotation_velocity field is missing");
-  }
-
-  res.rotation_velocity = rot_velo.As<Napi::Number>().FloatValue();
 
   return res;
 }

@@ -2,17 +2,13 @@
 
 namespace vasteroids {
 
-Asteroid Asteroid::FromNodeObject(Napi::Object obj) {
-  Asteroid res;
+Asteroid::Asteroid() : Instance() {}
+Asteroid::Asteroid(Napi::Object obj) : Instance(obj) {
   Napi::Env env = obj.Env();
-
-  dynamic_cast<Instance&>(res) = Instance::FromNodeObject(obj);
-
   Napi::Value geom = obj.Get("geometry");
   if (geom.IsUndefined() || !geom.IsArray()) {
     // something is wrong
     Napi::TypeError::New(env, "'geometry' field of asteroid not present").ThrowAsJavaScriptException();
-    return res;
   }
 
   Napi::Array arr = geom.As<Napi::Array>();
@@ -23,10 +19,8 @@ Asteroid Asteroid::FromNodeObject(Napi::Object obj) {
     }
 
     Napi::Object pt = val.As<Napi::Object>();
-    res.geometry.push_back(Point2D<float>::FromNodeObject(pt));
+    geometry.push_back(Point2D<float>(pt));
   }
-
-  return res;
 }
 
 Napi::Object Asteroid::ToNodeObject(Napi::Env env) {

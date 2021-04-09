@@ -5,6 +5,7 @@
 
 // TODO: remove this later :)
 #define CHUNK_SIZE 128.0f
+#define TYPEERROR(env, x) Napi::TypeError::New(env, x).ThrowAsJavaScriptException()
 
 namespace vasteroids {
   template <typename T = float>
@@ -12,24 +13,28 @@ namespace vasteroids {
     T x;
     T y;
 
-    Napi::Object ToNodeObject(Napi::Env env) const {
-      Napi::Object obj = Napi::Object::New(env);
-      obj.Set("x", x);
-      obj.Set("y", y);
-      return obj;
-    }
+    Point2D() {}
 
-    static Point2D FromNodeObject(Napi::Object obj) {
-      Point2D res;
-
+    Point2D(Napi::Object obj) {
       Napi::Env env = obj.Env();
       if (!obj.Has("x") || !obj.Has("y")) {
         Napi::TypeError::New(env, "point does not contain correct fields").ThrowAsJavaScriptException();
       }
 
-      res.x = obj.Get("x").As<Napi::Number>().DoubleValue();
-      res.y = obj.Get("y").As<Napi::Number>().DoubleValue();
-      return res;
+      x = static_cast<T>(obj.Get("x").As<Napi::Number>().DoubleValue());
+      y = static_cast<T>(obj.Get("y").As<Napi::Number>().DoubleValue());
+    }
+
+    Point2D(T x, T y) {
+      this->x = x;
+      this->y = y;
+    }
+
+    Napi::Object ToNodeObject(Napi::Env env) const {
+      Napi::Object obj = Napi::Object::New(env);
+      obj.Set("x", x);
+      obj.Set("y", y);
+      return obj;
     }
   };
 
@@ -47,15 +52,13 @@ namespace vasteroids {
     Point2D<int> chunk;
     Point2D<float> position;
 
+    WorldPosition() {}
+    WorldPosition(Napi::Object obj);
+
     /**
      *  Returns this worldposition as a Node object.
      */ 
     Napi::Object ToNodeObject(Napi::Env env) const;
-
-    /**
-     *  Creates a new WorldPosition from its respective node object.
-     */ 
-    static WorldPosition FromNodeObject(Napi::Object obj);
   };
 
   struct Instance {
@@ -64,9 +67,11 @@ namespace vasteroids {
     float rotation;
     float rotation_velocity;
 
-    Napi::Object ToNodeObject(Napi::Env env) const;
+    // def ctor, no init
+    Instance() {}
+    Instance(Napi::Object obj);
 
-    static Instance FromNodeObject(Napi::Object obj);
+    virtual Napi::Object ToNodeObject(Napi::Env env) const;
   };
 
 } // namespace vasteroids

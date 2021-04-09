@@ -1,7 +1,7 @@
 const ColliderTest = require("bindings")("collidertest");
 import { expect } from "chai";
-import { WorldPosition, Point2D } from "../addons-ts/GameTypes"
-import { Asteroid } from "../addons-ts/Asteroid";
+import { WorldPosition, Point2D } from "../instances/GameTypes"
+import { Asteroid } from "../instances/Asteroid";
 
 describe("ColliderFunction", function() {
   it("Should return correctly when a collision occurs", function() {
@@ -12,6 +12,7 @@ describe("ColliderFunction", function() {
       chunk: { x: 0, y: 0 },
       position: {x: 0, y: 0 }
     };
+
     a.rotation = 0;
     a.rotation_velocity = 0;
     a.velocity = {x: 0, y: 0};
