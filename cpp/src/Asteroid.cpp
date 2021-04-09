@@ -23,7 +23,7 @@ Asteroid::Asteroid(Napi::Object obj) : Instance(obj) {
   }
 }
 
-Napi::Object Asteroid::ToNodeObject(Napi::Env env) {
+Napi::Object Asteroid::ToNodeObject(Napi::Env env) const {
   Napi::Object res = Instance::ToNodeObject(env);
   Napi::Array arr = Napi::Array::New(env, geometry.size());
   

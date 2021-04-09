@@ -23,7 +23,7 @@ struct Asteroid : public Instance {
    *  Returns this Asteroid as a node object.
    *  @param env - the environment this node object is being constructed in.
    */
-  Napi::Object ToNodeObject(Napi::Env env);
+  Napi::Object ToNodeObject(Napi::Env env) const;
 };
 
 }
