@@ -48,6 +48,20 @@ namespace vasteroids {
       obj.Set("y", y);
       return obj;
     }
+
+    template<typename T>
+    Point2D<T>& operator+=(const Point2D<T>& rhs) {
+      this.x += rhs.x;
+      this.y += rhs.y;
+      return *this;
+    }
+
+    template<typename T, typename U>
+    Point2D<T>& operator*=(U mult) {
+      this.x *= mult;
+      this.y *= mult;
+      return *this;
+    }
   };
 
   template<typename T>
@@ -58,6 +72,11 @@ namespace vasteroids {
   template<typename T>
   Point2D<T> operator-(const Point2D<T>& lhs, const Point2D<T>& rhs) {
     return { lhs.x - rhs.x, lhs.y - rhs.y };
+  }
+
+  template<typename T, typename U>
+  Point2D<T> operator*(const Point2D<T>& lhs, U mult) {
+    return { lhs.x * mult, lhs.y * mult };
   }
 
   struct WorldPosition {
