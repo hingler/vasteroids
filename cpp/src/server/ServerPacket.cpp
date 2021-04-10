@@ -1,6 +1,12 @@
 #include <server/ServerPacket.hpp>
 
 namespace vasteroids {
+namespace server {
+
+void ServerPacket::ConcatPacket(const ServerPacket& packet) {
+  asteroids.insert(asteroids.end(), packet.asteroids.begin(), packet.asteroids.end());
+  ships.insert(ships.end(), packet.ships.begin(), packet.ships.end());
+}
 
 Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
   Napi::Object obj;
@@ -37,4 +43,5 @@ Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
   
 }
 
+}
 }

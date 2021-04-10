@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace vasteroids {
-
+namespace server {
 struct ServerPacket {
   // update information wrt asteroids
   std::vector<Asteroid> asteroids;
@@ -16,11 +16,16 @@ struct ServerPacket {
   std::vector<Ship> ships;
 
   /**
+   *  Concatenates another server packet onto this one.
+   */ 
+  void ConcatPacket(const ServerPacket& packet);
+
+  /**
    *  Converts a ServerPacket to a Node object.
    */ 
   Napi::Object ToNodeObject(Napi::Env env);
 };
-
+}
 }
 
 #endif
