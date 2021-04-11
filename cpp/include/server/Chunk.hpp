@@ -31,6 +31,11 @@ class Chunk {
    */ 
   void GetContents(ServerPacket& resid);
 
+  /**
+   *  @returns a floating point number representing the amount of activity in this chunk.
+   */ 
+  float GetActivity();
+
  private:
   // stores contents of this chunk.
   ServerPacket contents;
