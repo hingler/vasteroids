@@ -44,8 +44,17 @@
 #define ASSERT_E(...) EXPAND(ASSERT_E_LOOKUP(__VA_ARGS__, ASSERT_E_MSG, ASSERT_E_NOMSG)(__VA_ARGS__))
 
 
-#define ASSERT_N_MSG(ex, ac, eps, env, msg) if (abs(ex - ac) > eps) ERROR(env, msg)
-#define ASSERT_N_NOMSG(ex, ac, eps, env) if (abs(ex - ac) > eps) ERROR(env)
+#define ASSERT_N_INFO(ex, ac, eps) PRINTLN("\t\033[1;31mERR: expected " << #ex << " (" << ex << ") to be within " << #eps << " (" << eps << ") of " << #ac << "( " << ac << ")!\033[0m")
+#define ASSERT_N_MSG(ex, ac, eps, env, msg) if (abs(ex - ac) > eps) {\
+  ASSERT_N_INFO(ex, ac, eps);\
+  PRINTLN("\t" << msg);\
+  ERROR(env, msg);\
+}
+
+#define ASSERT_N_NOMSG(ex, ac, eps, env) if (abs(ex - ac) > eps) {\
+  ASSERT_N_INFO(ex, ac, eps);\
+  ERROR(env);\
+}
 #define ASSERT_N_LOOKUP(_1, _2, _3, _4, _5, NAME, ...) NAME
 #define ASSERT_N(...) EXPAND(ASSERT_N_LOOKUP(__VA_ARGS__, ASSERT_N_MSG, ASSERT_N_NOMSG)(__VA_ARGS__))
 
