@@ -36,27 +36,30 @@
         'NAPI_DISABLE_CPP_EXCEPTIONS',
         'COLLIDER_TEST'
       ]
+    },
+    {
+      "target_name": "worldsim",
+      "cflags!": [ "-fno-exceptions" ],
+      "cflags_cc!": [ "-fno-exceptions" ],
+      "sources": [
+        "cpp/src/AsteroidGenerator.cpp",
+        "cpp/src/Asteroid.cpp",
+        "cpp/src/AsteroidCollider.cpp",
+        "cpp/src/GameTypes.cpp",
+        "cpp/src/client/ClientPacket.cpp",
+        "cpp/src/server/Chunk.cpp",
+        "cpp/src/server/ServerPacket.cpp",
+        "cpp/src/server/WorldSim.cpp",
+        "cpp/src/Ship.cpp"
+      ],
+      "include_dirs": [
+        '<!@(node -p "require(\'node-addon-api\').include")',
+        "cpp/include"
+      ],
+      "defines": [ 
+        'NAPI_DISABLE_CPP_EXCEPTIONS',
+        'COLLIDER_TEST'
+      ]
     }
-    # {
-    #   "target_name": "worldsim",
-    #   "cflags!": [ "-fno-exceptions" ],
-    #   "cflags_cc!": [ "-fno-exceptions" ],
-    #   "sources": [
-    #     "cpp/src/AsteroidGenerator.cpp",
-    #     "cpp/src/Asteroid.cpp",
-    #     "cpp/src/AsteroidCollider.cpp",
-    #     "cpp/src/GameTypes.cpp",
-    #     "cpp/src/client/ClientPacket.cpp",
-    #     "cpp/src/Ship.cpp"
-    #   ],
-    #   "include_dirs": [
-    #     '<!@(node -p "require(\'node-addon-api\').include")',
-    #     "cpp/include"
-    #   ],
-    #   "defines": [ 
-    #     'NAPI_DISABLE_CPP_EXCEPTIONS',
-    #     'COLLIDER_TEST'
-    #   ]
-    # }
   ]
 }

@@ -72,6 +72,7 @@ Instance::Instance(Napi::Object obj) {
 
 Napi::Object Instance::ToNodeObject(Napi::Env env) const {
   Napi::Object res = Napi::Object::New(env);
+  res.Set("id", Napi::Number::New(env, id));
   res.Set("position", position.ToNodeObject(env));
   res.Set("velocity", velocity.ToNodeObject(env));
   res.Set("rotation", Napi::Number::New(env, rotation));

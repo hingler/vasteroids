@@ -15,6 +15,9 @@ struct ServerPacket {
   // update information wrt ships
   std::vector<Ship> ships;
 
+  // deltas which do not require complete information
+  std::vector<Instance> deltas;
+
   /**
    *  Concatenates another server packet onto this one.
    */ 

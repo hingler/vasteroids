@@ -2,6 +2,8 @@
 #define CHUNK_H_
 
 #include <chrono>
+#include <unordered_map>
+
 #include <server/ServerPacket.hpp>
 
 namespace vasteroids {
@@ -32,13 +34,35 @@ class Chunk {
   void GetContents(ServerPacket& resid);
 
   /**
+   *  @returns a copy of a locally stored ship, if one exists.
+   */ 
+  Ship* GetShip(uint64_t id);
+
+  /**
+   *  Inserts a ship into this chunk, or updates a ship if the corresponding ship is present.
+   */ 
+  void InsertShip(const Ship& s);
+
+  /**
+   *  Inserts or updates an asteroid in this chunk.
+   */ 
+  void InsertAsteroid(const Asteroid& a);
+
+  /**
+   *  Removes an instance from this chunk.
+   *  @param id - the ID of the instance being removed.
+   *  @returns true if the ID could be removed, false otherwise.
+   */ 
+  bool RemoveInstance(uint64_t id);
+
+  /**
    *  @returns a floating point number representing the amount of activity in this chunk.
    */ 
   float GetActivity();
 
  private:
-  // stores contents of this chunk.
-  ServerPacket contents;
+  std::unordered_map<uint64_t, Ship> ships_;
+  std::unordered_map<uint64_t, Asteroid> asteroids_;
 
   // records time since this chunk was last updated.
   std::chrono::time_point<std::chrono::high_resolution_clock> last_update;

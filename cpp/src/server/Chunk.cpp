@@ -9,7 +9,14 @@ Chunk::Chunk() {
 };
 
 void Chunk::InsertElements(const ServerPacket& insts) {
-  contents.ConcatPacket(insts);
+  for (auto& ship : insts.ships) {
+    ships_.insert(std::make_pair(ship.id, ship));
+  }
+
+  for (auto& asteroid : insts.asteroids) {
+    asteroids_.insert(std::make_pair(asteroid.id, asteroid));
+  }
+
 }
 
 void Chunk::UpdateChunk(ServerPacket& resid) {
@@ -22,14 +29,16 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
   delta = std::min(delta, 1.0f);
   {
     // update asteroids
-    auto itr = contents.asteroids.begin();
-    while (itr != contents.asteroids.end()) {
-      itr->position.position += (itr->velocity * delta);
-      if (itr->position.position.x >= chunk_size || itr->position.position.y >= chunk_size
-       || itr->position.position.x <           0 || itr->position.position.y <           0) {
+    auto itr = asteroids_.begin();
+    while (itr != asteroids_.end()) {
+      auto delta_local = std::chrono::duration<float>(now_update - itr->second.last_update).count();
+      itr->second.position.position += (itr->second.velocity * delta_local);
+      itr->second.last_update = now_update;
+      if (itr->second.position.position.x >= chunk_size || itr->second.position.position.y >= chunk_size
+       || itr->second.position.position.x <           0 || itr->second.position.position.y <           0) {
         // add it to resid
-        resid.asteroids.push_back(*itr);
-        itr = contents.asteroids.erase(itr);
+        resid.asteroids.push_back(itr->second);
+        itr = asteroids_.erase(itr);
       } else {
         itr++;
       }
@@ -38,14 +47,19 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
 
   {
     // update ships -- note: we're going to update this for it.
-    auto itr = contents.ships.begin();
-    while (itr != contents.ships.end()) {
-      itr->position.position += (itr->velocity * delta);
-      if (itr->position.position.x >= chunk_size || itr->position.position.y >= chunk_size
-       || itr->position.position.x <           0 || itr->position.position.y <           0) {
+    auto itr = ships_.begin();
+    while (itr != ships_.end()) {
+      auto delta_local = std::chrono::duration<float>(now_update - itr->second.last_update).count();
+      itr->second.position.position += (itr->second.velocity * delta_local);
+      itr->second.last_update = now_update;
+      if (itr->second.position.position.x >= chunk_size || itr->second.position.position.y >= chunk_size
+       || itr->second.position.position.x <           0 || itr->second.position.position.y <           0) {
         // add it to resid
-        resid.ships.push_back(*itr);
-        itr = contents.ships.erase(itr);
+        // make chunks consistent
+        itr->second.position.chunk.x += static_cast<int>(std::floor(itr->second.position.position.x / chunk_size));
+        itr->second.position.chunk.y += static_cast<int>(std::floor(itr->second.position.position.y / chunk_size));
+        resid.ships.push_back(itr->second);
+        itr = ships_.erase(itr);
       } else {
         itr++;
       }
@@ -53,9 +67,43 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
   }
 }
 
+Ship* Chunk::GetShip(uint64_t id) {
+  auto itr = ships_.find(id);
+  if (itr == ships_.end()) {
+    return nullptr;
+  }
+
+  return &(itr->second);
+}
+
+void Chunk::InsertShip(const Ship& s) {
+  ships_.insert(std::make_pair(s.id, s));
+}
+
+void Chunk::InsertAsteroid(const Asteroid& a) {
+  asteroids_.insert(std::make_pair(a.id, a));
+}
+
+bool Chunk::RemoveInstance(uint64_t id) {
+  if (ships_.erase(id)) {
+    return true;
+  }
+
+  if (asteroids_.erase(id)) {
+    return true;
+  }
+
+  return false;
+}
+
 void Chunk::GetContents(ServerPacket& resid) {
-  resid.asteroids.insert(resid.asteroids.end(), contents.asteroids.begin(), contents.asteroids.end());
-  resid.ships.insert(resid.ships.end(), contents.ships.begin(), contents.ships.end());
+  for (auto& a : asteroids_) {
+    resid.asteroids.push_back(a.second);
+  }
+
+  for (auto& s : ships_) {
+    resid.ships.push_back(s.second);
+  }
 }
 
 }

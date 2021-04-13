@@ -14,4 +14,10 @@ Ship::Ship(Napi::Object obj) : Instance(obj) {
   name = nameObj.As<Napi::String>().Utf8Value(); 
 }
 
+Napi::Object Ship::ToNodeObject(Napi::Env env) const {
+  Napi::Object res = Instance::ToNodeObject(env);
+  res.Set("name", name);
+  return res;
+}
+
 }

@@ -2,6 +2,7 @@
 #define GAME_TYPES_H_
 
 #include <napi.h>
+#include <chrono>
 
 #define TYPEERROR(env, x) Napi::TypeError::New(env, x).ThrowAsJavaScriptException()
 
@@ -12,7 +13,8 @@ namespace vasteroids {
   enum class InstanceType {
     ASTEROID,
     SHIP,
-    PROJECTILE
+    PROJECTILE,
+    DELTA
   };
 
   /**
@@ -51,18 +53,23 @@ namespace vasteroids {
 
     template<typename T>
     Point2D<T>& operator+=(const Point2D<T>& rhs) {
-      this.x += rhs.x;
-      this.y += rhs.y;
+      this->x += rhs.x;
+      this->y += rhs.y;
       return *this;
     }
 
     template<typename T, typename U>
     Point2D<T>& operator*=(U mult) {
-      this.x *= mult;
-      this.y *= mult;
+      this->x *= mult;
+      this->y *= mult;
       return *this;
     }
   };
+
+  template<typename T>
+  bool operator==(const Point2D<T>& lhs, const Point2D<T>& rhs) {
+    return (lhs.x == rhs.x && lhs.y == rhs.y);
+  }
 
   template<typename T>
   Point2D<T> operator+(const Point2D<T>& lhs, const Point2D<T>& rhs) {
@@ -97,6 +104,14 @@ namespace vasteroids {
     Point2D<> velocity;
     float rotation;
     float rotation_velocity;
+
+    // unique identifier assigned by WorldSim.
+    uint64_t id;
+
+    // tracks number of updates to instance.
+    uint32_t ver;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> last_update;
 
     // def ctor, no init
     Instance() {}
