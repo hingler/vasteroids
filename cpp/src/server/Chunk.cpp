@@ -39,6 +39,8 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
         // add it to resid
         itr->second.position.chunk.x += static_cast<int>(std::floor(itr->second.position.position.x / chunk_size));
         itr->second.position.chunk.y += static_cast<int>(std::floor(itr->second.position.position.y / chunk_size));
+        itr->second.position.position.x -= 128.0f * std::floor(itr->second.position.position.x / chunk_size);
+        itr->second.position.position.y -= 128.0f * std::floor(itr->second.position.position.y / chunk_size);
         resid.asteroids.push_back(itr->second);
         itr = asteroids_.erase(itr);
       } else {
@@ -60,6 +62,8 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
         // make chunks consistent
         itr->second.position.chunk.x += static_cast<int>(std::floor(itr->second.position.position.x / chunk_size));
         itr->second.position.chunk.y += static_cast<int>(std::floor(itr->second.position.position.y / chunk_size));
+        itr->second.position.position.x -= 128.0f * std::floor(itr->second.position.position.x / chunk_size);
+        itr->second.position.position.y -= 128.0f * std::floor(itr->second.position.position.y / chunk_size);
         resid.ships.push_back(itr->second);
         itr = ships_.erase(itr);
       } else {
