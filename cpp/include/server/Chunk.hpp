@@ -41,12 +41,12 @@ class Chunk {
   /**
    *  Inserts a ship into this chunk, or updates a ship if the corresponding ship is present.
    */ 
-  void InsertShip(const Ship& s);
+  void InsertShip(Ship& s);
 
   /**
    *  Inserts or updates an asteroid in this chunk.
    */ 
-  void InsertAsteroid(const Asteroid& a);
+  void InsertAsteroid(Asteroid& a);
 
   /**
    *  Removes an instance from this chunk.

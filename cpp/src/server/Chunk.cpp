@@ -24,7 +24,7 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
   // if one ends up outside the chunk (coord < 0 or coord >= CHUNK_SIZE),
   // add it to resid.
   auto now_update = std::chrono::high_resolution_clock::now();
-  float delta = std::chrono::duration<float>(now_update - last_update).count();
+  float delta = std::chrono::duration<float, std::ratio<1L, 1L>>(now_update - last_update).count();
   // ensure we keep update time less than 1s (keep it safe :)
   delta = std::min(delta, 1.0f);
   {
@@ -37,6 +37,8 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
       if (itr->second.position.position.x >= chunk_size || itr->second.position.position.y >= chunk_size
        || itr->second.position.position.x <           0 || itr->second.position.position.y <           0) {
         // add it to resid
+        itr->second.position.chunk.x += static_cast<int>(std::floor(itr->second.position.position.x / chunk_size));
+        itr->second.position.chunk.y += static_cast<int>(std::floor(itr->second.position.position.y / chunk_size));
         resid.asteroids.push_back(itr->second);
         itr = asteroids_.erase(itr);
       } else {
@@ -76,11 +78,14 @@ Ship* Chunk::GetShip(uint64_t id) {
   return &(itr->second);
 }
 
-void Chunk::InsertShip(const Ship& s) {
+void Chunk::InsertShip(Ship& s) {
+  // if we're inserting into a chunk, then the object has just been updated.
+  s.last_update = std::chrono::high_resolution_clock::now();
   ships_.insert(std::make_pair(s.id, s));
 }
 
-void Chunk::InsertAsteroid(const Asteroid& a) {
+void Chunk::InsertAsteroid(Asteroid& a) {
+  a.last_update = std::chrono::high_resolution_clock::now();
   asteroids_.insert(std::make_pair(a.id, a));
 }
 
