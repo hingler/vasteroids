@@ -60,7 +60,7 @@
       ],
       "defines": [ 
         'NAPI_DISABLE_CPP_EXCEPTIONS',
-        'COLLIDER_TEST'
+        'CHUNK_TEST'
       ]
     },
     {
@@ -84,7 +84,7 @@
       ],
       "defines": [ 
         'NAPI_DISABLE_CPP_EXCEPTIONS',
-        'COLLIDER_TEST'
+        'WORLD_EXPORT'
       ]
     }
   ]
