@@ -30,9 +30,6 @@ interface Instance {
 
   rotation_velocity: number;
 
-  // the time at which this instance was created, rel. to the server.
-  creation_time: number;
-
   // a unique identifier for this instance.
   id: number;
 }
