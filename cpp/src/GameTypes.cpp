@@ -30,7 +30,6 @@ WorldPosition::WorldPosition(Napi::Object obj) {
   }
 
   chunk = Point2D<int>(chunkObj.As<Napi::Object>());
-
   Napi::Value posObj = obj.Get("position");
   if (!posObj.IsObject()) {
     TYPEERROR(env, "no point2d 'position' field on provided object");
@@ -68,6 +67,13 @@ Instance::Instance(Napi::Object obj) {
   }
 
   rotation_velocity = rot_velo.As<Napi::Number>().FloatValue();
+
+  Napi::Value id_info = obj.Get("id");
+  if (!id_info.IsNumber()) {
+    TYPEERROR(env, "id field is missing");
+  }
+
+  id = static_cast<uint64_t>(id_info.As<Napi::Number>().Int64Value());
 }
 
 Napi::Object Instance::ToNodeObject(Napi::Env env) const {

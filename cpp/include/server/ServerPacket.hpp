@@ -4,6 +4,8 @@
 #include <Asteroid.hpp>
 #include <Ship.hpp>
 #include <GameTypes.hpp>
+
+#include <unordered_set>
 #include <vector>
 
 namespace vasteroids {
@@ -17,6 +19,8 @@ struct ServerPacket {
 
   // deltas which do not require complete information
   std::vector<Instance> deltas;
+
+  std::unordered_set<uint64_t> deleted;
 
   /**
    *  Concatenates another server packet onto this one.

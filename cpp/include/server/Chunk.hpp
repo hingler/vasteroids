@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <server/ServerPacket.hpp>
 
@@ -49,6 +50,12 @@ class Chunk {
   void InsertAsteroid(Asteroid& a);
 
   /**
+   *  Removes a ship from a chunk -- does not record the instance as deleted.
+   *  @param id - the ID of the ship we wish to move.
+   */  
+  bool MoveShip(uint64_t id);
+
+  /**
    *  Removes an instance from this chunk.
    *  @param id - the ID of the instance being removed.
    *  @returns true if the ID could be removed, false otherwise.
@@ -64,8 +71,16 @@ class Chunk {
   std::unordered_map<uint64_t, Ship> ships_;
   std::unordered_map<uint64_t, Asteroid> asteroids_;
 
+  // list of all items deleted since last update
+  std::unordered_set<uint64_t> deleted_cur_;
+
+  // list of all items deleted in the last update
+  std::unordered_set<uint64_t> deleted_last_;
+
   // records time since this chunk was last updated.
   std::chrono::time_point<std::chrono::high_resolution_clock> last_update;
+
+  // when getting contents: chunks will append the set of all IDs deleted in the last update
   
 
 };

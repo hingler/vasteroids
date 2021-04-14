@@ -24,8 +24,8 @@ interface WorldSim {
   /**
    * Updates the simulation. Should be done once per server tick.
    *   (we could JSONify this for NODE?)
-   * @returns a map containing the data to be sent to each client.
-   */
+   * @returns an object mapping IDs to server packets.
+   */ 
   UpdateSim() : any;
 
   /**

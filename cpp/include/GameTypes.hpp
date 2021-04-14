@@ -3,6 +3,7 @@
 
 #include <napi.h>
 #include <chrono>
+#include <iostream>
 
 #define TYPEERROR(env, x) Napi::TypeError::New(env, x).ThrowAsJavaScriptException()
 
@@ -49,6 +50,17 @@ namespace vasteroids {
       obj.Set("x", x);
       obj.Set("y", y);
       return obj;
+    }
+
+    Point2D& operator=(const Point2D<T>& rhs) {
+      this->x = rhs.x;
+      this->y = rhs.y;
+      return *this;
+    }
+
+    Point2D(const Point2D& rhs) {
+      this->x = rhs.x;
+      this->y = rhs.y;
     }
 
     template<typename T>

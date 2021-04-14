@@ -2,15 +2,11 @@ import { Asteroid } from "../instances/Asteroid";
 import { InstanceType, Instance } from "../instances/GameTypes";
 import { ClientShip } from "../instances/Ship";
 
-interface InstanceInfo {
+interface ServerPacket {
   asteroids: Array<Asteroid>,
   ships: Array<ClientShip>,
-  deltas: Array<Instance>
-  // TODO: record deleted IDs.
+  deltas: Array<Instance>,
+  deleted: Array<number>
 }
 
-interface ServerPacket {
-  instances: Array<InstanceInfo>;
-}
-
-export { ServerPacket, InstanceInfo };
+export { ServerPacket };

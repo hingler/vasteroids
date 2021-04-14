@@ -40,6 +40,16 @@ Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
 
     obj.Set("deltas", instance_arr);
   }
+  
+  {
+    Napi::Array deleted_nums = Napi::Array::New(env);
+    uint64_t i = 0;
+    for (const auto& del : deleted) {
+      deleted_nums[i++] = Napi::Number::New(env, del);
+    }
+
+    obj.Set("deleted", deleted_nums);
+  }
 
   return obj;
   

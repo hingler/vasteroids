@@ -16,6 +16,7 @@ describe("ColliderFunction", function() {
     a.rotation = 0;
     a.rotation_velocity = 0;
     a.velocity = {x: 0, y: 0};
+    a.id = 0;
     for (let i = 0; i < 12; i++) {
       let theta = ((Math.PI) / 6) * i;
       a.geometry.push({
@@ -72,6 +73,7 @@ describe("ColliderFunction", function() {
 
   it("Should account for rotation", function() {
     let a = {} as Asteroid;
+    a.id = 0;
     a.geometry = [];
     a.position = {
       position: { x: 0, y: 0 },

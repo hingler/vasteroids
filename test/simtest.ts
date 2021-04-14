@@ -1,7 +1,8 @@
 import { CreateWorldSim } from "../server/WorldSim";
 import { ClientShip } from "../instances/Ship";
 import { expect } from "chai";
-import { InstanceType } from "../instances/GameTypes";
+import { InstanceType, Point2D } from "../instances/GameTypes";
+import { ClientPacket } from "../client/ClientPacket";
 
 describe("WorldSim", function() {
   it("Should be able to be created :)", function() {
@@ -58,4 +59,61 @@ describe("WorldSim", function() {
     expect(pkts['1'].deltas.length).to.equal(0);
     expect(pkts['2'].deltas.length).to.equal(0);
   });
+
+  it("should allow clients to update their position", function() {
+    let worldsim = CreateWorldSim(4, 0);
+    let ship_one = worldsim.AddShip("ship1");
+    let testClientPacket = {} as ClientPacket;
+    // modify ship one
+    ship_one.position.chunk = {x: 0, y: 0} as Point2D;
+    testClientPacket.ship = ship_one;
+    testClientPacket.projectileFired = false;
+    let ship_two = worldsim.AddShip("ship2");
+    let testTwo = {} as ClientPacket;
+    
+    ship_two.position.chunk = {x: 0, y: 0} as Point2D;
+    testTwo.ship = ship_two;
+    testTwo.projectileFired = false;
+
+    console.log("one!");
+    console.log(testClientPacket.ship);
+    worldsim.HandleClientPacket(testClientPacket);
+    console.log("two!");
+    worldsim.HandleClientPacket(testTwo);
+
+    let res = worldsim.UpdateSim();
+    console.log(res);
+    expect(res[ship_one.id.toString()].ships.length).to.equal(1);
+    expect(res[ship_two.id.toString()].ships.length).to.equal(1);
+
+    // move ship2 to the other side of the earth
+    ship_two.position.chunk = {x: 3, y: 3} as Point2D;
+    testTwo.ship = ship_two;
+    testTwo.projectileFired = false;
+
+    worldsim.HandleClientPacket(testTwo);
+    
+    res = worldsim.UpdateSim();
+    console.log(res);
+    expect(res[ship_one.id.toString()].ships.length).to.equal(0);
+    expect(res[ship_two.id.toString()].ships.length).to.equal(0);
+
+    // move ship1 to ship2
+    ship_one.position.chunk = {x: 3, y: 3} as Point2D;
+    testClientPacket.ship = ship_one;
+    testClientPacket.projectileFired = false;
+
+    worldsim.HandleClientPacket(testClientPacket);
+
+    res = worldsim.UpdateSim();
+    console.log(res);
+    expect(res[ship_one.id.toString()].ships.length).to.equal(1);
+    expect(res[ship_two.id.toString()].ships.length).to.equal(1);
+
+    worldsim.DeleteShip(ship_two.id);
+    res = worldsim.UpdateSim();
+    console.log(res);
+    expect(res[ship_two.id.toString()]).to.be.undefined;
+    expect(res[ship_one.id.toString()].deleted.length).to.equal(1);
+  })
 })

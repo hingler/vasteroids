@@ -71,6 +71,9 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
       }
     }
   }
+
+  deleted_last_ = std::move(deleted_cur_);
+  deleted_cur_ = std::unordered_set<uint64_t>();
 }
 
 Ship* Chunk::GetShip(uint64_t id) {
@@ -93,12 +96,22 @@ void Chunk::InsertAsteroid(Asteroid& a) {
   asteroids_.insert(std::make_pair(a.id, a));
 }
 
-bool Chunk::RemoveInstance(uint64_t id) {
+bool Chunk::MoveShip(uint64_t id) {
   if (ships_.erase(id)) {
     return true;
   }
 
+  return false;
+}
+
+bool Chunk::RemoveInstance(uint64_t id) {
+  if (ships_.erase(id)) {
+    deleted_cur_.insert(id);
+    return true;
+  }
+
   if (asteroids_.erase(id)) {
+    deleted_cur_.insert(id);
     return true;
   }
 
@@ -112,6 +125,10 @@ void Chunk::GetContents(ServerPacket& resid) {
 
   for (auto& s : ships_) {
     resid.ships.push_back(s.second);
+  }
+
+  for (auto& s : deleted_last_) {
+    resid.deleted.insert(s);
   }
 }
 

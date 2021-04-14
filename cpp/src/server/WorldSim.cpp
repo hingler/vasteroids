@@ -86,6 +86,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 
   Point2D<int> chunk = ship_old->second;
 
+  // ships might enter chunks which have yet to be occupied
   auto c = chunks_.find(chunk);
   if (c == chunks_.end()) {
     Napi::Error::New(env, "Invariant not maintained -- ship does not exist in chunk!").ThrowAsJavaScriptException();
@@ -100,7 +101,8 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   }
   
   // remove old ship from old chunk
-  c->second.RemoveInstance(packet.client_ship.id);
+  // differentiate from deletion :(
+  c->second.MoveShip(packet.client_ship.id);
 
   // insert new ship into new chunk
   Point2D<int> new_chunk = ship_new.position.chunk;
@@ -112,6 +114,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   chunks_.at(new_chunk).InsertShip(ship_new);
 
   // update ships list to match new chunk
+  ships_.erase(ship_new.id);
   ships_.insert(std::make_pair(ship_new.id, new_chunk));
   return env.Undefined();
   // ret.
