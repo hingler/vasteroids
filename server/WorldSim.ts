@@ -3,6 +3,8 @@ import { ClientPacket } from "../client/ClientPacket"
 import { Point2D } from "../instances/GameTypes";
 import { ClientShip } from "../instances/Ship";
 import { ServerPacket } from "./ServerPacket";
+
+const worldsim = require("bindings")("worldsim");
 /**
  *  Represents the component which handles and updates the state of the game world. 
  */
@@ -24,7 +26,7 @@ interface WorldSim {
    *   (we could JSONify this for NODE?)
    * @returns a map containing the data to be sent to each client.
    */
-  UpdateSim() : Map<number, ServerPacket>;
+  UpdateSim() : any;
 
   /**
    * Adds a new ship to the world sim.
@@ -48,3 +50,9 @@ interface WorldSim {
    */
   // GetLocalChunkActivity(origin: Point2D, dims: Point2D) : Array<Array<number>>;
 }
+
+function CreateWorldSim(size: number, asts: number) : WorldSim {
+  return new worldsim.sim(size, asts) as WorldSim;
+}
+
+export { CreateWorldSim };
