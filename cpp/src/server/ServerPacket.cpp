@@ -9,13 +9,14 @@ void ServerPacket::ConcatPacket(const ServerPacket& packet) {
 }
 
 Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
-  Napi::Object obj;
-  Napi::Array instances;
+  Napi::Object obj = Napi::Object::New(env);
+  Napi::Array instances = Napi::Array::New(env);
 
   {
-    Napi::Object asteroid_info;
-    asteroid_info.Set("type", InstanceToString(InstanceType::ASTEROID));
-    Napi::Array instance_arr;
+    Napi::Object asteroid_info = Napi::Object::New(env);
+    std::string type = InstanceToString(InstanceType::ASTEROID);
+    asteroid_info.Set("type", type);
+    Napi::Array instance_arr = Napi::Array::New(env);
     uint32_t i = 0;
     for (const auto& asteroid : asteroids) {
       instance_arr[i++] = asteroid.ToNodeObject(env);
@@ -26,9 +27,10 @@ Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
   }
 
   {
-    Napi::Object ship_info;
-    ship_info.Set("type", InstanceToString(InstanceType::SHIP));
-    Napi::Array instance_arr;
+    Napi::Object ship_info = Napi::Object::New(env);
+    std::string type = InstanceToString(InstanceType::SHIP);
+    ship_info.Set("type", type);
+    Napi::Array instance_arr = Napi::Array::New(env);
     uint32_t i = 0;
     for (const auto& ship : ships) {
       instance_arr[i++] = ship.ToNodeObject(env);
