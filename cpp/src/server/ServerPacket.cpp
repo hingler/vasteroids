@@ -10,38 +10,38 @@ void ServerPacket::ConcatPacket(const ServerPacket& packet) {
 
 Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
   Napi::Object obj = Napi::Object::New(env);
-  Napi::Array instances = Napi::Array::New(env);
 
   {
-    Napi::Object asteroid_info = Napi::Object::New(env);
-    std::string type = InstanceToString(InstanceType::ASTEROID);
-    asteroid_info.Set("type", type);
     Napi::Array instance_arr = Napi::Array::New(env);
     uint32_t i = 0;
     for (const auto& asteroid : asteroids) {
       instance_arr[i++] = asteroid.ToNodeObject(env);
     }
 
-    asteroid_info.Set("data", instance_arr);
-    instances[(uint32_t)0] = asteroid_info;
+    obj.Set("asteroids", instance_arr);
   }
 
   {
-    Napi::Object ship_info = Napi::Object::New(env);
-    std::string type = InstanceToString(InstanceType::SHIP);
-    ship_info.Set("type", type);
     Napi::Array instance_arr = Napi::Array::New(env);
     uint32_t i = 0;
     for (const auto& ship : ships) {
       instance_arr[i++] = ship.ToNodeObject(env);
     }
 
-    ship_info.Set("data", instance_arr);
-    instances[(uint32_t)1] = ship_info;
-
-    obj.Set("instances", instances);
-    return obj;
+    obj.Set("ships", instance_arr);
   }
+
+  {
+    Napi::Array instance_arr = Napi::Array::New(env);
+    uint32_t i = 0;
+    for (const auto& delta : deltas) {
+      instance_arr[i++] = delta.ToNodeObject(env);
+    }
+
+    obj.Set("deltas", instance_arr);
+  }
+
+  return obj;
   
 }
 

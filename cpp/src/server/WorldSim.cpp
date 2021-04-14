@@ -3,6 +3,8 @@
 
 #include <AsteroidGenerator.hpp>
 
+#include <iostream>
+
 namespace vasteroids {
 namespace server {
 
@@ -11,7 +13,10 @@ using client::ClientPacket;
 Napi::Function WorldSim::GetClassInstance(Napi::Env env) {
   return DefineClass(env, "WorldSim", {
     InstanceMethod("GetChunkDims", &WorldSim::GetChunkDims),
-    InstanceMethod("HandleClientPacket", &WorldSim::HandleClientPacket)
+    InstanceMethod("HandleClientPacket", &WorldSim::HandleClientPacket),
+    InstanceMethod("UpdateSim", &WorldSim::UpdateSim),
+    InstanceMethod("AddShip", &WorldSim::AddShip),
+    InstanceMethod("DeleteShip", &WorldSim::DeleteShip)
   });
 }
 
@@ -24,7 +29,6 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
   }
 
   chunk_dims_ = chunks.As<Napi::Number>().Int32Value();
-
   Napi::Value asteroidsObj = info[1];
   if (!asteroidsObj.IsNumber()) {
     TYPEERROR(env, "Number of asteroids initially spawned not specified.");   
@@ -44,8 +48,8 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 
   WorldPosition temp;
   for (int i = 0; i < asteroids; i++) {
-    while (temp.chunk.x >= 0 && temp.chunk.y < chunk_dims_
-        && temp.chunk.y >= 0 && temp.chunk.y < chunk_dims_) {
+    while (temp.chunk.x < 0 || temp.chunk.x >= chunk_dims_
+        || temp.chunk.y < 0 || temp.chunk.y >= chunk_dims_) {
       temp.chunk.x = static_cast<int>(chunk_gen(gen));
       temp.chunk.y = static_cast<int>(chunk_gen(gen));
     }
@@ -179,10 +183,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   // note: we can really easily multithread this  
   for (auto& ship : ships_) {
     uint64_t id = ship.first;
-    std::unordered_map<uint64_t, uint32_t>* knowns = nullptr;
-    if (known_ids_.count(id)) {
-      knowns = &known_ids_.at(id);
-    }
+    std::unordered_map<uint64_t, uint32_t>& knowns = known_ids_.at(id);
 
     std::unordered_map<uint64_t, uint32_t> knowns_new;
     
@@ -197,6 +198,11 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
           continue;
         }
 
+        // chunk does not contain anything
+        if (!chunks_.count(Point2D<int>(x, y))) {
+          continue;
+        }
+
         chunks_.at(Point2D<int>(x, y)).GetContents(res);
       }
     }
@@ -206,9 +212,9 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     auto itr_a = res.asteroids.begin();
     while (itr_a != res.asteroids.end()) {
       knowns_new.insert(std::make_pair(itr_a->id, itr_a->ver));
-      if (knowns && knowns->count(itr_a->id)) {
+      if (knowns.count(itr_a->id)) {
         // known
-        if (knowns->at(itr_a->id) != itr_a->ver) {
+        if (knowns.at(itr_a->id) != itr_a->ver) {
           // known, but out of date
           // remove from itr, add to delta
           delta_pkt.id = itr_a->id;
@@ -220,14 +226,21 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
         }
 
         itr_a = res.asteroids.erase(itr_a);
-      } // unknown -- send the whole packet!
+      } else {
+        itr_a++;
+        // unknown -- send the whole packet! 
+      }
     }
 
     auto itr_s = res.ships.begin();
     while (itr_s != res.ships.end()) {
+      if (itr_s->id == id) {
+        itr_s = res.ships.erase(itr_s);
+        continue;
+      }
       knowns_new.insert(std::make_pair(itr_s->id, itr_s->ver));
-      if (knowns && knowns->count(itr_s->id)) {
-        if (knowns->at(itr_s->id) != itr_s->ver) {
+      if (knowns.count(itr_s->id)) {
+        if (knowns.at(itr_s->id) != itr_s->ver) {
           delta_pkt.id = itr_s->id;
           delta_pkt.position = itr_s->position;
           delta_pkt.velocity = itr_s->velocity;
@@ -237,14 +250,18 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
         }
 
         itr_s = res.ships.erase(itr_s);
+      } else {
+        itr_s++;
       }
     }
 
+    known_ids_.erase(id);
     known_ids_.insert(std::make_pair(id, std::move(knowns_new)));
     // res still contains our server packet for this ship
     // map from ID to that packet!
     // key: id -- value: server packet
-    obj_ret.Set(std::to_string(id), res.ToNodeObject(env));
+    std::string id_str = std::to_string(id);
+    obj_ret.Set(std::move(id_str), res.ToNodeObject(env));
   }
 
   // obj_ret returns
@@ -255,7 +272,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
 Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   Napi::Env env =  info.Env();
   Napi::Value val = info[0];
-  if (!val.IsObject()) {
+  if (!val.IsString()) {
     TYPEERROR(env, "`name` is not a string!");
   }
 
@@ -263,8 +280,8 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   // get name for this ship
   s.name = val.As<Napi::String>().Utf8Value();
   // add entries for our new ship
-  while (s.position.chunk.x >= 0 && s.position.chunk.y < chunk_dims_
-        && s.position.chunk.y >= 0 && s.position.chunk.y < chunk_dims_) {
+  while (s.position.chunk.x < 0 || s.position.chunk.x >= chunk_dims_
+      || s.position.chunk.y < 0 || s.position.chunk.y >= chunk_dims_) {
     s.position.chunk.x = static_cast<int>(chunk_gen(gen));
     s.position.chunk.y = static_cast<int>(chunk_gen(gen));
   }
@@ -287,7 +304,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
 
   ships_.insert(std::make_pair(s.id, s.position.chunk));
   known_ids_.insert(std::make_pair(s.id, std::unordered_map<uint64_t, uint32_t>()));
-
+  chunks_.at(s.position.chunk).InsertShip(s);
   return s.ToNodeObject(env);
 }
 
@@ -334,8 +351,8 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   auto& chunk = chunks_.at(coord.chunk);
   auto ast = GenerateAsteroid(radius, points);
   // random velocity
-  ast.velocity = { coord_gen(gen), coord_gen(gen) };
-  ast.rotation_velocity = coord_gen(gen);
+  ast.velocity = { (coord_gen(gen) - 64.0f) / 16.0f, (coord_gen(gen) - 64.0f) / 16.0f };
+  ast.rotation_velocity = (coord_gen(gen) - 64.0f) / 32.0f;
   ast.position = coord;
   ast.ver = 0;
   ast.id = id_max_++;
@@ -343,6 +360,18 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
 
   chunk.InsertAsteroid(ast);
 }
+
+#ifdef WORLD_EXPORT
+
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
+  Napi::Function func = WorldSim::GetClassInstance(env);
+  exports.Set("sim", func);
+  return exports;
+}
+
+NODE_API_MODULE(worldsim, Init);
+
+#endif
 
 
 }
