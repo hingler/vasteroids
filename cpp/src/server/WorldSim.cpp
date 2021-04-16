@@ -21,7 +21,7 @@ Napi::Function WorldSim::GetClassInstance(Napi::Env env) {
 }
 
 WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
-  id_max_ = 0;
+  id_max_ = 1;
   Napi::Env env = info.Env();
   Napi::Value chunks = info[0];
   if (!chunks.IsNumber()) {
