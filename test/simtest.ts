@@ -15,49 +15,49 @@ describe("WorldSim", function() {
     let ship = worldsim.AddShip("dingusville");
     expect(ship.name).to.equal("dingusville");
     let id = ship.id;
-    expect(id).to.equal(1);
+    expect(id).to.equal(2);
     console.log("beginning update...");
     let pkts = worldsim.UpdateSim();
 
     console.log(pkts);
 
-    expect(pkts['1'].asteroids.length).to.equal(1);
-    expect(pkts['1'].ships.length).to.equal(0);
-    expect(pkts['1'].deltas.length).to.equal(0);
+    expect(pkts['2'].asteroids.length).to.equal(1);
+    expect(pkts['2'].ships.length).to.equal(0);
+    expect(pkts['2'].deltas.length).to.equal(0);
 
     let ship_two = worldsim.AddShip("dingusville_two");
     expect(ship_two.name).to.equal("dingusville_two");
-    expect(ship_two.id).to.equal(2);
+    expect(ship_two.id).to.equal(3);
 
     pkts = worldsim.UpdateSim();
     console.log(pkts);
+    expect(pkts['3']).to.not.be.undefined;
     expect(pkts['2']).to.not.be.undefined;
-    expect(pkts['1']).to.not.be.undefined;
 
-    expect(pkts['1'].asteroids.length).to.equal(0);
-    expect(pkts['2'].asteroids.length).to.equal(1);
+    expect(pkts['2'].asteroids.length).to.equal(0);
+    expect(pkts['3'].asteroids.length).to.equal(1);
 
-    expect(pkts['1'].deltas.length).to.equal(0);
-
-    expect(pkts['1'].ships.length).to.equal(1);
-    expect(pkts['1'].ships[0].name).to.equal("dingusville_two");
+    expect(pkts['2'].deltas.length).to.equal(0);
 
     expect(pkts['2'].ships.length).to.equal(1);
-    expect(pkts['2'].ships[0].name).to.equal("dingusville");
+    expect(pkts['2'].ships[0].name).to.equal("dingusville_two");
+
+    expect(pkts['3'].ships.length).to.equal(1);
+    expect(pkts['3'].ships[0].name).to.equal("dingusville");
 
     pkts = worldsim.UpdateSim();
     console.log(pkts);
+    expect(pkts['3']).to.not.be.undefined;
     expect(pkts['2']).to.not.be.undefined;
-    expect(pkts['1']).to.not.be.undefined;
 
-    expect(pkts['1'].asteroids.length).to.equal(0);
     expect(pkts['2'].asteroids.length).to.equal(0);
+    expect(pkts['3'].asteroids.length).to.equal(0);
 
-    expect(pkts['1'].ships.length).to.equal(0);
     expect(pkts['2'].ships.length).to.equal(0);
+    expect(pkts['3'].ships.length).to.equal(0);
 
-    expect(pkts['1'].deltas.length).to.equal(0);
     expect(pkts['2'].deltas.length).to.equal(0);
+    expect(pkts['3'].deltas.length).to.equal(0);
   });
 
   it("should allow clients to update their position", function() {
