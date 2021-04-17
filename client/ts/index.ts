@@ -1,3 +1,6 @@
+import { Asteroid } from "../../instances/Asteroid";
+import { ClientShip } from "../../instances/Ship";
+
 (function() {
 
 window.addEventListener("load", main);
