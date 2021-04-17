@@ -1,8 +1,6 @@
 
 import { ClientPacket } from "../client/ClientPacket"
-import { Point2D } from "../instances/GameTypes";
 import { ClientShip } from "../instances/Ship";
-import { ServerPacket } from "./ServerPacket";
 
 const worldsim = require("bindings")("worldsim");
 /**
@@ -55,4 +53,4 @@ function CreateWorldSim(size: number, asts: number) : WorldSim {
   return new worldsim.sim(size, asts) as WorldSim;
 }
 
-export { CreateWorldSim };
+export { CreateWorldSim, WorldSim };
