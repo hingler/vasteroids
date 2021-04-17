@@ -1,5 +1,5 @@
 
-import { ClientPacket } from "../client/ClientPacket"
+import { ClientPacket } from "../server/ClientPacket"
 import { ClientShip } from "../instances/Ship";
 
 const worldsim = require("bindings")("worldsim");

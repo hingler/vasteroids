@@ -71,3 +71,5 @@ class BiMap<T, U> {
     return this.mapUT.keys();
   }
 }
+
+export { BiMap, Entry };

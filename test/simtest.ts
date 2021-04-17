@@ -2,7 +2,7 @@ import { CreateWorldSim } from "../server/WorldSim";
 import { ClientShip } from "../instances/Ship";
 import { expect } from "chai";
 import { InstanceType, Point2D } from "../instances/GameTypes";
-import { ClientPacket } from "../client/ClientPacket";
+import { ClientPacket } from "../server/ClientPacket";
 
 describe("WorldSim", function() {
   it("Should be able to be created :)", function() {

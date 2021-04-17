@@ -1,4 +1,4 @@
-import { ClientPacket } from "../client/ClientPacket";
+import { ClientPacket } from "../server/ClientPacket";
 import { Point2D } from "../instances/GameTypes";
 import { ServerPacket } from "../server/ServerPacket";
 

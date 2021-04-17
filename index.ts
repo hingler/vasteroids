@@ -28,6 +28,14 @@ wss.on("connection", (ws, req) => {
   socketStorage.add(ws);
 });
 
+app.get("/createToken", async (req, res) => {
+  let token = await mgr.createPlayerToken();
+  res.header("Content-type", "text/plain");
+  res.send(token);
+});
+
+express.static.mime.define({'text/javascript': ['ts']});
+app.use(express.static("client"));
 
 
 const server = app.listen(port, () => {

@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf ./ts-out && node-gyp rebuild && tsc",
-    "build-debug": "rm -rf ./ts-out && node-gyp build --debug && tsc",
-    "tsc-only": "rm -rf ./ts-out && tsc",
+    "build-debug": "rm -rf ./ts-out && rm -rf ./client/js && node-gyp build --debug && tsc && cd client/ts && tsc",
+    "tsc-only": "rm -rf ./ts-out && rm -rf ./client/js && tsc && cd ./client/ts && tsc",
     "test": "mocha ts-out/test/*",
     "start": "node ./ts-out/index.js"
   },

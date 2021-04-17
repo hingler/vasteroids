@@ -2,9 +2,9 @@ import * as WebSocket from "ws";
 import { CreateWorldSim, WorldSim } from "./WorldSim";
 import { generateID } from "./IDGen";
 import { ServerPacket } from "./ServerPacket";
-import { ClientShip } from "../instances/Ship";
 import { ConnectionPacket } from "./ConnectionPacket";
-import { ClientPacket } from "../client/ClientPacket";
+import { ClientPacket } from "./ClientPacket";
+import { BiMap } from "./BiMap";
 
 class SocketManager {
   game: WorldSim;
@@ -27,7 +27,7 @@ class SocketManager {
     this.sockets = new BiMap();
     this.timeouts = new Map();
     // start some regular update event
-    this.update = setInterval(this.handleUpdates, 62.5);
+    this.update = setInterval(this.handleUpdates.bind(this), 62.5);
   }
 
   async addSocket(socket: WebSocket, name: string) : Promise<void> {
