@@ -1,4 +1,4 @@
-import express = require("express");
+import * as express from "express";
 import * as WebSocket from "ws";
 import { SocketManager } from "./server/SocketManager";
 
@@ -34,7 +34,7 @@ app.get("/createToken", async (req, res) => {
   res.send(token);
 });
 
-express.static.mime.define({'text/javascript': ['ts']});
+express.static.mime.define({'text/javascript': ['js']});
 app.use(express.static("client"));
 
 
