@@ -21,10 +21,15 @@ export class VectorMesh2D {
     this.indexBuffer.insertData(tri[2]);
   }
 
-  draw(gl: WebGLRenderingContext) {
+  draw(gl: WebGLRenderingContext, location?: number) {
     this.vertexBuffer.bindBuffer(gl, gl.ARRAY_BUFFER);
     this.indexBuffer.bindBuffer(gl, gl.ELEMENT_ARRAY_BUFFER);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    let attribLoc = 0;
+    if (location) {
+      attribLoc = location;
+    }
+
+    gl.vertexAttribPointer(attribLoc, 2, gl.FLOAT, false, 0, 0);
     gl.drawElements(gl.TRIANGLES, this.indexBuffer.getElementCount(), gl.UNSIGNED_INT, 0);
   }
 
