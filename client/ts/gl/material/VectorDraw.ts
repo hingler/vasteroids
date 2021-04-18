@@ -1,7 +1,10 @@
+import { VectorMesh2D } from "../VectorMesh2D";
 import { CompileShaders } from "./CompileShaders";
 
 export class VectorDraw {
   prog: WebGLProgram;
+
+  loc: number;
 
   compilePromise: Promise<void>;
 
@@ -16,14 +19,15 @@ export class VectorDraw {
   }
 
   prepareAttributes(gl: WebGLRenderingContext) : void {
-    let loc = gl.getAttribLocation(this.prog, "aPosition");
+    this.loc = gl.getAttribLocation(this.prog, "aPosition");
   }
 
   async waitUntilCompiled() {
     await this.compilePromise;
   }
 
-  useMaterial(gl: WebGLRenderingContext) {
+  drawMaterial(gl: WebGLRenderingContext, mesh: VectorMesh2D) {
     gl.useProgram(this.prog);
+    mesh.draw(gl, this.loc);
   }
 }
