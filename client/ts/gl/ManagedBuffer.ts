@@ -42,5 +42,3 @@ export class ManagedBuffer<T extends Vector<number, ArrayBuffer>> {
     gl.bufferSubData(target, 0, this.buffer.data());
   }
 }
-
-let test = new ManagedBuffer(new FloatVector());
