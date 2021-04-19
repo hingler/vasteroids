@@ -33,7 +33,7 @@ class SocketManager {
   async addSocket(socket: WebSocket, name: string) : Promise<void> {
     let ship_new = this.game.AddShip(name);
     this.sockets.insert(socket, ship_new.id);
-    let token = await generateID(32);
+    let token = await this.createPlayerToken();
     this.players.set(token, ship_new.id);
     let packet = {} as ConnectionPacket;
     packet.ship = ship_new;

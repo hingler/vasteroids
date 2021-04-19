@@ -12,7 +12,6 @@ const socketStorage : Set<WebSocket> = new Set();
 const wss = new WebSocket.Server({ noServer: true });
 wss.on("connection", (ws, req) => {
   console.log("new connection!");
-  console.log(req);
   // do something with the socket
 
   // interpret next message as name -- thereafter, socketmgr handles
@@ -28,12 +27,6 @@ wss.on("connection", (ws, req) => {
   socketStorage.add(ws);
 });
 
-app.get("/createToken", async (req, res) => {
-  let token = await mgr.createPlayerToken();
-  res.header("Content-type", "text/plain");
-  res.send(token);
-});
-
 express.static.mime.define({
   'text/javascript': ['js'],
   'text/plain': ['glsl', 'frag', 'vert']
@@ -47,6 +40,7 @@ const server = app.listen(port, () => {
 
 server.on("upgrade", (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, (ws) => {
+    console.log("new conn :))");
     wss.emit("connection", ws, request);
   });
 });

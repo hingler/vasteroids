@@ -1,4 +1,5 @@
 import { VectorCanvas } from "./gl/VectorCanvas";
+import { ClientSocketManager } from "./instance/ClientSocketManager";
 
 (function() {
 
@@ -12,6 +13,8 @@ import { VectorCanvas } from "./gl/VectorCanvas";
       c.addLine(15, 15, 15, 125, 3);
       c.drawToScreen();
     });
+
+    let w = new ClientSocketManager();
   }
 
 
