@@ -16,5 +16,11 @@ describe("VectorMesh2D", function() {
     vec.addTriangle([0, 1, 2]);
     expect(vec.getIndexCount()).to.equal(3);
     expect(vec.getVertexCount()).to.equal(3);
+    for (let i = 3; i < 512; i++) {
+      vec.addVertex([i, i]);
+    }
+
+    expect(vec.getIndexCount()).to.equal(3);
+    expect(vec.getVertexCount()).to.equal(512);
   });
 });

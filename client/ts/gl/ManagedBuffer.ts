@@ -15,6 +15,7 @@ export class ManagedBuffer<T extends Vector<number, ArrayBuffer>> {
 
   insertData(data: number) {
     this.buffer.push_back(data);
+    console.log(data);
   }
 
   clear() {
@@ -37,6 +38,7 @@ export class ManagedBuffer<T extends Vector<number, ArrayBuffer>> {
     gl.bindBuffer(target, this.glBuffer);
     if (this.glBufferSize < this.buffer.byteLength()) {
       gl.bufferData(target, this.buffer.byteLength(), gl.DYNAMIC_DRAW);
+      this.glBufferSize = this.buffer.byteLength();
     }
 
     gl.bufferSubData(target, 0, this.buffer.data());

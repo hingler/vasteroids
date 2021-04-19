@@ -37,7 +37,7 @@ export class FloatVector implements Vector<number, Float32Array> {
   }
 
   byteLength() {
-    return this.elementCount * this.buffer.BYTES_PER_ELEMENT;
+    return this.buffer.length * this.buffer.BYTES_PER_ELEMENT;
   }
 
   data() {
@@ -77,7 +77,7 @@ export class Uint32Vector implements Vector<number, Uint32Array> {
   }
 
   byteLength() {
-    return this.elementCount * this.buffer.BYTES_PER_ELEMENT;
+    return this.buffer.length * this.buffer.BYTES_PER_ELEMENT;
   }
 
   data() {

@@ -30,6 +30,7 @@ export class VectorMesh2D {
     }
 
     gl.vertexAttribPointer(attribLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribLoc);
     gl.drawElements(gl.TRIANGLES, this.indexBuffer.getElementCount(), gl.UNSIGNED_INT, 0);
   }
 

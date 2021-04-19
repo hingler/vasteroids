@@ -1,5 +1,4 @@
-import { Asteroid } from "../../instances/Asteroid";
-import { ClientShip } from "../../instances/Ship";
+import { VectorCanvas } from "./gl/VectorCanvas";
 
 (function() {
 

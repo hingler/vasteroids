@@ -34,7 +34,10 @@ app.get("/createToken", async (req, res) => {
   res.send(token);
 });
 
-express.static.mime.define({'text/javascript': ['js']});
+express.static.mime.define({
+  'text/javascript': ['js'],
+  'text/plain': ['glsl', 'frag', 'vert']
+});
 app.use(express.static("client"));
 
 
