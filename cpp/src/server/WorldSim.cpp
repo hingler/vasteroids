@@ -94,8 +94,12 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 
   auto& ship_new = packet.client_ship;
 
+  std::cout << "test" << std::endl;
+
   {
     // update ver number
+    // we're grabbing this ship from the chunk we *think* has it
+    // but that chunk has since moved
     Ship* ship_last = c->second.GetShip(packet.client_ship.id);
     ship_new.ver = ship_last->ver + 1;
   }
@@ -106,6 +110,15 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 
   // insert new ship into new chunk
   Point2D<int> new_chunk = ship_new.position.chunk;
+  if (ship_new.position.chunk.x < 0 || ship_new.position.chunk.x >= chunk_dims_
+  ||  ship_new.position.chunk.y < 0 || ship_new.position.chunk.y >= chunk_dims_) {
+    // scoop it back around back in bounds
+    ship_new.position.chunk.x -= (chunk_dims_ * static_cast<int>(std::floor(ship_new.position.chunk.x / static_cast<double>(chunk_dims_))));
+    ship_new.position.chunk.y -= (chunk_dims_ * static_cast<int>(std::floor(ship_new.position.chunk.y / static_cast<double>(chunk_dims_))));
+  }
+
+  std::cout << "ship chunk: " << ship_new.position.chunk.x << ", " << ship_new.position.chunk.y << std::endl;
+
   if (chunks_.find(new_chunk) == chunks_.end()) {
     CreateChunk(new_chunk);
   }
@@ -170,6 +183,10 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     }
 
     chunks_.at(chunk_coord).InsertShip(s);
+    // handle ships which have been moved!
+    // does not quantify an update yet, so do not adjust ver number
+    ships_.erase(s.id);
+    ships_.insert(std::make_pair(s.id, chunk_coord));
   }
 
   // now, we would check relevant chunks for collisions
