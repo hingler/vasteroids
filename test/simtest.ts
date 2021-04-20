@@ -20,6 +20,7 @@ describe("WorldSim", function() {
     let pkts = worldsim.UpdateSim();
 
     console.log(pkts);
+    console.log(pkts['2'].asteroids);
 
     expect(pkts['2'].asteroids.length).to.equal(1);
     expect(pkts['2'].ships.length).to.equal(0);
@@ -87,7 +88,7 @@ describe("WorldSim", function() {
     expect(res[ship_two.id.toString()].ships.length).to.equal(1);
 
     // move ship2 to the other side of the earth
-    ship_two.position.chunk = {x: 3, y: 3} as Point2D;
+    ship_two.position.chunk = {x: 2, y: 2} as Point2D;
     testTwo.ship = ship_two;
     testTwo.projectileFired = false;
 
@@ -99,7 +100,7 @@ describe("WorldSim", function() {
     expect(res[ship_two.id.toString()].ships.length).to.equal(0);
 
     // move ship1 to ship2
-    ship_one.position.chunk = {x: 3, y: 3} as Point2D;
+    ship_one.position.chunk = {x: 2, y: 2} as Point2D;
     testClientPacket.ship = ship_one;
     testClientPacket.projectileFired = false;
 

@@ -39,6 +39,9 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   // generates a new asteroid with a prespecified number of points and radius and adds it to the world.
   void SpawnNewAsteroid(WorldPosition coord, float radius, int points);
 
+  // corrects for chunk overflow
+  void FixChunkBoundaries(Point2D<int>& chunk);
+
   // x/y dims of our world
   int chunk_dims_;
 

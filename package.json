@@ -4,8 +4,8 @@
   "description": "your whole life your whole fucking life",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf ./client/js && rm -rf ./ts-out && node-gyp rebuild && tsc && mkdir ./client/js && npx webpack",
-    "build-debug": "rm -rf ./client/js && rm -rf ./ts-out && node-gyp build --debug && tsc && mkdir ./client/js && npx webpack",
+    "build": "rm -rf ./client/js && rm -rf ./ts-out && node-gyp rebuild && tsc && npx webpack",
+    "build-debug": "rm -rf ./client/js && rm -rf ./ts-out && node-gyp build --debug && tsc && npx webpack",
     "tsc-only": "rm -rf ./ts-out && rm -rf ./client/js && tsc && npx webpack",
     "test": "mocha ts-out/test/*",
     "start": "node ./ts-out/index.js"

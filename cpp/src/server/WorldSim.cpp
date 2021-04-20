@@ -94,8 +94,6 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 
   auto& ship_new = packet.client_ship;
 
-  std::cout << "test" << std::endl;
-
   {
     // update ver number
     // we're grabbing this ship from the chunk we *think* has it
@@ -116,8 +114,6 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     ship_new.position.chunk.x -= (chunk_dims_ * static_cast<int>(std::floor(ship_new.position.chunk.x / static_cast<double>(chunk_dims_))));
     ship_new.position.chunk.y -= (chunk_dims_ * static_cast<int>(std::floor(ship_new.position.chunk.y / static_cast<double>(chunk_dims_))));
   }
-
-  std::cout << "ship chunk: " << ship_new.position.chunk.x << ", " << ship_new.position.chunk.y << std::endl;
 
   if (chunks_.find(new_chunk) == chunks_.end()) {
     CreateChunk(new_chunk);
@@ -166,9 +162,11 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   }
 
   // collate now contains all of the elements which have been displaced, properly simulated.
-  // place remaining elements in their proper places!
+  // chunks may overflow -- handle here!
   for (auto a : collate.asteroids) {
+    FixChunkBoundaries(a.position.chunk);
     Point2D<int> chunk_coord = a.position.chunk;
+    // we need to fix the chunk
     if (!chunks_.count(chunk_coord)) {
       CreateChunk(chunk_coord);
     }
@@ -177,6 +175,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   }
 
   for (auto s : collate.ships) {
+    FixChunkBoundaries(s.position.chunk);
     Point2D<int> chunk_coord = s.position.chunk;
     if (!chunks_.count(chunk_coord)) {
       CreateChunk(chunk_coord);
@@ -208,22 +207,27 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     std::unordered_map<uint64_t, uint32_t> knowns_new;
     
     ServerPacket res;
+    std::unordered_set<Point2D<int>> chunks_read;
     for (int x = ship.second.x - 1; x <= ship.second.x + 1; x++) {
       for (int y = ship.second.y - 1; y <= ship.second.y + 1; y++) {
-        if (x < 0 || x >= chunk_dims_) {
+        Point2D<int> chunk(x, y);
+        FixChunkBoundaries(chunk);
+        // what do we do if world is smaller than 3x3?
+        // chunks will be re-counted.
+
+        // if the chunk has been handled, it will be in here.
+        if (chunks_read.count(chunk)) {
           continue;
         }
 
-        if (y < 0 || y >= chunk_dims_) {
-          continue;
-        }
+        chunks_read.insert(chunk);
 
         // chunk does not contain anything
-        if (!chunks_.count(Point2D<int>(x, y))) {
+        if (!chunks_.count(chunk)) {
           continue;
         }
 
-        chunks_.at(Point2D<int>(x, y)).GetContents(res);
+        chunks_.at(chunk).GetContents(res);
       }
     }
 
@@ -379,6 +383,13 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   ast.last_update = std::chrono::high_resolution_clock::now();
 
   chunk.InsertAsteroid(ast);
+}
+
+void WorldSim::FixChunkBoundaries(Point2D<int>& chunk) {
+  if (chunk.x >= chunk_dims_ || chunk.x < 0 || chunk.y >= chunk_dims_ || chunk.y < 0) {
+    chunk.x -= std::floor(chunk.x / static_cast<double>(chunk_dims_)) * chunk_dims_;
+    chunk.y -= std::floor(chunk.y / static_cast<double>(chunk_dims_)) * chunk_dims_;
+  }
 }
 
 #ifdef WORLD_EXPORT

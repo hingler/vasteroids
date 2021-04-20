@@ -68,6 +68,9 @@ class Chunk {
   float GetActivity();
 
  private:
+  // updates the position of an instance, handling wrap around
+  bool UpdateInstance(Instance* inst, std::chrono::time_point<std::chrono::high_resolution_clock>* cur);
+
   std::unordered_map<uint64_t, Ship> ships_;
   std::unordered_map<uint64_t, Asteroid> asteroids_;
 

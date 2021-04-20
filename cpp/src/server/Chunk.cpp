@@ -19,6 +19,27 @@ void Chunk::InsertElements(const ServerPacket& insts) {
 
 }
 
+bool Chunk::UpdateInstance(Instance* inst, std::chrono::time_point<std::chrono::high_resolution_clock>* cur) {
+  auto delta_local = std::chrono::duration<float>(*cur - inst->last_update).count();
+  inst->position.position += (inst->velocity * delta_local);
+  inst->last_update = *cur;
+  if (inst->position.position.x >= chunk_size || inst->position.position.y >= chunk_size
+   || inst->position.position.x <           0 || inst->position.position.y <           0) {
+    // add it to resid
+    inst->position.chunk.x += static_cast<int>(std::floor(inst->position.position.x / chunk_size));
+    inst->position.chunk.y += static_cast<int>(std::floor(inst->position.position.y / chunk_size));
+    inst->position.position.x -= 128.0f * std::floor(inst->position.position.x / chunk_size);
+    inst->position.position.y -= 128.0f * std::floor(inst->position.position.y / chunk_size);
+
+    // don't handle chunk overflow yet
+
+    return false;
+  }
+
+  return true;
+
+}
+
 void Chunk::UpdateChunk(ServerPacket& resid) {
   // simulate all elements
   // if one ends up outside the chunk (coord < 0 or coord >= CHUNK_SIZE),
@@ -31,16 +52,7 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
     // update asteroids
     auto itr = asteroids_.begin();
     while (itr != asteroids_.end()) {
-      auto delta_local = std::chrono::duration<float>(now_update - itr->second.last_update).count();
-      itr->second.position.position += (itr->second.velocity * delta_local);
-      itr->second.last_update = now_update;
-      if (itr->second.position.position.x >= chunk_size || itr->second.position.position.y >= chunk_size
-       || itr->second.position.position.x <           0 || itr->second.position.position.y <           0) {
-        // add it to resid
-        itr->second.position.chunk.x += static_cast<int>(std::floor(itr->second.position.position.x / chunk_size));
-        itr->second.position.chunk.y += static_cast<int>(std::floor(itr->second.position.position.y / chunk_size));
-        itr->second.position.position.x -= 128.0f * std::floor(itr->second.position.position.x / chunk_size);
-        itr->second.position.position.y -= 128.0f * std::floor(itr->second.position.position.y / chunk_size);
+      if (!UpdateInstance(&itr->second, &now_update)) {
         resid.asteroids.push_back(itr->second);
         itr = asteroids_.erase(itr);
       } else {
@@ -53,17 +65,7 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
     // update ships -- note: we're going to update this for it.
     auto itr = ships_.begin();
     while (itr != ships_.end()) {
-      auto delta_local = std::chrono::duration<float>(now_update - itr->second.last_update).count();
-      itr->second.position.position += (itr->second.velocity * delta_local);
-      itr->second.last_update = now_update;
-      if (itr->second.position.position.x >= chunk_size || itr->second.position.position.y >= chunk_size
-       || itr->second.position.position.x <           0 || itr->second.position.position.y <           0) {
-        // add it to resid
-        // make chunks consistent
-        itr->second.position.chunk.x += static_cast<int>(std::floor(itr->second.position.position.x / chunk_size));
-        itr->second.position.chunk.y += static_cast<int>(std::floor(itr->second.position.position.y / chunk_size));
-        itr->second.position.position.x -= 128.0f * std::floor(itr->second.position.position.x / chunk_size);
-        itr->second.position.position.y -= 128.0f * std::floor(itr->second.position.position.y / chunk_size);
+      if (!UpdateInstance(&itr->second, &now_update)) {
         resid.ships.push_back(itr->second);
         itr = ships_.erase(itr);
       } else {
