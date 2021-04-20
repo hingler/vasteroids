@@ -1,5 +1,6 @@
 import { Asteroid } from "../../../instances/Asteroid";
 import { ClientShip } from "../../../instances/Ship";
+import { ClientPacket } from "../../../server/ClientPacket";
 import { ConnectionPacket } from "../../../server/ConnectionPacket";
 import { ServerPacket } from "../../../server/ServerPacket";
 import { ShipManager } from "./ShipManager";
@@ -15,8 +16,9 @@ export class GameStateManager {
 
   asteroids: Map<number, Asteroid>;
   ships: Map<number, ClientShip>;
+  socketUpdate: NodeJS.Timeout;
 
-  updateFunc: NodeJS.Timeout;
+  dims: number;
 
   constructor(name: string) {
     let socketURL : string;
@@ -38,7 +40,7 @@ export class GameStateManager {
     // on message (response containing data):
     //    - change onmessage so that we call some method which handles public data
     this.socket.onopen = () => { 
-      this.socket.send(name)
+      this.socket.send(name);
     };
 
     this.socket.onmessage = this.socketInit_.bind(this);
@@ -56,12 +58,26 @@ export class GameStateManager {
     console.log("ship");
     console.log(packet.ship);
     this.token = packet.playerToken;
+    console.log(this.token);
     // create ship manager
+    this.dims = packet.chunkDims;
+    console.log(this.dims);
     this.ship = new ShipManager(packet.ship);
     this.socket.onmessage = this.socketUpdate_.bind(this);
+    // ~16.66 updates per second
+    this.socketUpdate = setInterval(this.socketSend_.bind(this), 60);
     // call update manually as part of delta?
     // that would probably be better actually
-    this.updateFunc = setInterval(this.update.bind(this), 5);
+  }
+
+  private socketSend_() {
+    let a = {} as ClientPacket;
+    a.playerToken = this.token;
+    a.projectileFired = false;
+    a.ship = this.ship.getShip();
+    console.log(this.token);
+    console.log(a);
+    this.socket.send(JSON.stringify(a));
   }
 
   private socketUpdate_(event: MessageEvent) {
@@ -110,14 +126,16 @@ export class GameStateManager {
   }
 
   update() {
-    this.ship.update();
-    // update all instances
-    for (let a of this.asteroids.values()) {
-      UpdateInstance(a);
-    }
-
-    for (let s of this.ships.values()) {
-      UpdateInstance(s);
+    if (this.ship) {
+      this.ship.update(this.dims);
+      // update all instances
+      for (let a of this.asteroids.values()) {
+        UpdateInstance(a, this.dims);
+      }
+  
+      for (let s of this.ships.values()) {
+        UpdateInstance(s, this.dims);
+      }
     }
   }
 }

@@ -38,7 +38,9 @@ class SocketManager {
     let packet = {} as ConnectionPacket;
     packet.ship = ship_new;
     packet.playerToken = token;
+    packet.chunkDims = this.game.GetChunkDims();
     socket.send(JSON.stringify(packet));
+    console.log(packet.playerToken);
 
     let timeout = setTimeout(() => {
       this.timeoutFunc_(socket)
@@ -52,6 +54,7 @@ class SocketManager {
   private socketOnMessage_(socket: WebSocket, message: any) {
     // get packet
     let packet = JSON.parse(message) as ClientPacket;
+    console.log(packet.ship.position);
     // match packet to socket id
     let id = this.sockets.getEntryT(socket);
     if (!id) {
@@ -66,7 +69,7 @@ class SocketManager {
       return;
     }
 
-    let id_verify = this.players.get(message.playerToken);
+    let id_verify = this.players.get(packet.playerToken);
     if (id_verify !== id) {
       console.error("Socket was rejected because its token and stored ID did not agree.");
       socket.close();

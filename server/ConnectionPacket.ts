@@ -6,6 +6,7 @@ import { ClientShip } from "../instances/Ship"
 interface ConnectionPacket {
   ship: ClientShip;
   playerToken: string;
+  chunkDims: number;
 }
 
 export { ConnectionPacket };

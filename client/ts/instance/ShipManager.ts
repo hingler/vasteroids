@@ -40,7 +40,7 @@ export class ShipManager {
   /**
    * Called once every ~5ms to update the ship's state.
    */
-  update() : void {
+  update(dims: number) : void {
     this.accel = (this.inputmgr.getInputState(Input.THRUST_FWD) ? 2 : 0);
     this.accel_rot = 0;
     if (this.inputmgr.getInputState(Input.TURN_LEFT)) {
@@ -55,7 +55,7 @@ export class ShipManager {
     let update = performance.now() / 1000;
     let delta = update - this.ship.last_delta;
 
-    UpdateInstance(this.ship);
+    UpdateInstance(this.ship, dims);
 
     // modify veloicty
 
