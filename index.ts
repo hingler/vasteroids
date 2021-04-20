@@ -16,7 +16,8 @@ wss.on("connection", (ws, req) => {
 
   // interpret next message as name -- thereafter, socketmgr handles
   ws.once("message", (e) => {
-    let name = e.data;
+    let name = e;
+    console.log(name);
     socketStorage.delete(ws);
     mgr.addSocket(ws, name);
   });

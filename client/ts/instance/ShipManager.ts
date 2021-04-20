@@ -1,5 +1,7 @@
 import { chunkSize, Point2D } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
+import { Input, InputManager } from "../input/InputManager";
+import { KeyInputManager } from "../input/KeyInputManager";
 
 /**
  * ShipManager keeps track of updates on player's ship.
@@ -10,13 +12,16 @@ export class ShipManager {
   accel_rot: number;
   last_update: number;
   update_intvl: NodeJS.Timeout;
+  inputmgr: InputManager;
 
   constructor(ship: ClientShip) {
     this.ship = ship;
+    console.log(this.ship);
     this.last_update = performance.now() / 1000;
     this.accel = 0;
     this.accel_rot = 0;
     this.update_intvl = setInterval(this.update.bind(this), 5);
+    this.inputmgr = new KeyInputManager();
   }
 
   setThrust(accel: number) {
@@ -27,10 +32,25 @@ export class ShipManager {
     this.accel_rot = accel;
   }
 
+  getShip() : ClientShip {
+    return this.ship;
+  }
+
   /**
    * Called once every ~5ms to update the ship's state.
    */
   update() : void {
+    this.accel = (this.inputmgr.getInputState(Input.THRUST_FWD) ? 2 : 0);
+    this.accel_rot = 0;
+    if (this.inputmgr.getInputState(Input.TURN_LEFT)) {
+      this.accel_rot += 2;
+    }
+
+    if (this.inputmgr.getInputState(Input.TURN_RIGHT)) {
+      this.accel_rot -= 2;
+    }
+
+
     let update = performance.now() / 1000;
     let delta = update - this.last_update;
     this.last_update = update;
@@ -75,6 +95,9 @@ export class ShipManager {
     this.ship.velocity.y += damp.y;
 
     // same for rotation
+
+    this.ship.rotation += this.ship.rotation_velocity * delta;
+
     let delta_r = this.accel_rot * delta;
 
     let rot = this.ship.rotation_velocity;
@@ -84,5 +107,9 @@ export class ShipManager {
     // push new rotation velocity
     this.ship.rotation_velocity += delta_r;
     this.ship.rotation_velocity += rot_damp;
+
+    // temp
+    document.getElementById("ship").textContent = `pos: ${this.ship.position.position.x}, ${this.ship.position.position.y}
+    velo: ${this.ship.velocity.x}, ${this.ship.velocity.y}`
   }
 }

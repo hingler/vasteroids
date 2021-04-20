@@ -1,5 +1,5 @@
 import { VectorCanvas } from "./gl/VectorCanvas";
-import { ClientSocketManager } from "./instance/ClientSocketManager";
+import { GameStateManager } from "./instance/GameStateManager";
 
 (function() {
 
@@ -14,7 +14,8 @@ import { ClientSocketManager } from "./instance/ClientSocketManager";
       c.drawToScreen();
     });
 
-    let w = new ClientSocketManager();
+    // create this only after name is confirmed
+    let w = new GameStateManager("dickmuncher");
   }
 
 
