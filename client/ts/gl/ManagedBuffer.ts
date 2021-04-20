@@ -15,7 +15,6 @@ export class ManagedBuffer<T extends Vector<number, ArrayBuffer>> {
 
   insertData(data: number) {
     this.buffer.push_back(data);
-    console.log(data);
   }
 
   clear() {

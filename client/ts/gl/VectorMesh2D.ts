@@ -41,4 +41,9 @@ export class VectorMesh2D {
   getIndexCount() : number {
     return this.indexBuffer.getElementCount();
   }
+
+  clear() {
+    this.vertexBuffer.clear();
+    this.indexBuffer.clear();
+  }
 }

@@ -50,9 +50,7 @@ export class VectorCanvas {
     
     // correct for w/h of window
     strokeX *= (height / width);
-    console.log([strokeX, strokeY]);
     [strokeX, strokeY] = this.normalize_(strokeX, strokeY);
-    console.log([strokeX, strokeY]);
 
     let strokeDX = (strokeX * stroke) / width;
     let strokeDY = (strokeY * stroke) / width;
@@ -69,12 +67,20 @@ export class VectorCanvas {
   }
 
   drawToScreen() {
+    // ensure canvas display remains 1:1
+    this.canvas.width = this.canvas.clientWidth;
+    this.canvas.height = this.canvas.clientHeight;
+    this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     // prepare a material beforehand
     // draw to a premade frame buffer
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
     this.shader.drawMaterial(this.gl, this.mesh);
     // run a postfx pass to add some effects, etc.
     // render to screen
+  }
+
+  clearCanvas() {
+    this.mesh.clear();
   }
 
   waitUntilCompiled() : Promise<void> {
