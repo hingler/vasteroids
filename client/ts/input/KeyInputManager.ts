@@ -1,15 +1,9 @@
+import { Input, InputManager } from "./InputManager";
+
 /**
  * List of inputs we want to keep track of
  */
-export enum Input {
-  THRUST_FWD,
-  THRUST_BKD,
-  TURN_LEFT,
-  TURN_RIGHT,
-  SHOOT
-}
-
-export class KeyInputManager {
+export class KeyInputManager implements InputManager {
   keys: Map<string, Input>;
   inputState: Map<Input, boolean>;
   constructor(canvas: HTMLCanvasElement) {
