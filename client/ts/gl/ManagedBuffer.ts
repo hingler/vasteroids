@@ -1,4 +1,4 @@
-import { FloatVector, Uint32Vector, Vector } from "./vector/Vector";
+import { Vector } from "./vector/Vector";
 
 /**
  * Interface for a managed buffer which stores a particular type of information.

@@ -2,6 +2,7 @@ import { chunkSize, Point2D } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
 import { Input, InputManager } from "../input/InputManager";
 import { KeyInputManager } from "../input/KeyInputManager";
+import { UpdateInstance } from "./UpdateInstance";
 
 /**
  * ShipManager keeps track of updates on player's ship.
@@ -16,11 +17,11 @@ export class ShipManager {
 
   constructor(ship: ClientShip) {
     this.ship = ship;
+    this.ship.last_delta = performance.now();
     console.log(this.ship);
     this.last_update = performance.now() / 1000;
     this.accel = 0;
     this.accel_rot = 0;
-    this.update_intvl = setInterval(this.update.bind(this), 5);
     this.inputmgr = new KeyInputManager();
   }
 
@@ -50,24 +51,13 @@ export class ShipManager {
       this.accel_rot -= 2;
     }
 
-
+    // capture delta before updateinstance updates it
     let update = performance.now() / 1000;
-    let delta = update - this.last_update;
-    this.last_update = update;
+    let delta = update - this.ship.last_delta;
 
-    // update position based on current velocity
-    this.ship.position.position.x += this.ship.velocity.x * delta;
-    this.ship.position.position.y += this.ship.velocity.y * delta;
+    UpdateInstance(this.ship);
 
-    let pos = this.ship.position.position;
-
-    // adjust position if offset
-    if (pos.x < 0 || pos.x >= chunkSize || pos.y < 0 || pos.y > chunkSize) {
-      this.ship.position.chunk.x += Math.floor(pos.x / chunkSize);
-      this.ship.position.chunk.y += Math.floor(pos.y / chunkSize);
-      this.ship.position.position.x -= chunkSize * Math.floor(pos.x / chunkSize);
-      this.ship.position.position.y -= chunkSize * Math.floor(pos.y / chunkSize);
-    }
+    // modify veloicty
 
     // get delta velocity based on thrust
     let delta_v : Point2D = {x: 1, y: 0};
@@ -75,16 +65,17 @@ export class ShipManager {
 
     // calculate damping force right away
     let v_z = this.ship.velocity;
-
+    
     let damp = { x: -v_z.x / 1.8, y: -v_z.y / 1.8 };
     // account for delta
     damp.x *= delta;
     damp.y *= delta;
-
+    
     // handle rotation
     // default direction: head right!
+    delta_v.y = -(delta_v.x * Math.sin(this.ship.rotation));
     delta_v.x = delta_v.x * Math.cos(this.ship.rotation);
-    delta_v.y = delta_v.x * Math.sin(this.ship.rotation);
+    // flip on y axis since up is negative
 
     // add velocity
     this.ship.velocity.x += delta_v.x;
@@ -96,7 +87,6 @@ export class ShipManager {
 
     // same for rotation
 
-    this.ship.rotation += this.ship.rotation_velocity * delta;
 
     let delta_r = this.accel_rot * delta;
 

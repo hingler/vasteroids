@@ -32,6 +32,9 @@ interface Instance {
 
   // a unique identifier for this instance.
   id: number;
+
+  // used to update position
+  last_delta: number;
 }
 
 const chunkSize = 128.0;
