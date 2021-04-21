@@ -3,6 +3,7 @@
 
 #include <AsteroidGenerator.hpp>
 
+#include <cmath>
 #include <iostream>
 
 namespace vasteroids {

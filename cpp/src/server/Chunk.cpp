@@ -1,6 +1,8 @@
 #include <server/Chunk.hpp>
 #include <GameTypes.hpp>
 
+#include <cmath>
+
 namespace vasteroids {
 namespace server {
 
