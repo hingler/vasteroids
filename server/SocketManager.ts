@@ -6,6 +6,9 @@ import { ConnectionPacket } from "./ConnectionPacket";
 import { ClientPacket } from "./ClientPacket";
 import { BiMap } from "./BiMap";
 
+import { performance } from "node:perf_hooks";
+import now = require("performance-now");
+
 class SocketManager {
   game: WorldSim;
 
@@ -54,7 +57,6 @@ class SocketManager {
   private socketOnMessage_(socket: WebSocket, message: any) {
     // get packet
     let packet = JSON.parse(message) as ClientPacket;
-    console.log(packet.ship.position);
     // match packet to socket id
     let id = this.sockets.getEntryT(socket);
     if (!id) {
@@ -108,7 +110,10 @@ class SocketManager {
   }
 
   handleUpdates() {
+    console.log("update");
+    let test = now();
     let res = this.game.UpdateSim();
+    console.log(now() - test);
     for (let socket of this.sockets) {
       let id = socket[1];
       let pkt = res[id.toString()] as ServerPacket;

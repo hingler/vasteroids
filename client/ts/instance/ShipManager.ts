@@ -17,7 +17,7 @@ export class ShipManager {
 
   constructor(ship: ClientShip) {
     this.ship = ship;
-    this.ship.last_delta = performance.now();
+    this.ship.last_delta = performance.now() / 1000;
     console.log(this.ship);
     this.last_update = performance.now() / 1000;
     this.accel = 0;
@@ -41,14 +41,22 @@ export class ShipManager {
    * Called once every ~5ms to update the ship's state.
    */
   update(dims: number) : void {
-    this.accel = (this.inputmgr.getInputState(Input.THRUST_FWD) ? 2 : 0);
+    this.accel = 0;
     this.accel_rot = 0;
+    if (this.inputmgr.getInputState(Input.THRUST_FWD)) {
+      this.accel += 8;
+    }
+
+    if (this.inputmgr.getInputState(Input.THRUST_BKD)) {
+      this.accel -= 8;
+    }
+
     if (this.inputmgr.getInputState(Input.TURN_LEFT)) {
-      this.accel_rot += 2;
+      this.accel_rot += 18;
     }
 
     if (this.inputmgr.getInputState(Input.TURN_RIGHT)) {
-      this.accel_rot -= 2;
+      this.accel_rot -= 18;
     }
 
     // capture delta before updateinstance updates it
@@ -66,7 +74,7 @@ export class ShipManager {
     // calculate damping force right away
     let v_z = this.ship.velocity;
     
-    let damp = { x: -v_z.x / 1.8, y: -v_z.y / 1.8 };
+    let damp = { x: -v_z.x / 0.4, y: -v_z.y / 0.4 };
     // account for delta
     damp.x *= delta;
     damp.y *= delta;
@@ -91,7 +99,7 @@ export class ShipManager {
     let delta_r = this.accel_rot * delta;
 
     let rot = this.ship.rotation_velocity;
-    let rot_damp = -rot / 1.8;
+    let rot_damp = -rot / 0.4;
     rot_damp *= delta;
 
     // push new rotation velocity

@@ -32,22 +32,20 @@ bool Chunk::UpdateInstance(Instance* inst, std::chrono::time_point<std::chrono::
     inst->position.position.y -= 128.0f * std::floor(inst->position.position.y / chunk_size);
 
     // don't handle chunk overflow yet
-
+    std::cout << inst->position.chunk.x << ", " << inst->position.chunk.y << std::endl;
+    std::cout << inst->position.position.x << ", " << inst->position.position.y << std::endl;
     return false;
   }
 
+  std::cout << inst->position.chunk.x << ", " << inst->position.chunk.y << std::endl;
+  std::cout << inst->position.position.x << ", " << inst->position.position.y << std::endl;
   return true;
 
 }
 
 void Chunk::UpdateChunk(ServerPacket& resid) {
-  // simulate all elements
-  // if one ends up outside the chunk (coord < 0 or coord >= CHUNK_SIZE),
-  // add it to resid.
   auto now_update = std::chrono::high_resolution_clock::now();
-  float delta = std::chrono::duration<float, std::ratio<1L, 1L>>(now_update - last_update).count();
-  // ensure we keep update time less than 1s (keep it safe :)
-  delta = std::min(delta, 1.0f);
+
   {
     // update asteroids
     auto itr = asteroids_.begin();

@@ -19,12 +19,21 @@ export class VectorCanvas {
     this.mesh = new VectorMesh2D();
     this.shader = new VectorDraw(this.gl);
     
+    // store this -- use uint16t if not available
     const ext = this.gl.getExtension("OES_element_index_uint");
     if (!ext) {
       console.error("what the fuck are you doing");
     }
 
     this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  }
+
+  getWidth() {
+    return this.canvas.width;
+  }
+
+  getHeight() {
+    return this.canvas.height;
   }
 
   /**

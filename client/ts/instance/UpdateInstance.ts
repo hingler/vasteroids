@@ -5,6 +5,10 @@ export function UpdateInstance(i: Instance, chunkDims: number) {
   let delta = update - i.last_delta;
   i.last_delta = update;
 
+  if (delta > 0.1) {
+    console.error("large delta: " + delta);
+  }
+
   // update position based on current velocity
   i.position.position.x += i.velocity.x * delta;
   i.position.position.y += i.velocity.y * delta;

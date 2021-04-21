@@ -138,15 +138,10 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   for (auto ship : ships_) {
     for (int x = ship.second.x - 1; x <= ship.second.x + 1; x++) {
       for (int y = ship.second.y - 1; y <= ship.second.y + 1; y++) {
-        if (x < 0 || x >= chunk_dims_) {
-          continue;
-        }
+        Point2D<int> chunk(x, y);
+        FixChunkBoundaries(chunk);
 
-        if (y < 0 || y >= chunk_dims_) {
-          continue;
-        }
-
-        update_chunks.insert(Point2D<int>(x, y));
+        update_chunks.insert(chunk);
       }
     }
   }

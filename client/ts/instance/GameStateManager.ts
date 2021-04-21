@@ -18,6 +18,9 @@ export class GameStateManager {
   ships: Map<number, ClientShip>;
   socketUpdate: NodeJS.Timeout;
 
+  connectPromise: Promise<void>;
+  connectResolve: any;
+
   dims: number;
 
   constructor(name: string) {
@@ -33,8 +36,13 @@ export class GameStateManager {
     this.token = null;
     this.socket = new WebSocket(socketURL);
 
+    this.connectPromise = new Promise((res, rej) => {
+      this.connectResolve = res;
+    });
+
     this.asteroids = new Map();
     this.ships = new Map();
+
 
     // on open: send message
     // on message (response containing data):
@@ -51,23 +59,31 @@ export class GameStateManager {
     return this.ship.getShip();
   }
 
+  getInstances() : ServerPacket {
+    let a = {} as ServerPacket;
+    a.asteroids = Array.from(this.asteroids.values());
+    a.ships = Array.from(this.ships.values());
+    a.deleted = [];
+    a.deltas = [];
+    return a;
+  }
+
   private socketInit_(event: MessageEvent) {
-    console.log(event);
     let packet = JSON.parse(event.data) as ConnectionPacket;
-    console.log(packet);
-    console.log("ship");
-    console.log(packet.ship);
     this.token = packet.playerToken;
-    console.log(this.token);
     // create ship manager
     this.dims = packet.chunkDims;
-    console.log(this.dims);
     this.ship = new ShipManager(packet.ship);
     this.socket.onmessage = this.socketUpdate_.bind(this);
     // ~16.66 updates per second
     this.socketUpdate = setInterval(this.socketSend_.bind(this), 60);
+    this.connectResolve();
     // call update manually as part of delta?
     // that would probably be better actually
+  }
+
+  waitUntilConnected() : Promise<void> {
+    return this.connectPromise;
   }
 
   private socketSend_() {
@@ -75,8 +91,6 @@ export class GameStateManager {
     a.playerToken = this.token;
     a.projectileFired = false;
     a.ship = this.ship.getShip();
-    console.log(this.token);
-    console.log(a);
     this.socket.send(JSON.stringify(a));
   }
 
@@ -86,19 +100,23 @@ export class GameStateManager {
     for (let a of packet.asteroids) {
       // if already stored, replaces it
       // replace delta since we just received an update
-      a.last_delta = performance.now();
+      console.log("new asteroid :)");
+      a.last_delta = performance.now() / 1000;
       this.asteroids.set(a.id, a);
     }
 
     for (let s of packet.ships) {
-      s.last_delta = performance.now();
+      console.log("new ship :)");
+      s.last_delta = performance.now() / 1000;
       this.ships.set(s.id, s);
+      console.log(s);
+      console.log(s.position);
     }
 
     for (let d of packet.deltas) {
       let at = this.asteroids.get(d.id);
       if (at) {
-        at.last_delta = performance.now();
+        at.last_delta = performance.now() / 1000;
         at.position = d.position;
         at.rotation = d.rotation;
         at.velocity = d.velocity;
@@ -109,7 +127,10 @@ export class GameStateManager {
 
       let sh = this.ships.get(d.id);
       if (sh) {
-        sh.last_delta = performance.now();
+        console.log(d);
+        console.log(d.velocity);
+        console.log(d.position.position);
+        sh.last_delta = performance.now() / 1000;
         sh.position = d.position;
         sh.rotation = d.rotation;
         sh.velocity = d.velocity;
