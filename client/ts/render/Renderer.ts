@@ -81,7 +81,6 @@ export class Renderer {
     }
 
     for (let s of instances.ships) {
-      console.log(s.rotation);
       this.drawGeometry(player.position, s.position, shipGeom, -s.rotation);
     }
 

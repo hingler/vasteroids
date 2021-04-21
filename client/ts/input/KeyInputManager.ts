@@ -36,9 +36,7 @@ export class KeyInputManager implements InputManager {
   }
 
   bindKey(keycode: string, input: Input) {
-    console.log(keycode);
     this.keys.set(keycode, input);
-    console.log(this.keys.get(keycode));
   }
 
   unbindKey(keycode: string, input: Input) {
@@ -63,11 +61,8 @@ export class KeyInputManager implements InputManager {
   }
 
   private EventFuncOn_(e: KeyboardEvent) {
-    console.log(this.keys.get('w'));
     let input = this.keys.get(e.key);
-    console.log("pressed " + e.key);
     if (input) {
-      console.log("registered " + e.key + "!");
       this.inputState.set(input, true);
     }
   }
@@ -75,7 +70,6 @@ export class KeyInputManager implements InputManager {
   private EventFuncOff_(e: KeyboardEvent) {
     let input = this.keys.get(e.key);
     if (input) {
-      console.log("released " + e.key + "!");
       this.inputState.set(input, false);
     }
   }

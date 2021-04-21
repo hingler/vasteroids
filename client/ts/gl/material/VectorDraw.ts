@@ -11,7 +11,6 @@ export class VectorDraw {
 
   constructor(gl: WebGLRenderingContext) {
     let base = window.location.protocol + "//" + window.location.host;
-    console.log(base);
     let respFrag = fetch(base + "/glsl/vectordraw.frag");
     let respVert = fetch(base + "/glsl/vectordraw.vert");
     this.compilePromise = Promise.all([respVert, respFrag])
@@ -25,7 +24,6 @@ export class VectorDraw {
 
   prepareAttributes(gl: WebGLRenderingContext) : void {
     this.loc = gl.getAttribLocation(this.prog, "aPosition");
-    console.log(this.loc);
   }
 
   async waitUntilCompiled() {

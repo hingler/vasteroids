@@ -1,10 +1,11 @@
 import { Asteroid } from "../../../instances/Asteroid";
+import { Instance } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
 import { ClientPacket } from "../../../server/ClientPacket";
 import { ConnectionPacket } from "../../../server/ConnectionPacket";
 import { ServerPacket } from "../../../server/ServerPacket";
 import { ShipManager } from "./ShipManager";
-import { UpdateInstance } from "./UpdateInstance";
+import { UpdateAndInterpolate, UpdateInstance } from "./UpdateInstance";
 
 /**
  * Establishes a connection with the game server and interprets game updates.
@@ -14,8 +15,14 @@ export class GameStateManager {
   token: string;
   ship: ShipManager;
 
+  // local simulated results displayed to client.
   asteroids: Map<number, Asteroid>;
   ships: Map<number, ClientShip>;
+
+  // simulation based off packet data. used to constrain sim results
+  asteroidsPacket: Map<number, Instance>;
+  shipsPacket: Map<number, Instance>;
+
   socketUpdate: NodeJS.Timeout;
 
   connectPromise: Promise<void>;
@@ -42,6 +49,9 @@ export class GameStateManager {
 
     this.asteroids = new Map();
     this.ships = new Map();
+
+    this.asteroidsPacket = new Map();
+    this.shipsPacket = new Map();
 
 
     // on open: send message
@@ -105,37 +115,38 @@ export class GameStateManager {
       this.asteroids.set(a.id, a);
     }
 
+    // new ships need to be handled here
     for (let s of packet.ships) {
       console.log("new ship :)");
       s.last_delta = performance.now() / 1000;
       this.ships.set(s.id, s);
-      console.log(s);
-      console.log(s.position);
     }
 
     for (let d of packet.deltas) {
       let at = this.asteroids.get(d.id);
       if (at) {
-        at.last_delta = performance.now() / 1000;
-        at.position = d.position;
-        at.rotation = d.rotation;
-        at.velocity = d.velocity;
-        at.rotation_velocity = d.rotation_velocity;
-        this.asteroids.set(at.id, at);
-        return;
+        let atDelta = {} as Instance;
+        atDelta.id = at.id;
+        atDelta.last_delta = performance.now() / 1000;
+        atDelta.position = d.position;
+        atDelta.rotation = d.rotation;
+        atDelta.velocity = d.velocity;
+        atDelta.rotation_velocity = d.rotation_velocity;
+        this.asteroidsPacket.set(atDelta.id, atDelta);
+        continue;
       }
 
       let sh = this.ships.get(d.id);
       if (sh) {
-        console.log(d);
-        console.log(d.velocity);
-        console.log(d.position.position);
-        sh.last_delta = performance.now() / 1000;
-        sh.position = d.position;
-        sh.rotation = d.rotation;
-        sh.velocity = d.velocity;
-        sh.rotation_velocity = d.rotation_velocity;
-        this.ships.set(sh.id, sh);
+        let shDelta = {} as Instance;
+        shDelta.id = sh.id;
+        shDelta.last_delta = performance.now() / 1000;
+        shDelta.position = d.position;
+        shDelta.rotation = d.rotation;
+        shDelta.velocity = d.velocity;
+        shDelta.rotation_velocity = d.rotation_velocity;
+        this.shipsPacket.set(shDelta.id, shDelta);
+        continue;
       }
     }
 
@@ -151,11 +162,21 @@ export class GameStateManager {
       this.ship.update(this.dims);
       // update all instances
       for (let a of this.asteroids.values()) {
-        UpdateInstance(a, this.dims);
+        let packetInst = this.asteroidsPacket.get(a.id);
+        if (packetInst) {
+          UpdateAndInterpolate(a, packetInst, this.dims);
+        } else {
+          UpdateInstance(a, this.dims);
+        }
       }
   
       for (let s of this.ships.values()) {
-        UpdateInstance(s, this.dims);
+        let packetInst = this.shipsPacket.get(s.id);
+        if (packetInst) {
+          UpdateAndInterpolate(s, packetInst, this.dims);
+        } else {
+          UpdateInstance(s, this.dims);
+        }
       }
     }
   }

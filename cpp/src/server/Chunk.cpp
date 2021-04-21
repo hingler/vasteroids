@@ -34,13 +34,9 @@ bool Chunk::UpdateInstance(Instance* inst, std::chrono::time_point<std::chrono::
     inst->position.position.y -= 128.0f * std::floor(inst->position.position.y / chunk_size);
 
     // don't handle chunk overflow yet
-    std::cout << inst->position.chunk.x << ", " << inst->position.chunk.y << std::endl;
-    std::cout << inst->position.position.x << ", " << inst->position.position.y << std::endl;
     return false;
   }
 
-  std::cout << inst->position.chunk.x << ", " << inst->position.chunk.y << std::endl;
-  std::cout << inst->position.position.x << ", " << inst->position.position.y << std::endl;
   return true;
 
 }

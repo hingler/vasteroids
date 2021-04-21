@@ -110,10 +110,8 @@ class SocketManager {
   }
 
   handleUpdates() {
-    console.log("update");
     let test = now();
     let res = this.game.UpdateSim();
-    console.log(now() - test);
     for (let socket of this.sockets) {
       let id = socket[1];
       let pkt = res[id.toString()] as ServerPacket;
