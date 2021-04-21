@@ -63,15 +63,14 @@ namespace vasteroids {
       this->y = rhs.y;
     }
 
-    template<typename T>
-    Point2D<T>& operator+=(const Point2D<T>& rhs) {
+    Point2D& operator+=(const Point2D<T>& rhs) {
       this->x += rhs.x;
       this->y += rhs.y;
       return *this;
     }
 
-    template<typename T, typename U>
-    Point2D<T>& operator*=(U mult) {
+    template<typename U>
+    Point2D& operator*=(U mult) {
       this->x *= mult;
       this->y *= mult;
       return *this;
