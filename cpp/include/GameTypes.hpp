@@ -58,7 +58,7 @@ namespace vasteroids {
       return *this;
     }
 
-    Point2D(const Point2D& rhs) {
+    Point2D(const Point2D<T>& rhs) {
       this->x = rhs.x;
       this->y = rhs.y;
     }
@@ -101,7 +101,13 @@ namespace vasteroids {
     Point2D<int> chunk;
     Point2D<float> position;
 
-    WorldPosition() {}
+    WorldPosition() {
+      chunk.x = 0;
+      chunk.y = 0;
+      position.x = 0.0f;
+      position.y = 0.0f;
+    }
+    
     WorldPosition(Napi::Object obj);
 
     /**
