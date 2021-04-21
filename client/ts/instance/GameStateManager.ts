@@ -69,6 +69,10 @@ export class GameStateManager {
     return this.ship.getShip();
   }
 
+  getDims() : number {
+    return this.dims;
+  }
+
   getInstances() : ServerPacket {
     let a = {} as ServerPacket;
     a.asteroids = Array.from(this.asteroids.values());

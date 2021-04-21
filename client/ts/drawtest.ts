@@ -9,10 +9,10 @@ import { Renderer } from "./render/Renderer";
   function main() {
     let c = new VectorCanvas(document.getElementById("game-window") as HTMLCanvasElement);
     let w = new GameStateManager("dickmuncher");
-    let g = new Renderer(16, c);
     c.waitUntilCompiled()
       .then(async () => { await w.waitUntilConnected(); })
       .then(() => {
+        let g = new Renderer(8, c, w.getDims());
         requestAnimationFrame(() => { f(c, w, g) })
       });
 

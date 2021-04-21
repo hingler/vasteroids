@@ -33,10 +33,12 @@ const shipGeom = [
 export class Renderer {
   public widthScale: number;
   private canvas: VectorCanvas;
+  private dims: number;
 
-  constructor(widthScale: number, canvas: VectorCanvas) {
+  constructor(widthScale: number, canvas: VectorCanvas, dims: number) {
     this.widthScale = widthScale;
     this.canvas = canvas;
+    this.dims = dims;
   }
 
   drawInstances(player: ClientShip, instances: ServerPacket) {
@@ -74,9 +76,11 @@ export class Renderer {
     }
 
     // draw ship
+    console.log("test");
     this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
 
     for (let a of instances.asteroids) {
+      // if this element is on a boundary chunk:
       this.drawGeometry(player.position, a.position, a.geometry, -a.rotation);
     }
 
@@ -114,10 +118,27 @@ export class Renderer {
     wp.position.x += (diffX * chunkSize);
     wp.position.y += (diffY * chunkSize);
 
+    let posDelta = {
+      x: (wp.position.x - center.position.x),
+      y: (wp.position.y - center.position.y)
+    } as Point2D;
+
+    if (posDelta.x > (this.dims * chunkSize) / 2) {
+      posDelta.x -= this.dims * chunkSize;
+    } else if (posDelta.x < -(this.dims * chunkSize) / 2) {
+      posDelta.x += this.dims * chunkSize;
+    }
+
+    if (posDelta.y > (this.dims * chunkSize) / 2) {
+      posDelta.y -= this.dims * chunkSize;
+    } else if (posDelta.y < -(this.dims * chunkSize) / 2) {
+      posDelta.y += this.dims * chunkSize;
+    }
+
     // center of our geometry on screen
     let posScreen = {
-      x: screenCenter.x + (wp.position.x - center.position.x) * widthStep,
-      y: screenCenter.y + (wp.position.y - center.position.y) * widthStep
+      x: screenCenter.x + posDelta.x * widthStep,
+      y: screenCenter.y + posDelta.y * widthStep
     };
 
     let geomRot : Array<Point2D> = [];
