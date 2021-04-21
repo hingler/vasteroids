@@ -1,6 +1,7 @@
 import { chunkSize, Instance, Point2D } from "../../../instances/GameTypes";
 
-export function UpdateInstance(i: Instance, chunkDims: number) {
+// returns true if we cross past the end of our chunks
+export function UpdateInstance(i: Instance, chunkDims: number) : boolean {
   let update = performance.now() / 1000;
   let delta = update - i.last_delta;
   i.last_delta = update;
@@ -15,21 +16,36 @@ export function UpdateInstance(i: Instance, chunkDims: number) {
 
   let pos = i.position.position;
 
-  fixChunkOffset(i, chunkDims);
-
+  
   i.rotation += i.rotation_velocity * delta;
+  return fixChunkOffset(i, chunkDims);
 }
 
 export function UpdateAndInterpolate(il: Instance, ip: Instance, chunkDims: number) {
   let delta = (performance.now() / 1000) - il.last_delta;
   let t = 1 - Math.pow(0.0001, delta);
 
-  UpdateInstance(il, chunkDims);
-  UpdateInstance(ip, chunkDims);
+  let wrap_local = UpdateInstance(il, chunkDims);
+  let wrap_packt = UpdateInstance(ip, chunkDims);
 
   // both are updated
   // nudge il by the difference
   let posDist = getDistance(il, ip);
+  
+  // fix chunk boundary crossing if distance is massive
+  if (posDist.x > (chunkSize / 2)) {
+    posDist.x = posDist.x - (chunkSize * chunkDims);
+  } else if (posDist.x < -(chunkSize / 2)) {
+    posDist.x = posDist.x + (chunkSize * chunkDims);
+  }
+
+  // good money
+  if (posDist.y > (chunkSize / 2)) {
+    posDist.y = posDist.y - (chunkSize * chunkDims);
+  } else if (posDist.y < -(chunkSize / 2)) {
+    posDist.y = posDist.y + (chunkSize * chunkDims);
+  }
+
   il.position.position.x += posDist.x * t;
   il.position.position.y += posDist.y * t;
   fixChunkOffset(il, chunkDims);
@@ -48,7 +64,8 @@ export function UpdateAndInterpolate(il: Instance, ip: Instance, chunkDims: numb
   il.rotation_velocity += (ip.rotation_velocity - il.rotation_velocity) * t;
 }
 
-function fixChunkOffset(i: Instance, chunkDims: number) {
+// returns true if we passed our chunk boundary
+function fixChunkOffset(i: Instance, chunkDims: number) : boolean {
   let pos = i.position.position;
   if (pos.x < 0 || pos.x >= chunkSize || pos.y < 0 || pos.y > chunkSize) {
     i.position.chunk.x += Math.floor(pos.x / chunkSize);
@@ -62,7 +79,10 @@ function fixChunkOffset(i: Instance, chunkDims: number) {
     || i.position.chunk.y < 0 || i.position.chunk.y >= chunkDims) {
     i.position.chunk.x -= (Math.floor(i.position.chunk.x / chunkDims) * chunkDims);
     i.position.chunk.y -= (Math.floor(i.position.chunk.y / chunkDims) * chunkDims);
+    return true;
   }
+
+  return false;
 }
 
 function getDistance(i1: Instance, i2: Instance) : Point2D {
