@@ -43,40 +43,45 @@ export class Renderer {
 
   drawInstances(player: ClientShip, instances: ServerPacket) {
     // draw the ship
-    let widthStep = this.canvas.getWidth() / this.widthScale;
-    let posCenter = player.position.position.x;
+    // let widthStep = this.canvas.getWidth() / this.widthScale;
+    // let posCenter = player.position.position.x;
 
-    let widthOffV = (posCenter % GRIDSTEP) * widthStep;
-    let shipCenter = {
-      x: this.canvas.getWidth() / 2,
-      y: this.canvas.getHeight() / 2
-    };
+    // let widthOffV = (posCenter % GRIDSTEP) * widthStep;
+    // let shipCenter = {
+    //   x: this.canvas.getWidth() / 2,
+    //   y: this.canvas.getHeight() / 2
+    // };
 
-    let gridLineX = shipCenter.x - widthOffV;
-    while (gridLineX > 0) {
-      gridLineX -= widthStep;
-    }
+    // let gridColor : [number, number, number, number] = [0.3, 0.3, 0.3, 1.0];
 
-    gridLineX += widthStep;
-    while (gridLineX < this.canvas.getWidth()) {
-      this.canvas.addLine(gridLineX, -1, gridLineX, this.canvas.getHeight() + 1, 1);
-      gridLineX += widthStep;
-    }
+    // let gridLineX = shipCenter.x - widthOffV;
+    // while (gridLineX > 0) {
+    //   gridLineX -= widthStep;
+    // }
 
-    let widthOffH = (player.position.position.y % GRIDSTEP) * widthStep;
-    let gridLineY = shipCenter.y - widthOffH;
-    while (gridLineY > 0) {
-      gridLineY -= widthStep;
-    }
+    // gridLineX += widthStep;
+    // while (gridLineX < this.canvas.getWidth()) {
+    //   this.canvas.addLine(gridLineX, -1, gridLineX, this.canvas.getHeight() + 1, 1, gridColor);
+    //   gridLineX += widthStep;
+    // }
 
-    gridLineY += widthStep;
-    while (gridLineY < this.canvas.getHeight()) {
-      this.canvas.addLine(-1, gridLineY, this.canvas.getWidth() + 1, gridLineY, 1);
-      gridLineY += widthStep;
-    }
+    // let widthOffH = (player.position.position.y % GRIDSTEP) * widthStep;
+    // let gridLineY = shipCenter.y - widthOffH;
+    // while (gridLineY > 0) {
+    //   gridLineY -= widthStep;
+    // }
+
+    // gridLineY += widthStep;
+    // while (gridLineY < this.canvas.getHeight()) {
+    //   this.canvas.addLine(-1, gridLineY, this.canvas.getWidth() + 1, gridLineY, 1, gridColor);
+    //   gridLineY += widthStep;
+    // }
+
+    // this.drawGrid(player.position, 0.25, 0.25, [0.04, 0.04, 0.04, 1.0]);
+    this.drawGrid(player.position, 0.5, 0.5, [0.1, 0.1, 0.1, 1.0]);
+    this.drawGrid(player.position, 1.0, 1.0, [0.2, 0.2, 0.2, 1.0]);
 
     // draw ship
-    console.log("test");
     this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
 
     for (let a of instances.asteroids) {
@@ -89,6 +94,42 @@ export class Renderer {
     }
 
     this.canvas.drawToScreen();
+  }
+
+  private drawGrid(center: WorldPosition, step: number, speed: number, color: [number, number, number, number]) {
+    let widthStep = step * this.canvas.getWidth() / (this.widthScale);
+    let posCenter = center.position.x * speed / step;
+
+    let widthOffV = (posCenter % GRIDSTEP) * widthStep;
+    let shipCenter = {
+      x: this.canvas.getWidth() / 2,
+      y: this.canvas.getHeight() / 2
+    };
+
+    let gridColor : [number, number, number, number] = [0.3, 0.3, 0.3, 1.0];
+
+    let gridLineX = shipCenter.x - widthOffV;
+    while (gridLineX > 0) {
+      gridLineX -= widthStep;
+    }
+
+    gridLineX += widthStep;
+    while (gridLineX < this.canvas.getWidth()) {
+      this.canvas.addLine(gridLineX, -1, gridLineX, this.canvas.getHeight() + 1, 2, color);
+      gridLineX += widthStep;
+    }
+
+    let widthOffH = ((center.position.y * speed / step) % GRIDSTEP) * widthStep;
+    let gridLineY = shipCenter.y - widthOffH;
+    while (gridLineY > 0) {
+      gridLineY -= widthStep;
+    }
+
+    gridLineY += widthStep;
+    while (gridLineY < this.canvas.getHeight()) {
+      this.canvas.addLine(-1, gridLineY, this.canvas.getWidth() + 1, gridLineY, 2, color);
+      gridLineY += widthStep;
+    }
   }
 
   // draws geom onto screen rel. to center point

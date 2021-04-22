@@ -10,9 +10,18 @@ export class VectorMesh2D {
     this.indexBuffer = new ManagedBuffer(new Uint32Vector());
   }
 
-  addVertex(point: [number, number]) {
+  addVertex(point: [number, number], color?: [number, number, number, number]) {
+    if (!color) {
+      color = [1.0, 1.0, 1.0, 1.0];
+    }
+
     this.vertexBuffer.insertData(point[0]);
     this.vertexBuffer.insertData(point[1]);
+
+    this.vertexBuffer.insertData(color[0]);
+    this.vertexBuffer.insertData(color[1]);
+    this.vertexBuffer.insertData(color[2]);
+    this.vertexBuffer.insertData(color[3]);
   }
 
   addTriangle(tri: [number, number, number]) {
@@ -21,21 +30,20 @@ export class VectorMesh2D {
     this.indexBuffer.insertData(tri[2]);
   }
 
-  draw(gl: WebGLRenderingContext, location?: number) {
+  draw(gl: WebGLRenderingContext, locationGeometry: number, locationColor: number) {
     this.vertexBuffer.bindBuffer(gl, gl.ARRAY_BUFFER);
     this.indexBuffer.bindBuffer(gl, gl.ELEMENT_ARRAY_BUFFER);
-    let attribLoc = 0;
-    if (location) {
-      attribLoc = location;
-    }
 
-    gl.vertexAttribPointer(attribLoc, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attribLoc);
+    gl.vertexAttribPointer(locationGeometry, 2, gl.FLOAT, false, 6 * this.vertexBuffer.bytesPerElement(), 0);
+    gl.enableVertexAttribArray(locationGeometry);
+    gl.vertexAttribPointer(locationColor, 4, gl.FLOAT, false, 6 * this.vertexBuffer.bytesPerElement(), 2 * this.vertexBuffer.bytesPerElement());
+    gl.enableVertexAttribArray(locationColor);
+
     gl.drawElements(gl.TRIANGLES, this.indexBuffer.getElementCount(), gl.UNSIGNED_INT, 0);
   }
 
   getVertexCount() : number {
-    return this.vertexBuffer.getElementCount() / 2;
+    return this.vertexBuffer.getElementCount() / 6;
   }
 
   getIndexCount() : number {

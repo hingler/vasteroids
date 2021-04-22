@@ -8,6 +8,7 @@ export interface Vector<DataType, StorageType> {
   clear() : void;
   size() : number;
   byteLength() : number;
+  bytesPerElement() : number;
   data() : StorageType;
 }
 
@@ -34,6 +35,10 @@ export class FloatVector implements Vector<number, Float32Array> {
 
   size() {
     return this.elementCount;
+  }
+
+  bytesPerElement() {
+    return this.buffer.BYTES_PER_ELEMENT;
   }
 
   byteLength() {
@@ -74,6 +79,10 @@ export class Uint32Vector implements Vector<number, Uint32Array> {
 
   size() {
     return this.elementCount;
+  }
+
+  bytesPerElement() {
+    return this.buffer.BYTES_PER_ELEMENT;
   }
 
   byteLength() {

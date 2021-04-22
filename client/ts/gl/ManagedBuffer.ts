@@ -28,6 +28,10 @@ export class ManagedBuffer<T extends Vector<number, ArrayBuffer>> {
     return this.buffer.size();
   }
 
+  bytesPerElement() : number {
+    return this.buffer.bytesPerElement();
+  }
+
   bindBuffer(gl: WebGLRenderingContext, target: number) : void {
     if (!this.glBuffer) {
       this.glBuffer = gl.createBuffer();

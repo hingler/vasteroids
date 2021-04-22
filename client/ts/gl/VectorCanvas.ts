@@ -45,7 +45,11 @@ export class VectorCanvas {
    * @param endY - terminal Y
    * @param stroke - width of line in px
    */
-  addLine(startX: number, startY: number, endX: number, endY: number, stroke: number) {
+  addLine(startX: number, startY: number, endX: number, endY: number, stroke: number, color?: [number, number, number, number]) {
+    if (!color) {
+      color = [1.0, 1.0, 1.0, 1.0];
+    }
+
     let width = this.canvas.clientWidth, height = this.canvas.clientHeight;
     let screenSX = ((startX * 2) /   width) - 1;
     let screenSY = ((startY * 2) /  -height) + 1;
@@ -57,19 +61,17 @@ export class VectorCanvas {
     let strokeY = (endX - startX);
     let strokeX = (endY - startY);
     
-    // correct for w/h of window
-    strokeX *= (height / width);
     [strokeX, strokeY] = this.normalize_(strokeX, strokeY);
 
     let strokeDX = (strokeX * stroke) / width;
-    let strokeDY = (strokeY * stroke) / width;
+    let strokeDY = (strokeY * stroke) / height;
 
     let vertCount = this.mesh.getVertexCount();
 
-    this.mesh.addVertex([screenSX + strokeDX, screenSY + strokeDY]);
-    this.mesh.addVertex([screenSX - strokeDX, screenSY - strokeDY]);
-    this.mesh.addVertex([screenEX + strokeDX, screenEY + strokeDY]);
-    this.mesh.addVertex([screenEX - strokeDX, screenEY - strokeDY]);
+    this.mesh.addVertex([screenSX + strokeDX, screenSY + strokeDY], color);
+    this.mesh.addVertex([screenSX - strokeDX, screenSY - strokeDY], color);
+    this.mesh.addVertex([screenEX + strokeDX, screenEY + strokeDY], color);
+    this.mesh.addVertex([screenEX - strokeDX, screenEY - strokeDY], color);
 
     this.mesh.addTriangle([vertCount,     vertCount + 1, vertCount + 2]);
     this.mesh.addTriangle([vertCount + 1, vertCount + 3, vertCount + 2]);

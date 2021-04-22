@@ -6,6 +6,7 @@ export class VectorDraw {
   prog: WebGLProgram;
 
   loc: number;
+  locColor: number;
 
   compilePromise: Promise<void>;
 
@@ -24,6 +25,9 @@ export class VectorDraw {
 
   prepareAttributes(gl: WebGLRenderingContext) : void {
     this.loc = gl.getAttribLocation(this.prog, "aPosition");
+    this.locColor = gl.getAttribLocation(this.prog, "aColor");
+    console.log(this.loc);
+    console.log(this.locColor);
   }
 
   async waitUntilCompiled() {
@@ -32,6 +36,6 @@ export class VectorDraw {
 
   drawMaterial(gl: WebGLRenderingContext, mesh: VectorMesh2D) {
     gl.useProgram(this.prog);
-    mesh.draw(gl, this.loc);
+    mesh.draw(gl, this.loc, this.locColor);
   }
 }

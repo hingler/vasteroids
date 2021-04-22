@@ -25,12 +25,8 @@ import { Renderer } from "./render/Renderer";
   function f(c: VectorCanvas, w: GameStateManager, g: Renderer) {
     w.update();
     c.clearCanvas();
-    c.addLine(120, 120, 300, 300, 25);
-    c.addLine(5.5, 5.5, 125.5, 5.5, 2);
-    c.addLine(15, 15, 15, 125, 3);
     g.drawInstances(w.getShip(), w.getInstances());
     requestAnimationFrame(() => { f(c, w, g) });
   }
-
 
 })();
