@@ -42,42 +42,6 @@ export class Renderer {
   }
 
   drawInstances(player: ClientShip, instances: ServerPacket) {
-    // draw the ship
-    // let widthStep = this.canvas.getWidth() / this.widthScale;
-    // let posCenter = player.position.position.x;
-
-    // let widthOffV = (posCenter % GRIDSTEP) * widthStep;
-    // let shipCenter = {
-    //   x: this.canvas.getWidth() / 2,
-    //   y: this.canvas.getHeight() / 2
-    // };
-
-    // let gridColor : [number, number, number, number] = [0.3, 0.3, 0.3, 1.0];
-
-    // let gridLineX = shipCenter.x - widthOffV;
-    // while (gridLineX > 0) {
-    //   gridLineX -= widthStep;
-    // }
-
-    // gridLineX += widthStep;
-    // while (gridLineX < this.canvas.getWidth()) {
-    //   this.canvas.addLine(gridLineX, -1, gridLineX, this.canvas.getHeight() + 1, 1, gridColor);
-    //   gridLineX += widthStep;
-    // }
-
-    // let widthOffH = (player.position.position.y % GRIDSTEP) * widthStep;
-    // let gridLineY = shipCenter.y - widthOffH;
-    // while (gridLineY > 0) {
-    //   gridLineY -= widthStep;
-    // }
-
-    // gridLineY += widthStep;
-    // while (gridLineY < this.canvas.getHeight()) {
-    //   this.canvas.addLine(-1, gridLineY, this.canvas.getWidth() + 1, gridLineY, 1, gridColor);
-    //   gridLineY += widthStep;
-    // }
-
-    // this.drawGrid(player.position, 0.25, 0.25, [0.04, 0.04, 0.04, 1.0]);
     this.drawGrid(player.position, 0.5, 0.5, [0.1, 0.1, 0.1, 1.0]);
     this.drawGrid(player.position, 1.0, 1.0, [0.2, 0.2, 0.2, 1.0]);
 
