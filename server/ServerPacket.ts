@@ -6,7 +6,10 @@ interface ServerPacket {
   asteroids: Array<Asteroid>,
   ships: Array<ClientShip>,
   deltas: Array<Instance>,
-  deleted: Array<number>
+  deleted: Array<number>,
+
+  // seconds since server creation
+  serverTime: number
 }
 
 export { ServerPacket };

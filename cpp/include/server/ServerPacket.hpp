@@ -22,6 +22,9 @@ struct ServerPacket {
 
   std::unordered_set<uint64_t> deleted;
 
+  // time since server creation
+  double server_time;
+
   /**
    *  Concatenates another server packet onto this one.
    */ 

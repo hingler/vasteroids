@@ -4,6 +4,7 @@ namespace vasteroids {
 namespace server {
 
 void ServerPacket::ConcatPacket(const ServerPacket& packet) {
+  // ignore server time
   asteroids.insert(asteroids.end(), packet.asteroids.begin(), packet.asteroids.end());
   ships.insert(ships.end(), packet.ships.begin(), packet.ships.end());
 }
@@ -49,6 +50,11 @@ Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
     }
 
     obj.Set("deleted", deleted_nums);
+  }
+
+  {
+    Napi::Number time = Napi::Number::New(env, server_time);
+    obj.Set("serverTime", time);
   }
 
   return obj;
