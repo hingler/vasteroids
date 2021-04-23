@@ -17,7 +17,8 @@ Napi::Function WorldSim::GetClassInstance(Napi::Env env) {
     InstanceMethod("HandleClientPacket", &WorldSim::HandleClientPacket),
     InstanceMethod("UpdateSim", &WorldSim::UpdateSim),
     InstanceMethod("AddShip", &WorldSim::AddShip),
-    InstanceMethod("DeleteShip", &WorldSim::DeleteShip)
+    InstanceMethod("DeleteShip", &WorldSim::DeleteShip),
+    InstanceMethod("GetServerTime", &WorldSim::GetServerTime)
   });
 }
 
@@ -121,7 +122,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     CreateChunk(new_chunk);
   }
 
-  ship_new.last_update = GetServerTime();
+  ship_new.last_update = GetServerTime_();
   chunks_.at(new_chunk).InsertShip(ship_new);
 
   // update ships list to match new chunk
@@ -133,7 +134,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   // update all components
   // figure out which chunks we need to update
-  double server_time = GetServerTime();
+  double server_time = GetServerTime_();
   Napi::Env env = info.Env();
   Napi::Object obj_ret = Napi::Object::New(env);
   std::unordered_set<Point2D<int>> update_chunks;
@@ -245,6 +246,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
           delta_pkt.velocity = itr_a->velocity;
           delta_pkt.rotation = itr_a->rotation;
           delta_pkt.rotation_velocity = itr_a->rotation_velocity;
+          delta_pkt.last_update = itr_a->last_update;
           res.deltas.push_back(std::move(delta_pkt));
         }
 
@@ -269,6 +271,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
           delta_pkt.velocity = itr_s->velocity;
           delta_pkt.rotation = itr_s->rotation;
           delta_pkt.rotation_velocity = itr_s->rotation_velocity;
+          delta_pkt.last_update = itr_s->last_update;
           res.deltas.push_back(std::move(delta_pkt));
         }
 
@@ -322,7 +325,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   s.rotation = 0.0f;
   s.rotation_velocity = 0.0f;
   s.ver = 0;
-  s.last_update = GetServerTime();
+  s.last_update = GetServerTime_();
   // create the new ship and give it an id
   // find a random position for it to roam
   // return the new position of this ship
@@ -361,7 +364,7 @@ Napi::Value WorldSim::DeleteShip(const Napi::CallbackInfo& info) {
 
 // private funcs
 void WorldSim::CreateChunk(Point2D<int> chunk_coord) {
-  chunks_.insert(std::make_pair(chunk_coord, Chunk(GetServerTime())));
+  chunks_.insert(std::make_pair(chunk_coord, Chunk(GetServerTime_())));
 }
 
 void WorldSim::SpawnNewAsteroid(WorldPosition coord) {
@@ -381,7 +384,7 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   ast.position = coord;
   ast.ver = 0;
   ast.id = id_max_++;
-  ast.last_update = GetServerTime();
+  ast.last_update = GetServerTime_();
 
 
   chunk.InsertAsteroid(ast);
@@ -394,7 +397,11 @@ void WorldSim::FixChunkBoundaries(Point2D<int>& chunk) {
   }
 }
 
-double WorldSim::GetServerTime() {
+Napi::Value WorldSim::GetServerTime(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(info.Env(), GetServerTime_());
+}
+
+double WorldSim::GetServerTime_() {
   auto now = std::chrono::high_resolution_clock::now();
   return std::chrono::duration<double>(now - origin_time_).count();
 }

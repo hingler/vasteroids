@@ -43,7 +43,7 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   // corrects for chunk overflow
   void FixChunkBoundaries(Point2D<int>& chunk);
 
-  double GetServerTime();
+  double GetServerTime_();
 
   // x/y dims of our world
   int chunk_dims_;

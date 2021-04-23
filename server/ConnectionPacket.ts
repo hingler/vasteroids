@@ -7,6 +7,7 @@ interface ConnectionPacket {
   ship: ClientShip;
   playerToken: string;
   chunkDims: number;
+  serverTime: number;
 }
 
 export { ConnectionPacket };

@@ -1,8 +1,17 @@
 import { chunkSize, Instance, Point2D } from "../../../instances/GameTypes";
 
 // returns true if we cross past the end of our chunks
+// lol
+let startTime: number;
+
+// server time - performance now
+export function setUpdateOrigin(serverTime: number) {
+  startTime = serverTime - performance.now() / 1000;
+  console.log(startTime);
+}
+
 export function UpdateInstance(i: Instance, chunkDims: number) : boolean {
-  let update = performance.now() / 1000;
+  let update = startTime + (performance.now() / 1000);
   let delta = update - i.last_delta;
   i.last_delta = update;
 
@@ -22,7 +31,7 @@ export function UpdateInstance(i: Instance, chunkDims: number) : boolean {
 }
 
 export function UpdateAndInterpolate(il: Instance, ip: Instance, chunkDims: number) {
-  let delta = (performance.now() / 1000) - il.last_delta;
+  let delta = startTime + (performance.now() / 1000) - il.last_delta;
   let t = 1 - Math.pow(0.0001, delta);
 
   let wrap_local = UpdateInstance(il, chunkDims);

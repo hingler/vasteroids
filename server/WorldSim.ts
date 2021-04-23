@@ -41,6 +41,12 @@ interface WorldSim {
   DeleteShip(id: number) : boolean;
 
   /**
+   * Gets current server time.
+   * @returns server time.
+   */
+  GetServerTime() : number;
+
+  /**
    * Returns the relative amount of activity in nearby chunks.
    * @param origin - the top-left chunk we wish to fetch.
    * @param dims - the number of chunks fetched along x and y axes.

@@ -2,7 +2,7 @@ import { chunkSize, Point2D } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
 import { Input, InputManager } from "../input/InputManager";
 import { KeyInputManager } from "../input/KeyInputManager";
-import { UpdateInstance } from "./UpdateInstance";
+import { setUpdateOrigin, UpdateInstance } from "./UpdateInstance";
 
 /**
  * ShipManager keeps track of updates on player's ship.
@@ -13,16 +13,21 @@ export class ShipManager {
   accel_rot: number;
   last_update: number;
   update_intvl: NodeJS.Timeout;
+  origin_time: number;
   inputmgr: InputManager;
 
-  constructor(ship: ClientShip) {
+  constructor(ship: ClientShip, serverOrigin: number) {
     this.ship = ship;
-    this.ship.last_delta = performance.now() / 1000;
+    this.origin_time = serverOrigin - (performance.now() / 1000);
+    // offset
+    this.ship.last_delta = serverOrigin;
     console.log(this.ship);
-    this.last_update = performance.now() / 1000;
+    this.last_update = serverOrigin;
     this.accel = 0;
     this.accel_rot = 0;
     this.inputmgr = new KeyInputManager();
+
+    setUpdateOrigin(serverOrigin);
   }
 
   setThrust(accel: number) {
@@ -60,7 +65,7 @@ export class ShipManager {
     }
 
     // capture delta before updateinstance updates it
-    let update = performance.now() / 1000;
+    let update = this.origin_time + (performance.now() / 1000);
     let delta = update - this.ship.last_delta;
 
     UpdateInstance(this.ship, dims);

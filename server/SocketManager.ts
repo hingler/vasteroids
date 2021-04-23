@@ -42,6 +42,7 @@ class SocketManager {
     packet.ship = ship_new;
     packet.playerToken = token;
     packet.chunkDims = this.game.GetChunkDims();
+    packet.serverTime = this.game.GetServerTime();
     socket.send(JSON.stringify(packet));
     console.log(packet.playerToken);
 

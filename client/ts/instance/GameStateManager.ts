@@ -28,6 +28,9 @@ export class GameStateManager {
   connectPromise: Promise<void>;
   connectResolve: any;
 
+  // start time wrt performance now
+  startTimeOffset: number;
+
   dims: number;
 
   constructor(name: string) {
@@ -87,7 +90,7 @@ export class GameStateManager {
     this.token = packet.playerToken;
     // create ship manager
     this.dims = packet.chunkDims;
-    this.ship = new ShipManager(packet.ship);
+    this.ship = new ShipManager(packet.ship, packet.serverTime);
     this.socket.onmessage = this.socketUpdate_.bind(this);
     // ~16.66 updates per second
     this.socketUpdate = setInterval(this.socketSend_.bind(this), 60);
@@ -115,23 +118,23 @@ export class GameStateManager {
       // if already stored, replaces it
       // replace delta since we just received an update
       console.log("new asteroid :)");
-      a.last_delta = performance.now() / 1000;
+      // asteroid contains its last delta
       this.asteroids.set(a.id, a);
     }
 
     // new ships need to be handled here
     for (let s of packet.ships) {
       console.log("new ship :)");
-      s.last_delta = performance.now() / 1000;
+      console.log(s.last_delta);
       this.ships.set(s.id, s);
     }
 
     for (let d of packet.deltas) {
-      let at = this.asteroids.get(d.id);
+      let at = this.asteroids.has(d.id);
       if (at) {
         let atDelta = {} as Instance;
-        atDelta.id = at.id;
-        atDelta.last_delta = performance.now() / 1000;
+        atDelta.id = d.id;
+        atDelta.last_delta = d.last_delta;
         atDelta.position = d.position;
         atDelta.rotation = d.rotation;
         atDelta.velocity = d.velocity;
@@ -140,11 +143,11 @@ export class GameStateManager {
         continue;
       }
 
-      let sh = this.ships.get(d.id);
+      let sh = this.ships.has(d.id);
       if (sh) {
         let shDelta = {} as Instance;
-        shDelta.id = sh.id;
-        shDelta.last_delta = performance.now() / 1000;
+        shDelta.id = d.id;
+        shDelta.last_delta = d.last_delta;
         shDelta.position = d.position;
         shDelta.rotation = d.rotation;
         shDelta.velocity = d.velocity;
