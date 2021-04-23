@@ -83,7 +83,7 @@ Napi::Object Instance::ToNodeObject(Napi::Env env) const {
   res.Set("velocity", velocity.ToNodeObject(env));
   res.Set("rotation", Napi::Number::New(env, rotation));
   res.Set("rotation_velocity", Napi::Number::New(env, rotation_velocity));
-
+  res.Set("last_delta", Napi::Number::New(env, last_update));
   return res;
 }
 

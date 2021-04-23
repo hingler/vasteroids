@@ -278,6 +278,8 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       }
     }
 
+    res.server_time = server_time;
+
     known_ids_.erase(id);
     known_ids_.insert(std::make_pair(id, std::move(knowns_new)));
     // res still contains our server packet for this ship
