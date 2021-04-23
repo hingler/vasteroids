@@ -22,6 +22,7 @@ Napi::Function WorldSim::GetClassInstance(Napi::Env env) {
 }
 
 WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
+  origin_time_ = std::chrono::high_resolution_clock::now();
   id_max_ = 1;
   Napi::Env env = info.Env();
   Napi::Value chunks = info[0];
@@ -120,19 +121,19 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     CreateChunk(new_chunk);
   }
 
-  ship_new.last_update = std::chrono::high_resolution_clock::now();
+  ship_new.last_update = GetServerTime();
   chunks_.at(new_chunk).InsertShip(ship_new);
 
   // update ships list to match new chunk
   ships_.erase(ship_new.id);
   ships_.insert(std::make_pair(ship_new.id, new_chunk));
   return env.Undefined();
-  // ret.
 }
 
 Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   // update all components
   // figure out which chunks we need to update
+  double delta_cur = GetServerTime();
   Napi::Env env = info.Env();
   Napi::Object obj_ret = Napi::Object::New(env);
   std::unordered_set<Point2D<int>> update_chunks;
@@ -154,7 +155,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       continue;
     }
 
-    chunks_.at(point).UpdateChunk(collate);
+    chunks_.at(point).UpdateChunk(collate, delta_cur);
   }
 
   // collate now contains all of the elements which have been displaced, properly simulated.
@@ -167,6 +168,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       CreateChunk(chunk_coord);
     }
 
+    a.last_update = delta_cur;
     chunks_.at(chunk_coord).InsertAsteroid(a);
   }
 
@@ -177,6 +179,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       CreateChunk(chunk_coord);
     }
 
+    s.last_update = delta_cur;
     chunks_.at(chunk_coord).InsertShip(s);
     // handle ships which have been moved!
     // does not quantify an update yet, so do not adjust ver number
@@ -317,7 +320,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   s.rotation = 0.0f;
   s.rotation_velocity = 0.0f;
   s.ver = 0;
-  s.last_update = std::chrono::high_resolution_clock::now();
+  s.last_update = GetServerTime();
   // create the new ship and give it an id
   // find a random position for it to roam
   // return the new position of this ship
@@ -356,7 +359,7 @@ Napi::Value WorldSim::DeleteShip(const Napi::CallbackInfo& info) {
 
 // private funcs
 void WorldSim::CreateChunk(Point2D<int> chunk_coord) {
-  chunks_.insert(std::make_pair(chunk_coord, Chunk()));
+  chunks_.insert(std::make_pair(chunk_coord, Chunk(GetServerTime())));
 }
 
 void WorldSim::SpawnNewAsteroid(WorldPosition coord) {
@@ -376,7 +379,8 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   ast.position = coord;
   ast.ver = 0;
   ast.id = id_max_++;
-  ast.last_update = std::chrono::high_resolution_clock::now();
+  ast.last_update = GetServerTime();
+
 
   chunk.InsertAsteroid(ast);
 }
@@ -386,6 +390,11 @@ void WorldSim::FixChunkBoundaries(Point2D<int>& chunk) {
     chunk.x -= std::floor(chunk.x / static_cast<double>(chunk_dims_)) * chunk_dims_;
     chunk.y -= std::floor(chunk.y / static_cast<double>(chunk_dims_)) * chunk_dims_;
   }
+}
+
+double WorldSim::GetServerTime() {
+  auto now = std::chrono::high_resolution_clock::now();
+  return std::chrono::duration<double>(now - origin_time_).count();
 }
 
 #ifdef WORLD_EXPORT

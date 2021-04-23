@@ -15,7 +15,7 @@ namespace server {
  */ 
 class Chunk {
  public:
-  Chunk();
+  Chunk(double creation_time);
 
   /**
    *  Inserts some set of elements into this chunk.
@@ -25,8 +25,9 @@ class Chunk {
   /**
    *  Simulates the content of this chunk.
    *  @param resid - accumulates instances which exit this chunk.
+   *  @param server_time - the local server time at which this function is being called.
    */ 
-  void UpdateChunk(ServerPacket& resid);
+  void UpdateChunk(ServerPacket& resid, double server_time);
 
   /**
    *  Fetches the contents of this chunk and appends them to the passed ServerPacket.
@@ -69,7 +70,7 @@ class Chunk {
 
  private:
   // updates the position of an instance, handling wrap around
-  bool UpdateInstance(Instance* inst, std::chrono::time_point<std::chrono::high_resolution_clock>* cur);
+  bool UpdateInstance(Instance* inst, double cur);
 
   std::unordered_map<uint64_t, Ship> ships_;
   std::unordered_map<uint64_t, Asteroid> asteroids_;
@@ -80,8 +81,7 @@ class Chunk {
   // list of all items deleted in the last update
   std::unordered_set<uint64_t> deleted_last_;
 
-  // records time since this chunk was last updated.
-  std::chrono::time_point<std::chrono::high_resolution_clock> last_update;
+  double last_server_time_;
 
   // when getting contents: chunks will append the set of all IDs deleted in the last update
   

@@ -30,6 +30,7 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   Napi::Value UpdateSim(const Napi::CallbackInfo& info);
   Napi::Value AddShip(const Napi::CallbackInfo& info);
   Napi::Value DeleteShip(const Napi::CallbackInfo& info);
+  Napi::Value GetServerTime(const Napi::CallbackInfo& info);
   // Napi::Value GetLocalChunkActivity(const Napi::CallbackInfo& info);
  private:
   // creates and populates a chunk.
@@ -41,6 +42,8 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
 
   // corrects for chunk overflow
   void FixChunkBoundaries(Point2D<int>& chunk);
+
+  double GetServerTime();
 
   // x/y dims of our world
   int chunk_dims_;
@@ -59,6 +62,9 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   std::normal_distribution<> chunk_gen;
   std::uniform_real_distribution<float> coord_gen;
   std::uniform_real_distribution<float> velo_gen;
+
+  // the time point at which the server was created
+  std::chrono::time_point<std::chrono::high_resolution_clock> origin_time_;
 
   // keep it dumb :)
   uint64_t id_max_;

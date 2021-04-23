@@ -6,8 +6,8 @@
 namespace vasteroids {
 namespace server {
 
-Chunk::Chunk() {
-  last_update = std::chrono::high_resolution_clock::now();
+Chunk::Chunk(double creation_time) {
+  last_server_time_ = creation_time;
 };
 
 void Chunk::InsertElements(const ServerPacket& insts) {
@@ -21,10 +21,11 @@ void Chunk::InsertElements(const ServerPacket& insts) {
 
 }
 
-bool Chunk::UpdateInstance(Instance* inst, std::chrono::time_point<std::chrono::high_resolution_clock>* cur) {
-  auto delta_local = std::chrono::duration<float>(*cur - inst->last_update).count();
+bool Chunk::UpdateInstance(Instance* inst, double cur) {
+
+  float delta_local = static_cast<float>(cur - inst->last_update);
   inst->position.position += (inst->velocity * delta_local);
-  inst->last_update = *cur;
+  inst->last_update = cur;
   if (inst->position.position.x >= chunk_size || inst->position.position.y >= chunk_size
    || inst->position.position.x <           0 || inst->position.position.y <           0) {
     // add it to resid
@@ -41,14 +42,15 @@ bool Chunk::UpdateInstance(Instance* inst, std::chrono::time_point<std::chrono::
 
 }
 
-void Chunk::UpdateChunk(ServerPacket& resid) {
-  auto now_update = std::chrono::high_resolution_clock::now();
+void Chunk::UpdateChunk(ServerPacket& resid, double server_time) {
+  double delta = server_time - last_server_time_;
+  last_server_time_ = server_time;
 
   {
     // update asteroids
     auto itr = asteroids_.begin();
     while (itr != asteroids_.end()) {
-      if (!UpdateInstance(&itr->second, &now_update)) {
+      if (!UpdateInstance(&itr->second, server_time)) {
         resid.asteroids.push_back(itr->second);
         itr = asteroids_.erase(itr);
       } else {
@@ -61,7 +63,7 @@ void Chunk::UpdateChunk(ServerPacket& resid) {
     // update ships -- note: we're going to update this for it.
     auto itr = ships_.begin();
     while (itr != ships_.end()) {
-      if (!UpdateInstance(&itr->second, &now_update)) {
+      if (!UpdateInstance(&itr->second, server_time)) {
         resid.ships.push_back(itr->second);
         itr = ships_.erase(itr);
       } else {
@@ -85,12 +87,10 @@ Ship* Chunk::GetShip(uint64_t id) {
 
 void Chunk::InsertShip(Ship& s) {
   // if we're inserting into a chunk, then the object has just been updated.
-  s.last_update = std::chrono::high_resolution_clock::now();
   ships_.insert(std::make_pair(s.id, s));
 }
 
 void Chunk::InsertAsteroid(Asteroid& a) {
-  a.last_update = std::chrono::high_resolution_clock::now();
   asteroids_.insert(std::make_pair(a.id, a));
 }
 

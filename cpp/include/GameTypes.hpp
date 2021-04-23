@@ -128,8 +128,8 @@ namespace vasteroids {
     // tracks number of updates to instance.
     uint32_t ver;
 
-    // time of last update
-    std::chrono::time_point<std::chrono::high_resolution_clock> last_update;
+    // time of last update Wrt server start
+    double last_update;
 
     // def ctor, no init
     Instance() {}

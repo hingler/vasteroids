@@ -11,8 +11,9 @@ using namespace vasteroids;
 using server::Chunk;
 
 void RunTest(const Napi::CallbackInfo& info) {
+  auto origin = std::chrono::high_resolution_clock::now();
   Napi::Env env = info.Env();
-  Chunk c;
+  Chunk c(0.0);
 
   // simple insert test
   Ship s;
@@ -23,6 +24,7 @@ void RunTest(const Napi::CallbackInfo& info) {
   s.rotation = 0.0f;
   s.rotation_velocity = 0.0f;
   s.velocity = { 2.0f, 0.0f };
+  s.last_update = 0.0;
   s.ver = 1;
 
   c.InsertShip(s);
@@ -40,10 +42,9 @@ void RunTest(const Napi::CallbackInfo& info) {
   ASSERT_N(0.0f, s.rotation, 0.000001f, env, "Rotation of ship is non-zero!");
   ASSERT_E(1, s_copy.ver, env, "Ship records a modification!");
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
   sr = server::ServerPacket();
   ASSERT_E(0, sr.ships.size(), env, "Ship size should be 0!");
-  c.UpdateChunk(sr);
+  c.UpdateChunk(sr, 0.5);
   if (sr.ships.size() > 0) {
     std::cout << sr.ships[0].position.position.x << ", " << sr.ships[0].position.position.y << std::endl;
   }
@@ -67,11 +68,11 @@ void RunTest(const Napi::CallbackInfo& info) {
   a.position.chunk = {0, 0};
   a.position.position = {0.5f, 0.5f};
   a.velocity = { -5.0f, -5.0f };
+  a.last_update = 0.5;
   c.InsertAsteroid(a);
 
   sr = server::ServerPacket();
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  c.UpdateChunk(sr);
+  c.UpdateChunk(sr, 1.0);
 
   ASSERT_E(0, sr.ships.size(), env, "Ship size is non zero :(");
   ASSERT_E(1, sr.asteroids.size(), env, "Expected asteroid to be omitted from chunk!");
