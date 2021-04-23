@@ -49,7 +49,6 @@ export function UpdateAndInterpolate(il: Instance, ip: Instance, chunkDims: numb
   il.position.position.x += posDist.x * t;
   il.position.position.y += posDist.y * t;
   fixChunkOffset(il, chunkDims);
-  console.log(posDist);
 
   // do the same for velocity
   let velo = {} as Point2D;
