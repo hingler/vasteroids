@@ -133,7 +133,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   // update all components
   // figure out which chunks we need to update
-  double delta_cur = GetServerTime();
+  double server_time = GetServerTime();
   Napi::Env env = info.Env();
   Napi::Object obj_ret = Napi::Object::New(env);
   std::unordered_set<Point2D<int>> update_chunks;
@@ -155,7 +155,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       continue;
     }
 
-    chunks_.at(point).UpdateChunk(collate, delta_cur);
+    chunks_.at(point).UpdateChunk(collate, server_time);
   }
 
   // collate now contains all of the elements which have been displaced, properly simulated.
@@ -168,7 +168,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       CreateChunk(chunk_coord);
     }
 
-    a.last_update = delta_cur;
+    a.last_update = server_time;
     chunks_.at(chunk_coord).InsertAsteroid(a);
   }
 
@@ -179,7 +179,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       CreateChunk(chunk_coord);
     }
 
-    s.last_update = delta_cur;
+    s.last_update = server_time;
     chunks_.at(chunk_coord).InsertShip(s);
     // handle ships which have been moved!
     // does not quantify an update yet, so do not adjust ver number
