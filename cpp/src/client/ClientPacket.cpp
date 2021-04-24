@@ -18,7 +18,20 @@ ClientPacket::ClientPacket(Napi::Object obj) {
     TYPEERROR(env, "Property 'projectileFired' not found on object");
   }
 
-  projectile_fired = fireObj.As<Napi::Boolean>().Value();
+  Napi::Value proj = obj.Get("projectiles");
+  if (!proj.IsArray()) {
+    TYPEERROR(env, "Property 'projectiles' not found on object");
+  }
+
+  Napi::Array proj_array = proj.As<Napi::Array>();
+  for (uint32_t i = 0; i < proj_array.Length(); i++) {
+    Napi::Value proj = proj_array[i];
+    if (!proj.IsObject()) {
+      TYPEERROR(env, "Contents of projectile array are not projectiles!");
+    }
+
+    projectiles.push_back(Projectile(proj.As<Napi::Object>()));
+  }
 }
 
 }

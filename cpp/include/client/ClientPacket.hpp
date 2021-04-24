@@ -4,17 +4,17 @@
 #include <Ship.hpp>
 #include <GameTypes.hpp>
 
+#include <Projectile.hpp>
+
 namespace vasteroids {
 namespace client {
 
 struct ClientPacket {
   Ship client_ship;
-  bool projectile_fired;
+  std::vector<Projectile> projectiles;
 
   ClientPacket() {}
   ClientPacket(Napi::Object obj);
-
-  Napi::Object ToNodeObject() const;
 };
 
 }
