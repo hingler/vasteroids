@@ -68,13 +68,13 @@ describe("WorldSim", function() {
     // modify ship one
     ship_one.position.chunk = {x: 0, y: 0} as Point2D;
     testClientPacket.ship = ship_one;
-    testClientPacket.projectileFired = false;
+    testClientPacket.projectiles = [];
     let ship_two = worldsim.AddShip("ship2");
     let testTwo = {} as ClientPacket;
     
     ship_two.position.chunk = {x: 0, y: 0} as Point2D;
     testTwo.ship = ship_two;
-    testTwo.projectileFired = false;
+    testTwo.projectiles = [];
 
     console.log("one!");
     console.log(testClientPacket.ship);
@@ -90,7 +90,7 @@ describe("WorldSim", function() {
     // move ship2 to the other side of the earth
     ship_two.position.chunk = {x: 2, y: 2} as Point2D;
     testTwo.ship = ship_two;
-    testTwo.projectileFired = false;
+    testTwo.projectiles = [];
 
     worldsim.HandleClientPacket(testTwo);
     
@@ -102,7 +102,7 @@ describe("WorldSim", function() {
     // move ship1 to ship2
     ship_one.position.chunk = {x: 2, y: 2} as Point2D;
     testClientPacket.ship = ship_one;
-    testClientPacket.projectileFired = false;
+    testClientPacket.projectiles = [];
 
     worldsim.HandleClientPacket(testClientPacket);
 

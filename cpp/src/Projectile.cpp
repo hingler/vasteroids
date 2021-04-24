@@ -12,5 +12,6 @@ namespace vasteroids {
   Napi::Object Projectile::ToNodeObject(Napi::Env env) const {
     Napi::Object res = Instance::ToNodeObject(env);
     res.Set("clientID", Napi::Number::New(env, client_ID));
+    return res;
   }
 }

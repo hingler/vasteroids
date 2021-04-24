@@ -68,6 +68,13 @@ Instance::Instance(Napi::Object obj) {
 
   rotation_velocity = rot_velo.As<Napi::Number>().FloatValue();
 
+  Napi::Value origin_time = obj.Get("last_delta");
+  if (!origin_time.IsNumber()) {
+    TYPEERROR(env, "delta field is missing");
+  }
+
+  last_update = origin_time.As<Napi::Number>().DoubleValue();
+
   Napi::Value id_info = obj.Get("id");
   if (!id_info.IsNumber()) {
     TYPEERROR(env, "id field is missing");

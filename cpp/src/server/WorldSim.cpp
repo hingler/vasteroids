@@ -77,10 +77,6 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 
   ClientPacket packet(packetObj.As<Napi::Object>());
 
-  // note: there's currently no security on ships -- if you know another player's ship ID, you can just snag it.
-  // a solution to this would be to return a tuple which contains a private identifier for each player
-  // when we receive a ClientPacket, we verify that the ID they provide matches the one we have, and then let it pass if so.
-  
   // find old ship record
   auto ship_old = ships_.find(packet.client_ship.id);
   if (ship_old == ships_.end()) {
@@ -109,14 +105,8 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   // differentiate from deletion :(
   c->second.MoveShip(packet.client_ship.id);
 
-  // insert new ship into new chunk
+  CorrectChunk(ship_new);
   Point2D<int> new_chunk = ship_new.position.chunk;
-  if (ship_new.position.chunk.x < 0 || ship_new.position.chunk.x >= chunk_dims_
-  ||  ship_new.position.chunk.y < 0 || ship_new.position.chunk.y >= chunk_dims_) {
-    // scoop it back around back in bounds
-    ship_new.position.chunk.x -= (chunk_dims_ * static_cast<int>(std::floor(ship_new.position.chunk.x / static_cast<double>(chunk_dims_))));
-    ship_new.position.chunk.y -= (chunk_dims_ * static_cast<int>(std::floor(ship_new.position.chunk.y / static_cast<double>(chunk_dims_))));
-  }
 
   if (chunks_.find(new_chunk) == chunks_.end()) {
     CreateChunk(new_chunk);
@@ -128,7 +118,59 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   // update ships list to match new chunk
   ships_.erase(ship_new.id);
   ships_.insert(std::make_pair(ship_new.id, new_chunk));
+
+  for (auto& proj : packet.projectiles) {
+    HandleNewProjectile(packet.client_ship.id, proj);
+  }
+
+  // handle projectiles!
   return env.Undefined();
+}
+
+void WorldSim::CorrectChunk(Instance& inst) {
+  Point2D<int> new_chunk = inst.position.chunk;
+  if (new_chunk.x < 0 || new_chunk.x >= chunk_dims_
+  ||  new_chunk.y < 0 || new_chunk.y >= chunk_dims_) {
+    // scoop it back around back in bounds
+    new_chunk.x -= (chunk_dims_ * static_cast<int>(std::floor(new_chunk.x / static_cast<double>(chunk_dims_))));
+    new_chunk.y -= (chunk_dims_ * static_cast<int>(std::floor(new_chunk.y / static_cast<double>(chunk_dims_))));
+  }
+
+  inst.position.chunk = new_chunk;
+}
+
+
+
+void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
+  // for each projectile
+  // store it in its respective chunk
+  // store a reference to its id in a temporary map
+  // when updating the sim:
+  //  - read from that map
+  //  - for a given ship, if a projectile's ID is in that map:
+  //  - place it in a special "registeredProjectiles" field
+  //  - this field will indicate to the client which of its generated projectiles
+  //    are where according to the server
+  //    and from there our client can let the server take over :)
+  CorrectChunk(proj);
+  // generate a new ID for this projectile
+  proj.id = id_max_++;
+  proj.ship_ID = ship_id;
+  proj.creation_time = GetServerTime_();
+  
+  // inserted when the ship is added
+  // we should have already guaranteed that the ship id is valid :)
+  new_projectiles_.at(ship_id).insert(proj.client_ID);
+  // assumption: it should be impossible for a ship to generate a projectile,
+  // and abandon it in the next update
+
+  // but we can account for this:)
+  Point2D<int> new_chunk = proj.position.chunk;
+  if (chunks_.find(new_chunk) == chunks_.end()) {
+    CreateChunk(new_chunk);
+  }
+
+  chunks_.at(new_chunk).InsertProjectile(proj);
 }
 
 Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
@@ -186,6 +228,18 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     // does not quantify an update yet, so do not adjust ver number
     ships_.erase(s.id);
     ships_.insert(std::make_pair(s.id, chunk_coord));
+  }
+
+  for (auto p : collate.projectiles) {
+    FixChunkBoundaries(p.position.chunk);
+    Point2D<int> chunk_coord = p.position.chunk;
+
+    if (!chunks_.count(chunk_coord)) {
+      CreateChunk(chunk_coord);
+    }
+
+    p.last_update = server_time;
+    chunks_.at(chunk_coord).InsertProjectile(p);
   }
 
   // now, we would check relevant chunks for collisions
@@ -281,6 +335,40 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       }
     }
 
+    // start by grabbing a reference to our thing
+    // for each projectile in the packet:
+    //  - if the projectile is in our set, move it to projectile local and remove it from the set
+    //  - otherwise, leave it in projectiles
+    auto* proj_new = &new_projectiles_.at(id);
+    auto itr_p = res.projectiles.begin();
+    while (itr_p != res.projectiles.end()) {
+      if (proj_new->count(itr_p->client_ID) && itr_p->ship_ID == id) {
+        // does not handle clashing proj ids
+        // we just hit a projectile which is associated with this ship!
+        // handle it, then drop it.
+        res.projectiles_local.push_back(*itr_p);
+        proj_new->erase(itr_p->client_ID);
+        itr_p = res.projectiles.erase(itr_p);
+        continue;
+      }
+      // we have sent this projectile before
+      if (knowns.count(itr_p->id)) {
+        if (knowns.at(itr_p->id) != itr_p->ver) {
+          delta_pkt.id = itr_p->id;
+          delta_pkt.position = itr_p->position;
+          delta_pkt.velocity = itr_p->velocity;
+          delta_pkt.rotation = itr_p->rotation;
+          delta_pkt.rotation_velocity = itr_p->rotation_velocity;
+          delta_pkt.last_update = itr_p->last_update;
+          res.deltas.push_back(std::move(delta_pkt));
+        }
+
+        itr_p = res.projectiles.erase(itr_p);
+      } else {
+        itr_p++;
+      }
+    }
+
     res.server_time = server_time;
 
     known_ids_.erase(id);
@@ -330,6 +418,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   // find a random position for it to roam
   // return the new position of this ship
 
+  new_projectiles_.insert(std::make_pair(s.id, std::unordered_set<uint64_t>()));
   ships_.insert(std::make_pair(s.id, s.position.chunk));
   known_ids_.insert(std::make_pair(s.id, std::unordered_map<uint64_t, uint32_t>()));
   chunks_.at(s.position.chunk).InsertShip(s);

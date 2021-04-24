@@ -57,6 +57,19 @@ export class Renderer {
       this.drawGeometry(player.position, s.position, shipGeom, -s.rotation);
     }
 
+    for (let p of instances.projectiles) {
+      this.drawGeometry(player.position, p.position, [
+        {
+          x: -0.1,
+          y: 0
+        },
+        {
+          x: 0.1,
+          y: 0
+        }
+      ], -p.rotation)
+    }
+
     this.canvas.drawToScreen();
   }
 

@@ -3,6 +3,7 @@
 
 #include <GameTypes.hpp>
 #include <server/Chunk.hpp>
+#include <Projectile.hpp>
 
 #include <napi.h>
 
@@ -33,6 +34,12 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   Napi::Value GetServerTime(const Napi::CallbackInfo& info);
   // Napi::Value GetLocalChunkActivity(const Napi::CallbackInfo& info);
  private:
+  // corrects for instances which go off the world boundary
+  void CorrectChunk(Instance& inst);
+
+  // handles a single projectile (from a clientPacket)
+  void HandleNewProjectile(uint64_t ship_id, Projectile& proj);
+
   // creates and populates a chunk.
   void CreateChunk(Point2D<int> chunk_coord);
   // generates a new asteroid at some worldposition and adds it to the world.
@@ -56,6 +63,9 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
 
   // key: ship ID -> last known ver for each instance
   std::unordered_map<uint64_t, std::unordered_map<uint64_t, uint32_t>> known_ids_;
+
+  // key: ship ID -> newly generated projectiles which we need to report on
+  std::unordered_map<uint64_t, std::unordered_set<uint64_t>> new_projectiles_;
 
   std::mt19937 gen;
 

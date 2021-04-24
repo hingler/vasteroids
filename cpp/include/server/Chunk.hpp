@@ -51,6 +51,11 @@ class Chunk {
   void InsertAsteroid(Asteroid& a);
 
   /**
+   *  Inserts or updates a projectile in this chunk.
+   */ 
+  void InsertProjectile(Projectile& p);
+
+  /**
    *  Removes a ship from a chunk -- does not record the instance as deleted.
    *  @param id - the ID of the ship we wish to move.
    */  
@@ -74,6 +79,7 @@ class Chunk {
 
   std::unordered_map<uint64_t, Ship> ships_;
   std::unordered_map<uint64_t, Asteroid> asteroids_;
+  std::unordered_map<uint64_t, Projectile> projectiles_;
 
   // list of all items deleted since last update
   std::unordered_set<uint64_t> deleted_cur_;

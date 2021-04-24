@@ -15,6 +15,7 @@ export class ShipManager {
   update_intvl: NodeJS.Timeout;
   origin_time: number;
   inputmgr: InputManager;
+  shootState: number;
 
   constructor(ship: ClientShip, serverOrigin: number) {
     this.ship = ship;
@@ -28,6 +29,21 @@ export class ShipManager {
     this.inputmgr = new KeyInputManager();
 
     setUpdateOrigin(serverOrigin);
+  }
+
+  isShoot() : boolean {
+    if (this.inputmgr.getInputState(Input.SHOOT)) {
+      switch(this.shootState) {
+        case 0:
+          this.shootState = 1;
+          return true;
+        case 1:
+          return false;
+      }
+    } else {
+      this.shootState = 0;
+      return false;
+    }
   }
 
   setThrust(accel: number) {

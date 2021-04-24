@@ -4,6 +4,10 @@ import { chunkSize, Instance, Point2D } from "../../../instances/GameTypes";
 // lol
 let startTime: number;
 
+export function getOriginTime() {
+  return startTime;
+}
+
 // server time - performance now
 export function setUpdateOrigin(serverTime: number) {
   startTime = serverTime - performance.now() / 1000;

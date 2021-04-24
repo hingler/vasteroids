@@ -13,11 +13,6 @@ ClientPacket::ClientPacket(Napi::Object obj) {
 
   client_ship = Ship(shipObj.As<Napi::Object>());
 
-  Napi::Value fireObj = obj.Get("projectileFired");
-  if (!fireObj.IsBoolean()) {
-    TYPEERROR(env, "Property 'projectileFired' not found on object");
-  }
-
   Napi::Value proj = obj.Get("projectiles");
   if (!proj.IsArray()) {
     TYPEERROR(env, "Property 'projectiles' not found on object");

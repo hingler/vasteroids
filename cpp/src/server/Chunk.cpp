@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+#define PROJECTILE_LIFESPAN 5.0
+
 namespace vasteroids {
 namespace server {
 
@@ -72,6 +74,26 @@ void Chunk::UpdateChunk(ServerPacket& resid, double server_time) {
     }
   }
 
+  {
+    auto itr = projectiles_.begin();
+    while (itr != projectiles_.end()) {
+      bool exit = UpdateInstance(&itr->second, server_time);
+      if (server_time - itr->second.creation_time > PROJECTILE_LIFESPAN) {
+        std::cout << "deleting projectile " << itr->second.id << "..." << std::endl;
+        // erase the projectile from existence
+        deleted_cur_.insert(itr->second.id);
+        itr = projectiles_.erase(itr);
+      } else {
+        if (!UpdateInstance(&itr->second, server_time)) {
+          resid.projectiles.push_back(itr->second);
+          itr = projectiles_.erase(itr);
+        } else {
+          itr++;
+        }
+      }
+    }
+  }
+
   deleted_last_ = std::move(deleted_cur_);
   deleted_cur_ = std::unordered_set<uint64_t>();
 }
@@ -92,6 +114,10 @@ void Chunk::InsertShip(Ship& s) {
 
 void Chunk::InsertAsteroid(Asteroid& a) {
   asteroids_.insert(std::make_pair(a.id, a));
+}
+
+void Chunk::InsertProjectile(Projectile& p) {
+  projectiles_.insert(std::make_pair(p.id, p));
 }
 
 bool Chunk::MoveShip(uint64_t id) {
@@ -123,6 +149,10 @@ void Chunk::GetContents(ServerPacket& resid) {
 
   for (auto& s : ships_) {
     resid.ships.push_back(s.second);
+  }
+
+  for (auto& p : projectiles_) {
+    resid.projectiles.push_back(p.second);
   }
 
   for (auto& s : deleted_last_) {
