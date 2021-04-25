@@ -51,6 +51,7 @@
         "cpp/src/server/Chunk.cpp",
         "cpp/src/server/ServerPacket.cpp",
         "cpp/src/server/WorldSim.cpp",
+        "cpp/src/server/CollisionWorld.cpp",
         "cpp/src/Ship.cpp",
         "cpp/test/ChunkTest.cpp"
       ],
@@ -78,6 +79,7 @@
         "cpp/src/server/Chunk.cpp",
         "cpp/src/server/ServerPacket.cpp",
         "cpp/src/server/WorldSim.cpp",
+        "cpp/src/server/CollisionWorld.cpp",
         "cpp/src/Ship.cpp"
       ],
       "include_dirs": [

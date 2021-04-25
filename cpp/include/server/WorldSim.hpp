@@ -3,10 +3,12 @@
 
 #include <GameTypes.hpp>
 #include <server/Chunk.hpp>
+#include <server/CollisionWorld.hpp>
 #include <Projectile.hpp>
 
 #include <napi.h>
 
+#include <memory>
 #include <random>
 #include <unordered_map>
 #include <unordered_set>
@@ -51,9 +53,10 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   void FixChunkBoundaries(Point2D<int>& chunk);
 
   double GetServerTime_();
-
   // x/y dims of our world
   int chunk_dims_;
+
+  std::shared_ptr<CollisionWorld> cw_;
 
   // key: chunk coordinate -> chunk and all elements inside it
   std::unordered_map<Point2D<int>, Chunk> chunks_;

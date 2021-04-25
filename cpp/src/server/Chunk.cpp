@@ -24,9 +24,13 @@ void Chunk::InsertElements(const ServerPacket& insts) {
 }
 
 bool Chunk::UpdateInstance(Instance* inst, double cur) {
+  if (hard_update_) {
+    inst->ver++;
+  }
 
   float delta_local = static_cast<float>(cur - inst->last_update);
   inst->position.position += (inst->velocity * delta_local);
+  inst->rotation += (inst->rotation_velocity * delta_local);
   inst->last_update = cur;
   if (inst->position.position.x >= chunk_size || inst->position.position.y >= chunk_size
    || inst->position.position.x <           0 || inst->position.position.y <           0) {
@@ -35,6 +39,7 @@ bool Chunk::UpdateInstance(Instance* inst, double cur) {
     inst->position.chunk.y += static_cast<int>(std::floor(inst->position.position.y / chunk_size));
     inst->position.position.x -= 128.0f * std::floor(inst->position.position.x / chunk_size);
     inst->position.position.y -= 128.0f * std::floor(inst->position.position.y / chunk_size);
+
 
     // don't handle chunk overflow yet
     return false;
@@ -45,7 +50,10 @@ bool Chunk::UpdateInstance(Instance* inst, double cur) {
 }
 
 void Chunk::UpdateChunk(ServerPacket& resid, double server_time) {
-  double delta = server_time - last_server_time_;
+  // TODO: we want to keep components up to date
+  //       ever second or so, increase the ver number so that we send a delta to the client
+
+  hard_update_ = static_cast<int>(server_time) > static_cast<int>(last_server_time_);
   last_server_time_ = server_time;
 
   {
@@ -134,6 +142,11 @@ bool Chunk::RemoveInstance(uint64_t id) {
   }
 
   if (asteroids_.erase(id)) {
+    deleted_cur_.insert(id);
+    return true;
+  }
+
+  if (projectiles_.erase(id)) {
     deleted_cur_.insert(id);
     return true;
   }

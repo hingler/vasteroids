@@ -32,6 +32,9 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
   }
 
   chunk_dims_ = chunks.As<Napi::Number>().Int32Value();
+
+  cw_ = std::make_shared<CollisionWorld>(chunk_dims_);
+
   Napi::Value asteroidsObj = info[1];
   if (!asteroidsObj.IsNumber()) {
     TYPEERROR(env, "Number of asteroids initially spawned not specified.");   
@@ -243,7 +246,42 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   }
 
   // now, we would check relevant chunks for collisions
-  // im gonna skip this for now
+  // poll our chunks again with a server packet
+  ServerPacket simmed;
+  for (auto point : update_chunks) {
+    if (!chunks_.count(point)) {
+      continue;
+    }
+
+    // we need these deleted instances below!
+    chunks_.at(point).GetContents(simmed);
+  }
+
+  cw_->clear();
+
+  for (auto a : simmed.asteroids) {
+    cw_->AddAsteroid(a);
+  }
+
+  for (auto p : simmed.projectiles) {
+    cw_->AddProjectile(p);
+  }
+
+  std::unordered_map<uint64_t, Point2D<int>> deleted;
+  std::vector<std::pair<WorldPosition, float>> collide_pos;
+
+  cw_->ComputeCollisions(deleted, collide_pos);
+  // delete instances from relevant chunks
+  // add asteroids to relevant chunks
+  for (auto& del : deleted) {
+    // should be valid -- if inst moved to new chunk, we would have created it in prev step
+    chunks_.at(del.second).RemoveInstance(del.first);
+  }
+
+  for (auto& pos : collide_pos) {
+    SpawnNewAsteroid(pos.first, pos.second, 12);
+    SpawnNewAsteroid(pos.first, pos.second, 12);
+  }
 
   // lastly, we need to figure out which entities to expose to which instances
   
@@ -289,6 +327,13 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     // res now contains all nearby objects -- trim it down based on `knowns`
     auto itr_a = res.asteroids.begin();
     while (itr_a != res.asteroids.end()) {
+      if (deleted.count(itr_a->id)) {
+        // delete immediately!
+        res.deleted.insert(itr_a->id);
+        itr_a = res.asteroids.erase(itr_a);
+        continue;
+      }
+
       knowns_new.insert(std::make_pair(itr_a->id, itr_a->ver));
       if (knowns.count(itr_a->id)) {
         // known
@@ -342,6 +387,12 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     auto* proj_new = &new_projectiles_.at(id);
     auto itr_p = res.projectiles.begin();
     while (itr_p != res.projectiles.end()) {
+      if (deleted.count(itr_p->id)) {
+        // delete immediately!
+        res.deleted.insert(itr_p->id);
+        itr_p = res.projectiles.erase(itr_p);
+        continue;
+      }
       if (proj_new->count(itr_p->client_ID) && itr_p->ship_ID == id) {
         // does not handle clashing proj ids
         // we just hit a projectile which is associated with this ship!
@@ -468,7 +519,7 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   auto& chunk = chunks_.at(coord.chunk);
   auto ast = GenerateAsteroid(radius, points);
   // random velocity
-  ast.velocity = { (coord_gen(gen) - 64.0f) / 16.0f, (coord_gen(gen) - 64.0f) / 16.0f };
+  ast.velocity = { (coord_gen(gen) - 64.0f) / 32.0f, (coord_gen(gen) - 64.0f) / 32.0f };
   ast.rotation_velocity = (coord_gen(gen) - 64.0f) / 32.0f;
   ast.position = coord;
   ast.ver = 0;

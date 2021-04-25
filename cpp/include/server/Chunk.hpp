@@ -88,6 +88,8 @@ class Chunk {
   std::unordered_set<uint64_t> deleted_last_;
 
   double last_server_time_;
+  // set to true when we want to update
+  bool hard_update_;
 
   // when getting contents: chunks will append the set of all IDs deleted in the last update
   

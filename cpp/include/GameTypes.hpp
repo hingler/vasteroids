@@ -5,7 +5,11 @@
 #include <chrono>
 #include <iostream>
 
-#define TYPEERROR(env, x) Napi::TypeError::New(env, x).ThrowAsJavaScriptException()
+#define TYPEERROR(env, x) {\
+  std::cout << x << std::endl;\
+  Napi::TypeError::New(env, x).ThrowAsJavaScriptException();\
+}
+
 
 namespace vasteroids {
 

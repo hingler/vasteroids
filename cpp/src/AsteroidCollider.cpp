@@ -52,14 +52,11 @@ static bool Collide(const Asteroid& asteroid, const Point2D<float>& pt, int chun
   for (size_t i = 0; i < asteroid.geometry.size(); i++) {
     delta = asteroid.geometry[i] - pt;
     delta_theta = atan2(delta.y, delta.x) - theta_last;
-    // std::cout << "delta before: " << delta_theta << " -- ";
     if (delta_theta > PI) {
       delta_theta = delta_theta - (2 * PI);
     } else if (delta_theta < -PI) {
       delta_theta = (2 * PI) + delta_theta;
     }
-
-    // std::cout << "delta after: " << delta_theta << std::endl;
 
     wind_distance += delta_theta;
     theta_last = atan2(delta.y, delta.x);
