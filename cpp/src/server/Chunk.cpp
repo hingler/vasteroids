@@ -79,12 +79,11 @@ void Chunk::UpdateChunk(ServerPacket& resid, double server_time) {
     while (itr != projectiles_.end()) {
       bool exit = UpdateInstance(&itr->second, server_time);
       if (server_time - itr->second.creation_time > PROJECTILE_LIFESPAN) {
-        std::cout << "deleting projectile " << itr->second.id << "..." << std::endl;
         // erase the projectile from existence
         deleted_cur_.insert(itr->second.id);
         itr = projectiles_.erase(itr);
       } else {
-        if (!UpdateInstance(&itr->second, server_time)) {
+        if (!exit) {
           resid.projectiles.push_back(itr->second);
           itr = projectiles_.erase(itr);
         } else {
