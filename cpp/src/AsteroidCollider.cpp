@@ -7,9 +7,9 @@
 
 namespace vasteroids {
 
+static bool Collide(const Asteroid& asteroid, const Point2D<float>& point);
+
 bool Collide(const Asteroid& asteroid, const WorldPosition& point) {
-  float wind_distance = 0.0f;
-  float theta_last, delta_theta;
   // perform a test to see if the point and the asteroid are in neighboring chunks
   // then extract point and use point rel
   Point2D<int> dist = point.chunk - asteroid.position.chunk;
@@ -29,10 +29,16 @@ bool Collide(const Asteroid& asteroid, const WorldPosition& point) {
   float rot_sin = sin(-asteroid.rotation);
   point_rel = { (point_rel.x * rot_cos) + (point_rel.y * rot_sin),
                 (point_rel.x * -rot_sin) + (point_rel.y * rot_cos) };
-  Point2D<float> delta = asteroid.geometry[asteroid.geometry.size() - 1] - point_rel;
+  return Collide(asteroid, point_rel);
+}
+
+static bool Collide(const Asteroid& asteroid, const Point2D<float>& pt) {
+  float wind_distance = 0.0f;
+  float theta_last, delta_theta;
+  Point2D<float> delta = asteroid.geometry[asteroid.geometry.size() - 1] - pt;
   theta_last = atan2(delta.y, delta.x);
   for (size_t i = 0; i < asteroid.geometry.size(); i++) {
-    delta = asteroid.geometry[i] - point_rel;
+    delta = asteroid.geometry[i] - pt;
     delta_theta = atan2(delta.y, delta.x) - theta_last;
     // std::cout << "delta before: " << delta_theta << " -- ";
     if (delta_theta > PI) {
@@ -49,6 +55,40 @@ bool Collide(const Asteroid& asteroid, const WorldPosition& point) {
 
   if (wind_distance > PI || wind_distance < -PI) {
     return true;
+  }
+
+  return false;
+}
+
+bool Collide(const Asteroid& asteroid, const WorldPosition& line_start, const WorldPosition& line_end, int steps) {
+  Point2D<float> asteroidPos = asteroid.position.position;
+  Point2D<float> lineStartPos = line_start.position;
+  lineStartPos += Point2D<float>( chunk_size * (line_start.chunk.x - asteroid.position.chunk.x),
+                                  chunk_size * (line_start.chunk.y - asteroid.position.chunk.y));
+  Point2D<float> lineEndPos = line_end.position;
+  lineEndPos   += Point2D<float>( chunk_size * (line_end.chunk.x   - asteroid.position.chunk.x),
+                                  chunk_size * (line_end.chunk.y   - asteroid.position.chunk.y));
+
+  float rot_sin = sin(-asteroid.rotation);
+  float rot_cos = cos(-asteroid.rotation);
+
+  lineStartPos = {
+    (lineStartPos.x * rot_cos) + (lineStartPos.y * rot_sin),
+    (lineStartPos.x * -rot_sin) + (lineStartPos.y * rot_cos)
+  };
+
+  lineEndPos = {
+    (lineEndPos.x * rot_cos) + (lineEndPos.y * rot_sin),
+    (lineEndPos.x * -rot_sin) + (lineEndPos.y * rot_cos)
+  };
+
+  Point2D<float> lineDelta = (lineEndPos - lineStartPos) * (1.0f / steps);
+  for (int i = 0; i <= steps; i++) {
+    if (Collide(asteroid, lineStartPos)) {
+      return true;
+    }
+
+    lineStartPos += lineDelta;
   }
 
   return false;
