@@ -97,8 +97,8 @@ export class ShipManager {
     
     let damp = { x: -v_z.x / 0.4, y: -v_z.y / 0.4 };
     // account for delta
-    damp.x *= delta;
-    damp.y *= delta;
+    damp.x *= Math.min(delta, 0.4);
+    damp.y *= Math.min(delta, 0.4);
     
     // handle rotation
     // default direction: head right!
@@ -121,7 +121,7 @@ export class ShipManager {
 
     let rot = this.ship.rotation_velocity;
     let rot_damp = -rot / 0.4;
-    rot_damp *= delta;
+    rot_damp *= Math.min(delta, 0.4);
 
     // push new rotation velocity
     this.ship.rotation_velocity += delta_r;
