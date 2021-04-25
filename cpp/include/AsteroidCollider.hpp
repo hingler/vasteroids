@@ -13,7 +13,7 @@ namespace vasteroids {
  *  @param point - the point particle itself.
  *  @returns true if a collision occurs -- false otherwise.
  */
-bool Collide(const Asteroid& asteroid, const WorldPosition& point);
+bool Collide(const Asteroid& asteroid, const WorldPosition& point, int chunk_dims);
 
 /**
  *  Determines whether a line which some point particle passes through intersects an asteroid.
@@ -22,7 +22,7 @@ bool Collide(const Asteroid& asteroid, const WorldPosition& point);
  *  @param line_end - the end of the line.
  *  @returns true if a collision occurs -- false otherwise.
  */ 
-bool Collide(const Asteroid& asteroid, const WorldPosition& line_start, const WorldPosition& line_end);
+bool Collide(const Asteroid& asteroid, const WorldPosition& line_start, const WorldPosition& line_end, int steps, int chunk_dims);
 
 // for much later: write in asteroid/asteroid collisions?
 
