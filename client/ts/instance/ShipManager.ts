@@ -134,9 +134,5 @@ export class ShipManager {
     // push new rotation velocity
     this.ship.rotation_velocity += delta_r;
     this.ship.rotation_velocity += rot_damp;
-
-    // temp
-    document.getElementById("ship").textContent = `pos: ${this.ship.position.position.x}, ${this.ship.position.position.y}
-    velo: ${this.ship.velocity.x}, ${this.ship.velocity.y}`
   }
 }

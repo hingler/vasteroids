@@ -72,8 +72,18 @@ export class Renderer {
       shipPos.x += 24;
       shipPos.y += 24;
 
-      this.canvas.addText(shipPos.x, shipPos.y, s.name, 2, [8, 8]);
+      this.canvas.addText(shipPos.x, shipPos.y, s.name + `: ${s.score}`, 2, [8, 8]);
     }
+
+    let score = player.score.toString();
+    let len = score.length;
+    this.canvas.addText(screen.x - 40 - (len * 30), screen.y - 60, score, 2, [24, 24]);
+
+    let chunk = `chunk: ${player.position.chunk.x}, ${player.position.chunk.y}`;
+    let position = `pos: ${player.position.position.x.toFixed(2)}, ${player.position.position.y.toFixed(2)}`;
+
+    this.canvas.addText(16, 16, chunk, 2, [12, 12]);
+    this.canvas.addText(16, 46, position, 2, [12, 12]);
 
     for (let p of instances.projectiles) {
       this.drawGeometry(player.position, p.position, [

@@ -431,24 +431,25 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     while (itr_s != res.ships.end()) {
       if (itr_s->id == id) {
         itr_s = res.ships.erase(itr_s);
-        continue;
-      }
-      knowns_new.insert(std::make_pair(itr_s->id, itr_s->ver));
-      if (knowns.count(itr_s->id)) {
-        if (knowns.at(itr_s->id) != itr_s->ver) {
-          delta_pkt.id = itr_s->id;
-          delta_pkt.position = itr_s->position;
-          delta_pkt.velocity = itr_s->velocity;
-          delta_pkt.rotation = itr_s->rotation;
-          delta_pkt.rotation_velocity = itr_s->rotation_velocity;
-          delta_pkt.last_update = itr_s->last_update;
-          res.deltas.push_back(std::move(delta_pkt));
-        }
-
-        itr_s = res.ships.erase(itr_s);
       } else {
         itr_s++;
       }
+      // knowns_new.insert(std::make_pair(itr_s->id, itr_s->ver));
+      // if (knowns.count(itr_s->id)) {
+      //   if (knowns.at(itr_s->id) != itr_s->ver) {
+      //     delta_pkt.id = itr_s->id;
+      //     delta_pkt.position = itr_s->position;
+      //     delta_pkt.velocity = itr_s->velocity;
+      //     delta_pkt.rotation = itr_s->rotation;
+      //     delta_pkt.rotation_velocity = itr_s->rotation_velocity;
+      //     delta_pkt.last_update = itr_s->last_update;
+      //     res.deltas.push_back(std::move(delta_pkt));
+      //   }
+
+      //   itr_s = res.ships.erase(itr_s);
+      // } else {
+      //   itr_s++;
+      // }
     }
 
 

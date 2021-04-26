@@ -150,7 +150,7 @@ export class GameStateManager {
 
   private socketUpdate_(event: MessageEvent) {
     let packet = JSON.parse(event.data) as ServerPacket;
-    console.log(packet.score);
+    this.ship.ship.score = packet.score;
     // store local objects
     for (let a of packet.asteroids) {
       // if already stored, replaces it
@@ -206,6 +206,7 @@ export class GameStateManager {
         shDelta.rotation = d.rotation;
         shDelta.velocity = d.velocity;
         shDelta.rotation_velocity = d.rotation_velocity;
+        // score info doesn't send here
         this.shipsPacket.set(shDelta.id, shDelta);
         continue;
       }
