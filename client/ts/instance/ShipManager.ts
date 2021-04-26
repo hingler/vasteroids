@@ -16,6 +16,7 @@ export class ShipManager {
   origin_time: number;
   inputmgr: InputManager;
   shootState: number;
+  lastShot: number;
 
   constructor(ship: ClientShip, serverOrigin: number) {
     this.ship = ship;
@@ -27,6 +28,7 @@ export class ShipManager {
     this.accel = 0;
     this.accel_rot = 0;
     this.inputmgr = new KeyInputManager();
+    this.lastShot = performance.now() / 1000;
 
     setUpdateOrigin(serverOrigin);
   }
@@ -35,8 +37,12 @@ export class ShipManager {
     if (this.inputmgr.getInputState(Input.SHOOT)) {
       switch(this.shootState) {
         case 0:
-          this.shootState = 1;
-          return true;
+          if ((performance.now() / 1000) - this.lastShot > 0.05) {
+            this.lastShot = performance.now() / 1000;
+            this.shootState = 1;
+            return true;
+          }
+
         case 1:
           return false;
       }
@@ -44,6 +50,8 @@ export class ShipManager {
       this.shootState = 0;
       return false;
     }
+
+    
   }
 
   setThrust(accel: number) {
