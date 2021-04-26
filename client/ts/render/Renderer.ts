@@ -32,16 +32,30 @@ const shipGeom = [
  */
 export class Renderer {
   public widthScale: number;
+  public widthScaleBase: number;
   private canvas: VectorCanvas;
   private dims: number;
 
   constructor(widthScale: number, canvas: VectorCanvas, dims: number) {
-    this.widthScale = widthScale;
+    this.widthScaleBase = widthScale;
     this.canvas = canvas;
     this.dims = dims;
   }
 
   drawInstances(player: ClientShip, instances: ServerPacket) {
+    let screen = {
+      x: this.canvas.getWidth(),
+      y: this.canvas.getHeight()
+    };
+
+    let ratio = screen.x / screen.y;
+    if (ratio > 1) {
+      this.widthScale = this.widthScaleBase * ratio;
+    } else {
+      this.widthScale = this.widthScaleBase;
+    }
+
+
     this.drawGrid(player.position, 0.5, 0.5, [0.1, 0.1, 0.1, 1.0]);
     this.drawGrid(player.position, 1.0, 1.0, [0.2, 0.2, 0.2, 1.0]);
 
