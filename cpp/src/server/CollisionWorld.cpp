@@ -55,8 +55,10 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
 
       Asteroid& ast = asteroids_.at(id);
       bool collide = false;
-      for (int i = 0; i < 5; i++) {
-        // collide at +0, +10, +20, +30, +40
+      // handle lookback -- back 20ms, forward 20ms
+      proj.second.position.position += ((proj.second.velocity) * -0.03f);
+      for (int i = 0; i < 7; i++) {
+        // collide at 0, +/-10, +/-20, +/-30
         // if any of those hit, register a hit.
         // we never re-sample asteroid chunks, so there may be something in a proximal chunk which we don't hit.
         // nbd right now :)
