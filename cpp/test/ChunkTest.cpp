@@ -11,7 +11,6 @@ using namespace vasteroids;
 using server::Chunk;
 
 void RunTest(const Napi::CallbackInfo& info) {
-  auto origin = std::chrono::high_resolution_clock::now();
   Napi::Env env = info.Env();
   Chunk c(0.0);
 

@@ -70,7 +70,6 @@ static bool Collide(const Asteroid& asteroid, const Point2D<float>& pt, int chun
 }
 
 bool Collide(const Asteroid& asteroid, const WorldPosition& line_start, const WorldPosition& line_end, int steps, int chunk_dims) {
-  Point2D<float> asteroidPos = asteroid.position.position;
   Point2D<float> lineStartPos = line_start.position;
   lineStartPos += Point2D<float>( chunk_size * (line_start.chunk.x - asteroid.position.chunk.x),
                                   chunk_size * (line_start.chunk.y - asteroid.position.chunk.y));
