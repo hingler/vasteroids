@@ -68,6 +68,11 @@ export class Renderer {
 
     for (let s of instances.ships) {
       this.drawGeometry(player.position, s.position, shipGeom, -s.rotation);
+      let shipPos = this.toScreenPosition(player.position, s.position);
+      shipPos.x += 24;
+      shipPos.y += 24;
+
+      this.canvas.addText(shipPos.x, shipPos.y, s.name, 2, [8, 8]);
     }
 
     for (let p of instances.projectiles) {
@@ -122,9 +127,7 @@ export class Renderer {
     }
   }
 
-  // draws geom onto screen rel. to center point
-  private drawGeometry(center: WorldPosition, pos: WorldPosition, geom: Array<Point2D>, rot: number) {
-    // find pos relative to center based on widthscale
+  toScreenPosition(center: WorldPosition, pos: WorldPosition) : Point2D {
     let widthStep = this.canvas.getWidth() / this.widthScale;
 
     let screenCenter = {
@@ -171,6 +174,15 @@ export class Renderer {
       x: screenCenter.x + posDelta.x * widthStep,
       y: screenCenter.y + posDelta.y * widthStep
     };
+
+    return posScreen;
+  }
+
+  // draws geom onto screen rel. to center point
+  private drawGeometry(center: WorldPosition, pos: WorldPosition, geom: Array<Point2D>, rot: number) {
+    // find pos relative to center based on widthscale
+    let widthStep = this.canvas.getWidth() / this.widthScale;
+    let posScreen = this.toScreenPosition(center, pos);
 
     let geomRot : Array<Point2D> = [];
 

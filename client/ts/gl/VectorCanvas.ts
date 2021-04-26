@@ -1,4 +1,5 @@
 import { Point2D } from "../../../instances/GameTypes";
+import { letters } from "../render/letters";
 import { VectorDraw } from "./material/VectorDraw";
 import { VectorMesh2D } from "./VectorMesh2D";
 
@@ -29,12 +30,42 @@ export class VectorCanvas {
   }
 
   getWidth() {
+    this.canvas.width = this.canvas.clientWidth;
+    this.canvas.height = this.canvas.clientHeight;
     return this.canvas.width;
   }
 
   getHeight() {
+    this.canvas.width = this.canvas.clientWidth;
+    this.canvas.height = this.canvas.clientHeight;
     return this.canvas.height;
   }
+
+  addText(startX: number, startY: number, text: string, stroke: number, size: [number, number]) {
+    // multiply text size by scale
+    let originX = startX;
+    text = text.toLowerCase();
+    for (let char of text) {
+      if (!letters.hasOwnProperty(char)) {
+        continue;
+      }
+
+      let coords = letters[char];
+      for (let line of coords) {
+        this.addLine(originX + line[0] * size[0], startY + (2.0 - line[1]) * size[1],
+                     originX + line[2] * size[0], startY + (2.0 - line[3]) * size[1],
+                     stroke);
+      }
+
+      originX += (1.25 * size[0] + stroke);
+    }
+  }
+
+  // private arrayToLine(coords: Array<Array<number>>) {
+  //   for (let arr of coords) {
+  //     this.addLine(arr[0], arr[1], arr[2], arr[3], 2);
+  //   }
+  // }
 
   /**
    * Draws a line onto the screen.

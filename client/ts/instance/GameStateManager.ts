@@ -88,6 +88,10 @@ export class GameStateManager {
     return this.ship.getShip();
   }
 
+  setDims(dims: number) : void {
+    this.dims = dims;
+  }
+
   getDims() : number {
     return this.dims;
   }

@@ -1,14 +1,59 @@
+import { request } from "express";
 import { VectorCanvas } from "./gl/VectorCanvas";
 import { GameStateManager } from "./instance/GameStateManager";
+import { letters } from "./render/letters";
 import { Renderer } from "./render/Renderer";
 
 (function() {
 
+  let name: string = "";
+  let c: VectorCanvas;
+
   window.addEventListener("load", main);
 
   function main() {
+    c = new VectorCanvas(document.getElementById("game-window") as HTMLCanvasElement);
+    c.waitUntilCompiled().then(() => {
+      addEventListener("keydown", keyListener);
+      addEventListener("resize", nameFunc);
+      requestAnimationFrame(nameFunc);
+    })
+  }
+
+  function keyListener(e: KeyboardEvent) {
+    let key = e.key.toLowerCase();
+    if (letters.hasOwnProperty(key) && name.length < 32) {
+      name = name + key;
+    } else if (key === "backspace") {
+      name = name.substr(0, name.length - 1);
+    } else if (key === "enter") {
+      startGame();
+      return;
+    }
+
+    requestAnimationFrame(nameFunc);
+  }
+
+  function nameFunc() {
+    let w = c.getWidth();
+    let h = c.getHeight();
+
+    c.clearCanvas();
+    c.addLine(120, h / 2, w - 120, h / 2, 3);
+    c.addText(120, h / 2 + 8, "enter name", 2, [8, 8]);
+    c.addText(120, h / 2 - 40, name, 2, [16, 16]);
+    c.drawToScreen();
+  }
+
+  function startGame() {
+    if (name === "") {
+      name = "dickmuncher";
+    }
+
+    removeEventListener("keydown", keyListener);
+    removeEventListener("resize", nameFunc);
     let c = new VectorCanvas(document.getElementById("game-window") as HTMLCanvasElement);
-    let w = new GameStateManager("dickmuncher");
+    let w = new GameStateManager(name);
     c.waitUntilCompiled()
       .then(async () => { await w.waitUntilConnected(); })
       .then(() => {
