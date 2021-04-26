@@ -123,7 +123,7 @@ export class GameStateManager {
     this.ship = new ShipManager(packet.ship, packet.serverTime);
     this.socket.onmessage = this.socketUpdate_.bind(this);
     // ~33.33 updates per second
-    this.socketUpdate = setInterval(this.socketSend_.bind(this), 30);
+    this.socketUpdate = setInterval(this.socketSend_.bind(this), 50);
     this.connectResolve();
     // call update manually as part of delta?
     // that would probably be better actually
@@ -149,6 +149,7 @@ export class GameStateManager {
   }
 
   private socketUpdate_(event: MessageEvent) {
+    let a = performance.now();
     let packet = JSON.parse(event.data) as ServerPacket;
     // store local objects
     for (let a of packet.asteroids) {
@@ -238,10 +239,11 @@ export class GameStateManager {
     }
 
     for (let del of packet.deletedLocal) {
-      console.log(del);
       this.projectilesLocal.delete(del);
       this.projectilesHot.delete(del);
     }
+
+    console.log(performance.now() - a);
   }
 
   private generateProjectile_(ship: ClientShip) {

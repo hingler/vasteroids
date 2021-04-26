@@ -5,8 +5,6 @@ import { ServerPacket } from "./ServerPacket";
 import { ConnectionPacket } from "./ConnectionPacket";
 import { ClientPacket } from "./ClientPacket";
 import { BiMap } from "./BiMap";
-
-import { performance } from "node:perf_hooks";
 import now = require("performance-now");
 
 class SocketManager {
@@ -30,7 +28,7 @@ class SocketManager {
     this.sockets = new BiMap();
     this.timeouts = new Map();
     // start some regular update event
-    this.update = setInterval(this.handleUpdates.bind(this), 30);
+    this.update = setInterval(this.handleUpdates.bind(this), 50);
   }
 
   async addSocket(socket: WebSocket, name: string) : Promise<void> {
@@ -57,6 +55,7 @@ class SocketManager {
 
   private socketOnMessage_(socket: WebSocket, message: any) {
     // get packet
+    let a = now();
     let packet = JSON.parse(message) as ClientPacket;
     // match packet to socket id
     let id = this.sockets.getEntryT(socket);
@@ -93,6 +92,7 @@ class SocketManager {
     this.timeouts.set(socket, timeout);
 
     this.game.HandleClientPacket(packet);
+    console.log(now() - a);
   }
 
   private timeoutFunc_(socket: WebSocket) {
