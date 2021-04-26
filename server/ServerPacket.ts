@@ -10,6 +10,7 @@ interface ServerPacket {
   projectiles: Array<Projectile>,
   projectilesLocal: Array<Projectile>,
   deleted: Array<number>,
+  deletedLocal: Array<number>,
 
   // seconds since server creation
   serverTime: number

@@ -148,6 +148,8 @@ bool Chunk::RemoveInstance(uint64_t id) {
 
   if (projectiles_.erase(id)) {
     deleted_cur_.insert(id);
+    // handle local deletion
+
     return true;
   }
 

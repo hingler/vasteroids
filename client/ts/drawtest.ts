@@ -12,7 +12,7 @@ import { Renderer } from "./render/Renderer";
     c.waitUntilCompiled()
       .then(async () => { await w.waitUntilConnected(); })
       .then(() => {
-        let g = new Renderer(8, c, w.getDims());
+        let g = new Renderer(12, c, w.getDims());
         requestAnimationFrame(() => { f(c, w, g) })
       });
 

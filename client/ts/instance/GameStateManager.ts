@@ -229,6 +229,14 @@ export class GameStateManager {
       this.asteroidsPacket.delete(del);
       this.shipsPacket.delete(del);
       this.projectilesPacket.delete(del);
+
+      // send client ID of deleted particles to client
+    }
+
+    for (let del of packet.deletedLocal) {
+      console.log(del);
+      this.projectilesLocal.delete(del);
+      this.projectilesHot.delete(del);
     }
   }
 

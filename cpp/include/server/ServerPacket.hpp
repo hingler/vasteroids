@@ -29,6 +29,9 @@ struct ServerPacket {
 
   std::unordered_set<uint64_t> deleted;
 
+  // entities local to the client which were deleted
+  std::unordered_set<uint64_t> deleted_local;
+
   // time since server creation
   double server_time;
 

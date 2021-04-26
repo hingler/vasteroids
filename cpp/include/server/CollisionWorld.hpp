@@ -37,8 +37,9 @@ class CollisionWorld {
    *  Handles collisions in game, destroying asteroids which are hit.
    *  @param deleted_insts - an output parameter for the IDs which are deleted -- id -> chunk
    *  @param new_asteroids - if a destroyed asteroid can spawn two more, this maps from its position to its radius.
+   *  @returns mapping from ships to their locally destroyed projectiles.
    */ 
-  void ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>>& deleted_insts, std::vector<std::pair<WorldPosition, float>>& deleted_asteroids);
+  std::unordered_map<uint64_t, std::unordered_set<uint32_t>> ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>>& deleted_insts, std::vector<std::pair<WorldPosition, float>>& deleted_asteroids);
  
   /**
    *  Resets the contents of this collisionworld :sade:

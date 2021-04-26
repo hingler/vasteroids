@@ -32,10 +32,11 @@ void CollisionWorld::AddProjectile(const Projectile& p) {
   projectiles_.insert(std::make_pair(p.id, p));
 }
 
-void CollisionWorld::ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>>& deleted_insts, std::vector<std::pair<WorldPosition, float>>& deleted_asteroids) {
+std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>>& deleted_insts, std::vector<std::pair<WorldPosition, float>>& deleted_asteroids) {
   // for each projectile:
   // see if its chunk has asteroids
   // test it against each asteroid, breaking if it gets a hit
+  std::unordered_map<uint64_t, std::unordered_set<uint32_t>> res;
   Point2D<int> chunk;
   for (auto& proj : projectiles_) {
     chunk.x = static_cast<int>(proj.second.position.chunk.x * chunk_size + proj.second.position.position.x);
@@ -55,9 +56,17 @@ void CollisionWorld::ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>
       Asteroid& ast = asteroids_.at(id);
       if (Collide(ast, proj.second.position, chunk_count_)) {
         // add the hit asteroid to our deleted IDs
+        std::cout << "hello!" << std::endl;
         deleted_insts.insert(std::make_pair(ast.id, ast.position.chunk));
         // add the projectile to our deleted IDs as well
         deleted_insts.insert(std::make_pair(proj.second.id, proj.second.position.chunk));
+        uint64_t ship_id = proj.second.ship_ID;
+        if (!res.count(ship_id)) {
+          res.insert(std::make_pair(ship_id, std::unordered_set<uint32_t>()));
+        }
+
+        std::cout << ship_id << std::endl;
+        res.at(ship_id).insert(proj.second.client_ID);
         //  - get radius as max (radius) of all points in the asteroid
         float radius = GetAsteroidRadius(ast);
         radius *= 0.707f;
@@ -68,7 +77,9 @@ void CollisionWorld::ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>
       }
     }
   }
+  return res;
 }
+
 
 void CollisionWorld::clear() {
   asteroid_chunks_.clear();

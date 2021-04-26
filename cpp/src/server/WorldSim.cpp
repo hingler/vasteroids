@@ -270,11 +270,12 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   std::unordered_map<uint64_t, Point2D<int>> deleted;
   std::vector<std::pair<WorldPosition, float>> collide_pos;
 
-  cw_->ComputeCollisions(deleted, collide_pos);
+  auto client_map = cw_->ComputeCollisions(deleted, collide_pos);
   // delete instances from relevant chunks
   // add asteroids to relevant chunks
   for (auto& del : deleted) {
     // should be valid -- if inst moved to new chunk, we would have created it in prev step
+    // projectiles are deleted by the time they get here
     chunks_.at(del.second).RemoveInstance(del.first);
   }
 
@@ -388,8 +389,15 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     auto itr_p = res.projectiles.begin();
     while (itr_p != res.projectiles.end()) {
       if (deleted.count(itr_p->id)) {
-        // delete immediately!
+        // odd workaround
+        // if a projectile collides on first tick, it is erased and the client doesn't notice
+        // we do this deleted check since our server sometimes can't keep up
+        // but if we skip it on the first tick, the projectile will exist for one additional tick
+        // and then be deleted -- this will give the client enough time to confirm its deletion
         res.deleted.insert(itr_p->id);
+        if (proj_new->count(itr_p->client_ID) && itr_p->ship_ID == id) {
+          res.deleted_local.insert(itr_p->client_ID);
+        }
         itr_p = res.projectiles.erase(itr_p);
         continue;
       }
@@ -421,6 +429,12 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     }
 
     res.server_time = server_time;
+    if (client_map.count(id)) {
+      for (auto& pr : client_map.at(id)) {
+        std::cout << pr << std::endl;
+        res.deleted_local.insert(pr);
+      }
+    }
 
     known_ids_.erase(id);
     known_ids_.insert(std::make_pair(id, std::move(knowns_new)));
@@ -557,7 +571,6 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
 NODE_API_MODULE(worldsim, Init);
 
 #endif
-
 
 }
 }
