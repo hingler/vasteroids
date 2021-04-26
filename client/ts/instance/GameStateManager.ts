@@ -266,7 +266,7 @@ export class GameStateManager {
       this.ship.update(this.dims);
 
       // poll input, see if we need to generate a projectile
-      if (this.ship.isShoot()) {
+      if (this.ship.inputmgr.getInputState(Input.SHOOT)) {
         this.generateProjectile_(this.ship.getShip());
       }
 
