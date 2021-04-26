@@ -28,6 +28,11 @@ wss.on("connection", (ws, req) => {
   socketStorage.add(ws);
 });
 
+app.get("/heroku", (req, res) => {
+  res.header("Content-type", "text/plain");
+  res.send("OK");
+})
+
 express.static.mime.define({
   'text/javascript': ['js'],
   'text/plain': ['glsl', 'frag', 'vert']

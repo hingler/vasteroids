@@ -20,6 +20,11 @@ import { Renderer } from "./render/Renderer";
     // use some new component to monitor w
     // update w once per frame, and draw
     // then wait for next frame
+
+    setInterval(() => {
+      fetch(window.location.protocol + "//" + window.location.host + "/heroku")
+        .then(() => console.log("pinged host :)"));
+    }, 15000);
   }
 
   function f(c: VectorCanvas, w: GameStateManager, g: Renderer) {
