@@ -49,7 +49,7 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
   std::random_device dev;
   gen = std::mt19937(dev());
   chunk_gen = std::normal_distribution<>(chunk_dims_ / 2.0, chunk_dims_ / 4.0);
-  coord_gen = std::uniform_real_distribution<float>(0.0f, 128.0f);
+  coord_gen = std::uniform_real_distribution<float>(0.0f, chunk_size);
   velo_gen = std::uniform_real_distribution<float>(-3.0, 3.0);
 
   WorldPosition temp;
@@ -160,6 +160,8 @@ void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
   proj.id = id_max_++;
   proj.ship_ID = ship_id;
   proj.creation_time = GetServerTime_();
+  // fudge a bit to ensure we don't send too much at once
+  proj.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
   
   // inserted when the ship is added
   // we should have already guaranteed that the ship id is valid :)
@@ -478,6 +480,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   s.rotation_velocity = 0.0f;
   s.ver = 0;
   s.last_update = GetServerTime_();
+  s.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
   // create the new ship and give it an id
   // find a random position for it to roam
   // return the new position of this ship
@@ -538,6 +541,7 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   ast.ver = 0;
   ast.id = id_max_++;
   ast.last_update = GetServerTime_();
+  ast.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
 
 
   chunk.InsertAsteroid(ast);

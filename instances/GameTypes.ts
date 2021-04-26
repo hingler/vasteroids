@@ -37,6 +37,6 @@ interface Instance {
   last_delta: number;
 }
 
-const chunkSize = 128.0;
+const chunkSize = 64.0;
 
 export { InstanceType, Point2D, WorldPosition, Instance, chunkSize }

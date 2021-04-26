@@ -49,8 +49,25 @@ export class VectorCanvas {
     if (!color) {
       color = [1.0, 1.0, 1.0, 1.0];
     }
-
+    
     let width = this.canvas.clientWidth, height = this.canvas.clientHeight;
+
+    if (startX > width && endX > width) {
+      return;
+    }
+
+    if (startX < 0 && endX < 0) {
+      return;
+    }
+
+    if (startY > height && endY > width) {
+      return;
+    }
+
+    if (startY < 0 && endY < 0) {
+      return;
+    }
+
     let screenSX = ((startX * 2) /   width) - 1;
     let screenSY = ((startY * 2) /  -height) + 1;
     let screenEX = ((endX * 2)   /   width) - 1;

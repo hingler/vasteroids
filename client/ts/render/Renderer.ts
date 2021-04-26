@@ -49,7 +49,6 @@ export class Renderer {
     this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
 
     for (let a of instances.asteroids) {
-      // if this element is on a boundary chunk:
       this.drawGeometry(player.position, a.position, a.geometry, -a.rotation);
     }
 

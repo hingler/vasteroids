@@ -13,7 +13,7 @@
 
 namespace vasteroids {
 
-  constexpr float chunk_size { 128.0f };
+  constexpr float chunk_size { 64.0f };
 
   enum class InstanceType {
     ASTEROID,
@@ -134,6 +134,9 @@ namespace vasteroids {
 
     // time of last update Wrt server start
     double last_update;
+
+    // when the shit was created
+    double origin_time;
 
     // def ctor, no init
     Instance() {}

@@ -24,7 +24,7 @@ void Chunk::InsertElements(const ServerPacket& insts) {
 }
 
 bool Chunk::UpdateInstance(Instance* inst, double cur) {
-  if (hard_update_) {
+  if (static_cast<int>((inst->origin_time + cur) / 4) > static_cast<int>((inst->origin_time + inst->last_update) / 4)) {
     inst->ver++;
   }
 
@@ -37,8 +37,8 @@ bool Chunk::UpdateInstance(Instance* inst, double cur) {
     // add it to resid
     inst->position.chunk.x += static_cast<int>(std::floor(inst->position.position.x / chunk_size));
     inst->position.chunk.y += static_cast<int>(std::floor(inst->position.position.y / chunk_size));
-    inst->position.position.x -= 128.0f * std::floor(inst->position.position.x / chunk_size);
-    inst->position.position.y -= 128.0f * std::floor(inst->position.position.y / chunk_size);
+    inst->position.position.x -= chunk_size * std::floor(inst->position.position.x / chunk_size);
+    inst->position.position.y -= chunk_size * std::floor(inst->position.position.y / chunk_size);
 
 
     // don't handle chunk overflow yet
@@ -53,6 +53,7 @@ void Chunk::UpdateChunk(ServerPacket& resid, double server_time) {
   // TODO: we want to keep components up to date
   //       ever second or so, increase the ver number so that we send a delta to the client
 
+  // handle this per instance
   hard_update_ = static_cast<int>(server_time) > static_cast<int>(last_server_time_);
   last_server_time_ = server_time;
 
