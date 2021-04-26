@@ -54,7 +54,19 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
       }
 
       Asteroid& ast = asteroids_.at(id);
-      if (Collide(ast, proj.second.position, chunk_count_)) {
+      bool collide = false;
+      for (int i = 0; i < 5; i++) {
+        // collide at +0, +10, +20, +30, +40
+        // if any of those hit, register a hit.
+        collide = (collide || Collide(ast, proj.second.position, chunk_count_));
+        if (collide) {
+          break;
+        }
+
+        // note: we have a copy here, so this is ok.
+        proj.second.position.position += ((proj.second.velocity) * 0.01f);
+      }
+      if (collide) {
         // add the hit asteroid to our deleted IDs
         deleted_insts.insert(std::make_pair(ast.id, ast.position.chunk));
         // add the projectile to our deleted IDs as well

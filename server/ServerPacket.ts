@@ -14,6 +14,9 @@ interface ServerPacket {
 
   // seconds since server creation
   serverTime: number
+
+  // client's current score
+  score: number;
 }
 
 export { ServerPacket };

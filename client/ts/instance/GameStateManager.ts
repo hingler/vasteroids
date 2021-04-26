@@ -149,8 +149,8 @@ export class GameStateManager {
   }
 
   private socketUpdate_(event: MessageEvent) {
-    let a = performance.now();
     let packet = JSON.parse(event.data) as ServerPacket;
+    console.log(packet.score);
     // store local objects
     for (let a of packet.asteroids) {
       // if already stored, replaces it
@@ -163,7 +163,6 @@ export class GameStateManager {
     // new ships need to be handled here
     for (let s of packet.ships) {
       console.log("new ship :)");
-      console.log(s.last_delta);
       this.ships.set(s.id, s);
     }
 
@@ -176,7 +175,6 @@ export class GameStateManager {
         local.id = p.id;
         this.projectiles.set(p.id, local);
         this.projectilesPacket.set(p.id, p);
-        console.log("confirmed proj " + p.clientID);
         this.projectilesLocal.delete(p.clientID);
       }
     }
@@ -242,8 +240,6 @@ export class GameStateManager {
       this.projectilesLocal.delete(del);
       this.projectilesHot.delete(del);
     }
-
-    console.log(performance.now() - a);
   }
 
   private generateProjectile_(ship: ClientShip) {

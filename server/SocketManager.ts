@@ -55,7 +55,6 @@ class SocketManager {
 
   private socketOnMessage_(socket: WebSocket, message: any) {
     // get packet
-    let a = now();
     let packet = JSON.parse(message) as ClientPacket;
     // match packet to socket id
     let id = this.sockets.getEntryT(socket);
@@ -92,7 +91,6 @@ class SocketManager {
     this.timeouts.set(socket, timeout);
 
     this.game.HandleClientPacket(packet);
-    console.log(now() - a);
   }
 
   private timeoutFunc_(socket: WebSocket) {

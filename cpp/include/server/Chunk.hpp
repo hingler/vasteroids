@@ -35,6 +35,8 @@ class Chunk {
    */ 
   void GetContents(ServerPacket& resid);
 
+  Projectile* GetProjectile(uint64_t);
+
   /**
    *  @returns a copy of a locally stored ship, if one exists.
    */ 

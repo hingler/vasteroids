@@ -35,6 +35,9 @@ struct ServerPacket {
   // time since server creation
   double server_time;
 
+  // score
+  int64_t score;
+
   /**
    *  Concatenates another server packet onto this one.
    */ 

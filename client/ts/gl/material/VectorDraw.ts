@@ -26,8 +26,6 @@ export class VectorDraw {
   prepareAttributes(gl: WebGLRenderingContext) : void {
     this.loc = gl.getAttribLocation(this.prog, "aPosition");
     this.locColor = gl.getAttribLocation(this.prog, "aColor");
-    console.log(this.loc);
-    console.log(this.locColor);
   }
 
   async waitUntilCompiled() {

@@ -117,8 +117,20 @@ Ship* Chunk::GetShip(uint64_t id) {
   return &(itr->second);
 }
 
+Projectile* Chunk::GetProjectile(uint64_t id) {
+  auto itr = projectiles_.find(id);
+  if (itr == projectiles_.end()) {
+    return nullptr;
+  }
+
+  return &(itr->second);
+}
+
 void Chunk::InsertShip(Ship& s) {
   // if we're inserting into a chunk, then the object has just been updated.
+  if (ships_.count(s.id)) {
+    ships_.erase(s.id);
+  }
   ships_.insert(std::make_pair(s.id, s));
 }
 

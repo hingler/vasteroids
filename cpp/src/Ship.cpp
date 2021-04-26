@@ -12,11 +12,19 @@ Ship::Ship(Napi::Object obj) : Instance(obj) {
   }
 
   name = nameObj.As<Napi::String>().Utf8Value(); 
+
+  Napi::Value scoreObj = obj.Get("score");
+  if (!scoreObj.IsNumber()) {
+    TYPEERROR(env, "score field not present :(");
+  }
+
+  score = scoreObj.As<Napi::Number>().Int64Value();
 }
 
 Napi::Object Ship::ToNodeObject(Napi::Env env) const {
   Napi::Object res = Instance::ToNodeObject(env);
   res.Set("name", name);
+  res.Set("score", score);
   return res;
 }
 

@@ -87,6 +87,11 @@ Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
     obj.Set("serverTime", time);
   }
 
+  {
+    Napi::Number s = Napi::Number::New(env, score);
+    obj.Set("score", s);
+  }
+
   return obj;
   
 }

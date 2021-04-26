@@ -102,6 +102,8 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     // but that chunk has since moved
     Ship* ship_last = c->second.GetShip(packet.client_ship.id);
     ship_new.ver = ship_last->ver + 1;
+    // update score lole
+    ship_new.score = ship_last->score;
   }
   
   // remove old ship from old chunk
@@ -278,6 +280,15 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   for (auto& del : deleted) {
     // should be valid -- if inst moved to new chunk, we would have created it in prev step
     // projectiles are deleted by the time they get here
+    Projectile* proj = chunks_.at(del.second).GetProjectile(del.first);
+    if (proj) {
+      // del corresponds with a projectile
+      uint64_t client = proj->ship_ID;
+      if (ships_.count(client)) {
+        Point2D<int> pt = ships_.at(client);
+        chunks_.at(pt).GetShip(client)->score += 10;
+      }
+    }
     chunks_.at(del.second).RemoveInstance(del.first);
   }
 
@@ -368,30 +379,6 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       }
     }
 
-    auto itr_s = res.ships.begin();
-    while (itr_s != res.ships.end()) {
-      if (itr_s->id == id) {
-        itr_s = res.ships.erase(itr_s);
-        continue;
-      }
-      knowns_new.insert(std::make_pair(itr_s->id, itr_s->ver));
-      if (knowns.count(itr_s->id)) {
-        if (knowns.at(itr_s->id) != itr_s->ver) {
-          delta_pkt.id = itr_s->id;
-          delta_pkt.position = itr_s->position;
-          delta_pkt.velocity = itr_s->velocity;
-          delta_pkt.rotation = itr_s->rotation;
-          delta_pkt.rotation_velocity = itr_s->rotation_velocity;
-          delta_pkt.last_update = itr_s->last_update;
-          res.deltas.push_back(std::move(delta_pkt));
-        }
-
-        itr_s = res.ships.erase(itr_s);
-      } else {
-        itr_s++;
-      }
-    }
-
     // start by grabbing a reference to our thing
     // for each projectile in the packet:
     //  - if the projectile is in our set, move it to projectile local and remove it from the set
@@ -406,6 +393,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
         // but if we skip it on the first tick, the projectile will exist for one additional tick
         // and then be deleted -- this will give the client enough time to confirm its deletion
         res.deleted.insert(itr_p->id);
+        std::cout << itr_p->client_ID << std::endl;
         if (proj_new->count(itr_p->client_ID) && itr_p->ship_ID == id) {
           res.deleted_local.insert(itr_p->client_ID);
         }
@@ -438,6 +426,31 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
         itr_p++;
       }
     }
+    
+    auto itr_s = res.ships.begin();
+    while (itr_s != res.ships.end()) {
+      if (itr_s->id == id) {
+        itr_s = res.ships.erase(itr_s);
+        continue;
+      }
+      knowns_new.insert(std::make_pair(itr_s->id, itr_s->ver));
+      if (knowns.count(itr_s->id)) {
+        if (knowns.at(itr_s->id) != itr_s->ver) {
+          delta_pkt.id = itr_s->id;
+          delta_pkt.position = itr_s->position;
+          delta_pkt.velocity = itr_s->velocity;
+          delta_pkt.rotation = itr_s->rotation;
+          delta_pkt.rotation_velocity = itr_s->rotation_velocity;
+          delta_pkt.last_update = itr_s->last_update;
+          res.deltas.push_back(std::move(delta_pkt));
+        }
+
+        itr_s = res.ships.erase(itr_s);
+      } else {
+        itr_s++;
+      }
+    }
+
 
     res.server_time = server_time;
     if (client_map.count(id)) {
@@ -445,6 +458,8 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
         res.deleted_local.insert(pr);
       }
     }
+
+    res.score = chunks_.at(ship.second).GetShip(id)->score;
 
     known_ids_.erase(id);
     known_ids_.insert(std::make_pair(id, std::move(knowns_new)));
@@ -488,6 +503,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   s.rotation = 0.0f;
   s.rotation_velocity = 0.0f;
   s.ver = 0;
+  s.score = 0;
   s.last_update = GetServerTime_();
   s.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
   // create the new ship and give it an id
