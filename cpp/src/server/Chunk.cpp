@@ -28,7 +28,9 @@ bool Chunk::UpdateInstance(Instance* inst, double cur) {
     inst->ver++;
   }
 
-  float delta_local = static_cast<float>(cur - inst->last_update);
+  // max?
+  // it might handle just fine right now :)
+  float delta_local = static_cast<float>(std::min(cur - inst->last_update, 1.0));
   inst->position.position += (inst->velocity * delta_local);
   inst->rotation += (inst->rotation_velocity * delta_local);
   inst->last_update = cur;
