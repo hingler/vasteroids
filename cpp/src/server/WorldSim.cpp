@@ -431,7 +431,6 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     res.server_time = server_time;
     if (client_map.count(id)) {
       for (auto& pr : client_map.at(id)) {
-        std::cout << pr << std::endl;
         res.deleted_local.insert(pr);
       }
     }

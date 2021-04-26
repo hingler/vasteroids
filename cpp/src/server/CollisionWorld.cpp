@@ -56,7 +56,6 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
       Asteroid& ast = asteroids_.at(id);
       if (Collide(ast, proj.second.position, chunk_count_)) {
         // add the hit asteroid to our deleted IDs
-        std::cout << "hello!" << std::endl;
         deleted_insts.insert(std::make_pair(ast.id, ast.position.chunk));
         // add the projectile to our deleted IDs as well
         deleted_insts.insert(std::make_pair(proj.second.id, proj.second.position.chunk));
@@ -65,7 +64,6 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
           res.insert(std::make_pair(ship_id, std::unordered_set<uint32_t>()));
         }
 
-        std::cout << ship_id << std::endl;
         res.at(ship_id).insert(proj.second.client_ID);
         //  - get radius as max (radius) of all points in the asteroid
         float radius = GetAsteroidRadius(ast);
