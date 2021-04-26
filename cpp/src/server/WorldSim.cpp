@@ -328,6 +328,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
 
     Instance delta_pkt;
     // res now contains all nearby objects -- trim it down based on `knowns`
+    int asteroid_count = 0;
     auto itr_a = res.asteroids.begin();
     while (itr_a != res.asteroids.end()) {
       if (deleted.count(itr_a->id)) {
@@ -354,8 +355,16 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
 
         itr_a = res.asteroids.erase(itr_a);
       } else {
-        itr_a++;
-        // unknown -- send the whole packet! 
+        // worry about new asteroids only
+        if (asteroid_count > 32) {
+          // erase it anyway
+          // remove it from knowns
+          knowns_new.erase(itr_a->id);
+          itr_a = res.asteroids.erase(itr_a);
+        } else {
+          asteroid_count++;
+          itr_a++;
+        }
       }
     }
 
@@ -535,8 +544,8 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   auto& chunk = chunks_.at(coord.chunk);
   auto ast = GenerateAsteroid(radius, points);
   // random velocity
-  ast.velocity = { (coord_gen(gen) - 64.0f) / 32.0f, (coord_gen(gen) - 64.0f) / 32.0f };
-  ast.rotation_velocity = (coord_gen(gen) - 64.0f) / 32.0f;
+  ast.velocity = { (coord_gen(gen) - ((chunk_size) / 2)) / ((chunk_size) / 4), (coord_gen(gen) - ((chunk_size) / 2)) / ((chunk_size) / 4) };
+  ast.rotation_velocity = (coord_gen(gen) - ((chunk_size) / 2)) / ((chunk_size) / 4);
   ast.position = coord;
   ast.ver = 0;
   ast.id = id_max_++;
