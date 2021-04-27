@@ -60,7 +60,9 @@ export class Renderer {
     this.drawGrid(player.position, 1.0, 1.0, [0.2, 0.2, 0.2, 1.0]);
 
     // draw ship
-    this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
+    if (!player.destroyed) {
+      this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
+    }
 
     for (let a of instances.asteroids) {
       if (a.hidden) {
@@ -72,7 +74,7 @@ export class Renderer {
     }
 
     for (let s of instances.ships) {
-      if (s.hidden) {
+      if (s.hidden || s.destroyed) {
         continue;
       }
 

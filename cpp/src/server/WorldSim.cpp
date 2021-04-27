@@ -72,6 +72,7 @@ Napi::Value WorldSim::GetChunkDims(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
+  bool destroyed = false;
   Napi::Env env = info.Env();
   Napi::Value packetObj = info[0];
   if (!packetObj.IsObject()) {
@@ -101,9 +102,14 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     // we're grabbing this ship from the chunk we *think* has it
     // but that chunk has since moved
     Ship* ship_last = c->second.GetShip(packet.client_ship.id);
+    destroyed = (ship_new.destroyed && !ship_last->destroyed);
     ship_new.ver = ship_last->ver + 1;
     // update score lole
     ship_new.score = ship_last->score;
+  }
+
+  if (destroyed) {
+    std::cout << "ship id " << ship_new.id << " destroyed :sade:" << std::endl;
   }
   
   // remove old ship from old chunk
@@ -124,6 +130,10 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   ships_.erase(ship_new.id);
   ships_.insert(std::make_pair(ship_new.id, new_chunk));
 
+  // if the ship is destroyed, we should start ignoring these
+  if (packet.projectiles.size() > 4) {
+    std::cout << "something funny is going on" << std::endl;
+  }
   for (auto& proj : packet.projectiles) {
     HandleNewProjectile(packet.client_ship.id, proj);
   }
@@ -507,6 +517,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   s.score = 0;
   s.last_update = GetServerTime_();
   s.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
+  s.destroyed = false;
   // create the new ship and give it an id
   // find a random position for it to roam
   // return the new position of this ship

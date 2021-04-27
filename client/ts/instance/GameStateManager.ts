@@ -248,6 +248,11 @@ export class GameStateManager {
   }
 
   private generateProjectile_(ship: ClientShip) {
+    if (this.ship.getShip().destroyed) {
+      // ignore projectile creation if our ship is destroyed
+      return;
+    }
+
     let p = {} as Projectile;
     let delta_v : Point2D = {x: 7.5, y: 0};
     delta_v.y = -(delta_v.x * Math.sin(ship.rotation));
@@ -316,8 +321,7 @@ export class GameStateManager {
 
         if (GetDistance(a, this.ship.getShip().position, this.dims) < 12) {
           if (Collide(a, this.ship.getShip().position, this.dims)) {
-            console.warn("Collision occurred!");
-            // TODO: figure out how to handle this properly
+            this.ship.collide();
           }
         }
 

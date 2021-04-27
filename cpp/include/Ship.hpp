@@ -8,6 +8,7 @@ namespace vasteroids {
 struct Ship : public Instance {
   std::string name;
   int64_t score;
+  bool destroyed;
 
   Ship();
   Ship(Napi::Object obj);

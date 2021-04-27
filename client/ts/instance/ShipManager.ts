@@ -66,12 +66,23 @@ export class ShipManager {
     return this.ship;
   }
 
+  collide() : void {
+    this.ship.destroyed = true;
+  }
+
   /**
    * Called once every ~5ms to update the ship's state.
    */
   update(dims: number) : void {
     this.accel = 0;
     this.accel_rot = 0;
+
+    if (this.ship.destroyed) {
+      this.ship.velocity.x = 0;
+      this.ship.velocity.y = 0;
+      return;
+    }
+
     if (this.inputmgr.getInputState(Input.THRUST_FWD)) {
       this.accel += 8;
     }
