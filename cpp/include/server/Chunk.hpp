@@ -58,6 +58,12 @@ class Chunk {
   void InsertProjectile(Projectile& p);
 
   /**
+   *  Inserts a collision in this chunk.
+   *  The collision, if unperturbed, will be deleted by the chunk once its life span comes to pass.
+   */ 
+  void InsertCollision(Collision& c);
+
+  /**
    *  Removes a ship from a chunk -- does not record the instance as deleted.
    *  @param id - the ID of the ship we wish to move.
    */  
@@ -82,6 +88,7 @@ class Chunk {
   std::unordered_map<uint64_t, Ship> ships_;
   std::unordered_map<uint64_t, Asteroid> asteroids_;
   std::unordered_map<uint64_t, Projectile> projectiles_;
+  std::unordered_map<uint64_t, Collision> collisions_;
 
   // list of all items deleted since last update
   std::unordered_set<uint64_t> deleted_cur_;

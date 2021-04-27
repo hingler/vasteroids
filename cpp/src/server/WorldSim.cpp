@@ -107,10 +107,6 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     // update score lole
     ship_new.score = ship_last->score;
   }
-
-  if (destroyed) {
-    std::cout << "ship id " << ship_new.id << " destroyed :sade:" << std::endl;
-  }
   
   // remove old ship from old chunk
   // differentiate from deletion :(
@@ -125,6 +121,22 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
 
   ship_new.last_update = GetServerTime_();
   chunks_.at(new_chunk).InsertShip(ship_new);
+
+  if (destroyed) {
+    std::cout << "ship id " << ship_new.id << " destroyed :sade:" << std::endl;
+    std::cout << new_chunk.x << ", " << new_chunk.y << std::endl;
+    Collision c;
+    c.id = id_max_++;
+    c.creation_time = GetServerTime_();
+    c.velocity.x = 0;
+    c.velocity.y = 0;
+    c.position = ship_new.position;
+    c.rotation = 0;
+    c.rotation_velocity = 0;
+    c.last_update = GetServerTime_();
+    c.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
+    chunks_.at(new_chunk).InsertCollision(c);
+  }
 
   // update ships list to match new chunk
   ships_.erase(ship_new.id);
@@ -403,7 +415,6 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
         // but if we skip it on the first tick, the projectile will exist for one additional tick
         // and then be deleted -- this will give the client enough time to confirm its deletion
         res.deleted.insert(itr_p->id);
-        std::cout << itr_p->client_ID << std::endl;
         if (proj_new->count(itr_p->client_ID) && itr_p->ship_ID == id) {
           res.deleted_local.insert(itr_p->client_ID);
         }
@@ -462,6 +473,25 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       // }
     }
 
+    auto itr_c = res.collisions.begin();
+    while (itr_c != res.collisions.end()) {
+      knowns_new.insert(std::make_pair(itr_c->id, itr_c->ver));
+      if (knowns.count(itr_c->id)) {
+        if (knowns.at(itr_c->id) != itr_c->ver) {
+          delta_pkt.id = itr_c->id;
+          delta_pkt.position = itr_c->position;
+          delta_pkt.velocity = itr_c->velocity;
+          delta_pkt.rotation = itr_c->rotation;
+          delta_pkt.rotation_velocity = itr_c->rotation_velocity;
+          delta_pkt.last_update = itr_c->last_update;
+          res.deltas.push_back(std::move(delta_pkt));
+        }
+
+        itr_c = res.collisions.erase(itr_c);
+      } else {
+        itr_c++;
+      }
+    }
 
     res.server_time = server_time;
     if (client_map.count(id)) {

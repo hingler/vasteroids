@@ -4,6 +4,7 @@
 #include <cmath>
 
 #define PROJECTILE_LIFESPAN 5.0
+#define COLLISION_LIFESPAN 3.0
 
 namespace vasteroids {
 namespace server {
@@ -104,6 +105,20 @@ void Chunk::UpdateChunk(ServerPacket& resid, double server_time) {
     }
   }
 
+  {
+    auto itr = collisions_.begin();
+    // collisions don't move
+    while (itr != collisions_.end()) {
+      if (server_time - itr->second.creation_time > COLLISION_LIFESPAN) {
+        deleted_cur_.insert(itr->second.id);
+        std::cout << "deleted collision id " << itr->second.id << std::endl;
+        itr = collisions_.erase(itr);
+      } else {
+        itr++;
+      }
+    }
+  }
+
   deleted_last_ = std::move(deleted_cur_);
   deleted_cur_ = std::unordered_set<uint64_t>();
 }
@@ -142,6 +157,11 @@ void Chunk::InsertProjectile(Projectile& p) {
   projectiles_.insert(std::make_pair(p.id, p));
 }
 
+void Chunk::InsertCollision(Collision& c) {
+  std::cout << "added collision " << c.id << std::endl;
+  collisions_.insert(std::make_pair(c.id, c));
+}
+
 bool Chunk::MoveShip(uint64_t id) {
   if (ships_.erase(id)) {
     return true;
@@ -164,7 +184,11 @@ bool Chunk::RemoveInstance(uint64_t id) {
   if (projectiles_.erase(id)) {
     deleted_cur_.insert(id);
     // handle local deletion
+    return true;
+  }
 
+  if (collisions_.erase(id)) {
+    deleted_cur_.insert(id);
     return true;
   }
 
@@ -182,6 +206,10 @@ void Chunk::GetContents(ServerPacket& resid) {
 
   for (auto& p : projectiles_) {
     resid.projectiles.push_back(p.second);
+  }
+
+  for (auto& c : collisions_) {
+    resid.collisions.push_back(c.second);
   }
 
   for (auto& s : deleted_last_) {

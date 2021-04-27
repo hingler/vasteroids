@@ -1,4 +1,5 @@
 import { Asteroid } from "../../../instances/Asteroid";
+import { CollisionLocal } from "../../../instances/CollisionLocal";
 import { Instance, Point2D, WorldPosition } from "../../../instances/GameTypes";
 import { Projectile } from "../../../instances/Projectile";
 import { ClientShip } from "../../../instances/Ship";
@@ -22,6 +23,7 @@ export class GameStateManager {
   asteroids: Map<number, Asteroid>;
   ships: Map<number, ClientShip>;
   projectiles: Map<number, Projectile>;
+  collisions: Map<number, CollisionLocal>;
 
   // avoid sending new projectiles more than we have to
   projectilesHot: Map<number, Projectile>;
@@ -65,6 +67,7 @@ export class GameStateManager {
     this.asteroids = new Map();
     this.ships = new Map();
     this.projectiles = new Map();
+    this.collisions = new Map();
     this.projectilesHot = new Map();
     this.projectilesLocal = new Map();
     this.projectileID = 0;
@@ -102,6 +105,13 @@ export class GameStateManager {
     a.asteroids = Array.from(this.asteroids.values());
     a.ships = Array.from(this.ships.values());
     a.projectiles = Array.from(this.projectiles.values());
+    for (let c of this.collisions.values()) {
+      for (let i of c.particles) {
+        // breaks if we need ClientID.
+        // i don't think we will >:)
+        a.projectiles.push(i as Projectile); 
+      }
+    }
 
     for (let proj of this.projectilesHot.values()) {
       a.projectiles.push(proj);
@@ -164,6 +174,36 @@ export class GameStateManager {
       s.hidden = false;
       this.ships.set(s.id, s);
 
+    }
+
+    for (let c of packet.collisions) {
+      let cl = c as CollisionLocal;
+      // for collisions: we don't care about updates, only deletions
+      if (!this.collisions.has(cl.id)) {
+        cl.particles = [];
+        for (let i = 0; i < 8; i++) {
+          let p = {} as Instance;
+          let rot = Math.random() * Math.PI * 2;
+          let delta_v : Point2D = {x: (Math.random() / 2 + 1.2), y: 0};
+          delta_v.y = -(delta_v.x * Math.sin(rot));
+          delta_v.x = delta_v.x * Math.cos(rot);
+          p.position = {} as WorldPosition;
+          p.position.chunk = {} as Point2D;
+          p.position.position = {} as Point2D;
+          p.position.chunk.x = c.position.chunk.x;
+          p.position.chunk.y = c.position.chunk.y;
+          p.position.position.x = c.position.position.x;
+          p.position.position.y = c.position.position.y;
+          p.last_delta = getOriginTime() + (performance.now() / 1000);
+          p.rotation = rot;
+          p.rotation_velocity = 0;
+          p.id = 0;
+          p.velocity = delta_v;
+          cl.particles.push(p);
+        }
+  
+        this.collisions.set(cl.id, cl);
+      }
     }
 
     // check to see if any packets resolved
@@ -233,6 +273,7 @@ export class GameStateManager {
       this.asteroids.delete(del);
       this.ships.delete(del);
       this.projectiles.delete(del);
+      this.collisions.delete(del);
 
       this.asteroidsPacket.delete(del);
       this.shipsPacket.delete(del);
@@ -355,6 +396,21 @@ export class GameStateManager {
         }
 
         this.hideIfDistance(this.ship.getShip(), p);
+      }
+
+      let delColl = [];
+      for (let c of this.collisions.values()) {
+        for (let p of c.particles) {
+          UpdateInstance(p, this.dims);
+        }
+
+        if ((getOriginTime() + performance.now() / 1000) - c.creationTime > 3.0) {
+          delColl.push(c.id);
+        }
+      }
+
+      for (let i of delColl) {
+        this.collisions.delete(i);
       }
 
       for (let pl of this.projectilesLocal.values()) {

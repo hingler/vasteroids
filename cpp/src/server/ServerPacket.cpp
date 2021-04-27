@@ -35,6 +35,16 @@ Napi::Object ServerPacket::ToNodeObject(Napi::Env env) {
   {
     Napi::Array instance_arr = Napi::Array::New(env);
     uint32_t i = 0;
+    for (const auto& collision : collisions) {
+      instance_arr[i++] = collision.ToNodeObject(env);
+    }
+
+    obj.Set("collisions", instance_arr);
+  }
+
+  {
+    Napi::Array instance_arr = Napi::Array::New(env);
+    uint32_t i = 0;
     for (const auto& proj : projectiles) {
       instance_arr[i++] = proj.ToNodeObject(env);
     }
