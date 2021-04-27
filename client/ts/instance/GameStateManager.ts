@@ -6,6 +6,7 @@ import { ClientPacket } from "../../../server/ClientPacket";
 import { ConnectionPacket } from "../../../server/ConnectionPacket";
 import { ServerPacket } from "../../../server/ServerPacket";
 import { Input } from "../input/InputManager";
+import { Collide, GetDistance } from "./AsteroidColliderJS";
 import { ShipManager } from "./ShipManager";
 import { getOriginTime, UpdateAndInterpolate, UpdateInstance } from "./UpdateInstance";
 
@@ -153,12 +154,6 @@ export class GameStateManager {
     this.ship.ship.score = packet.score;
     // store local objects
     for (let a of packet.asteroids) {
-      // if already stored, replaces it
-      // replace delta since we just received an update
-      console.log("new asteroid :)");
-      console.log(a.position.chunk);
-      console.log(a.position.position);
-      // asteroid contains its last delta
       a.hidden = false;
       this.asteroids.set(a.id, a);
     }
@@ -308,6 +303,10 @@ export class GameStateManager {
 
       // update all instances
       for (let a of this.asteroids.values()) {
+        if (a.hidden) {
+          continue;
+        }
+
         let packetInst = this.asteroidsPacket.get(a.id);
         if (packetInst) {
           UpdateAndInterpolate(a, packetInst, this.dims);
@@ -315,10 +314,20 @@ export class GameStateManager {
           UpdateInstance(a, this.dims);
         }
 
+        if (GetDistance(a, this.ship.getShip().position, this.dims) < 12) {
+          if (Collide(a, this.ship.getShip().position, this.dims)) {
+            console.warn("Collision occurred!");
+            // TODO: figure out how to handle this properly
+          }
+        }
+
         this.hideIfDistance(this.ship.getShip(), a);
       }
   
       for (let s of this.ships.values()) {
+        if (s.hidden) {
+          continue;
+        }
         let packetInst = this.shipsPacket.get(s.id);
         if (packetInst) {
           UpdateAndInterpolate(s, packetInst, this.dims);
@@ -330,6 +339,10 @@ export class GameStateManager {
       }
 
       for (let p of this.projectiles.values()) {
+        if (p.hidden) {
+          continue;
+        }
+
         let packetInst = this.projectilesPacket.get(p.id);
         if (packetInst) {
           UpdateAndInterpolate(p, packetInst, this.dims);

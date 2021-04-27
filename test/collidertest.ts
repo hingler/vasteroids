@@ -1,7 +1,8 @@
 const ColliderTest = require("bindings")("collidertest");
 import { expect } from "chai";
-import { WorldPosition, Point2D } from "../instances/GameTypes"
+import { WorldPosition, Point2D, chunkSize } from "../instances/GameTypes"
 import { Asteroid } from "../instances/Asteroid";
+import { Collide } from "../client/ts/instance/AsteroidColliderJS";
 
 describe("ColliderFunction", function() {
   it("Should return correctly when a collision occurs", function() {
@@ -39,6 +40,8 @@ describe("ColliderFunction", function() {
     let res = ColliderTest.collide(a, worldpos, 1);
     expect(res).is.true;
 
+    expect(Collide(a, worldpos, 1)).is.true;
+
     worldpos.position = {
       x: 1.5,
       y: 1.5
@@ -46,6 +49,8 @@ describe("ColliderFunction", function() {
 
     res = ColliderTest.collide(a, worldpos, 1);
     expect(res).is.false;
+
+    expect(Collide(a, worldpos, 1)).is.false;
 
     worldpos.position = {
       x: 1.0,
@@ -55,6 +60,8 @@ describe("ColliderFunction", function() {
     res = ColliderTest.collide(a, worldpos, 1);
     expect(res).is.true;
 
+    expect(Collide(a, worldpos, 1)).is.true;
+
     worldpos.position = {
       x: -0.5,
       y: -0.5
@@ -62,6 +69,8 @@ describe("ColliderFunction", function() {
 
     res = ColliderTest.collide(a, worldpos, 1);
     expect(res).is.true;
+
+    expect(Collide(a, worldpos, 1)).is.true;
 
     worldpos.position = {
       x: 0.0,
@@ -71,6 +80,8 @@ describe("ColliderFunction", function() {
     res = ColliderTest.collide(a, worldpos, 1);
     expect(res).is.true;
 
+    expect(Collide(a, worldpos, 1)).is.true;
+
     worldpos.position = {
       x: 2.001,
       y: 0.0
@@ -78,6 +89,8 @@ describe("ColliderFunction", function() {
 
     res = ColliderTest.collide(a, worldpos, 1);
     expect(res).is.false;
+
+    expect(Collide(a, worldpos, 1)).is.false;
   });
 
   it("Should account for rotation", function() {
@@ -112,8 +125,10 @@ describe("ColliderFunction", function() {
       res = ColliderTest.collide(a, point, 1);
       if (i & 1) {
         expect(res).is.false;
+        expect(Collide(a, point, 1)).is.false;
       } else {
         expect(res).is.true;
+        expect(Collide(a, point, 1)).is.true;
       }
     }
   });
@@ -134,7 +149,7 @@ describe("ColliderFunction", function() {
 
     let point = {
       chunk: {x: 15, y: 15 },
-      position: {x: 127.9, y: 127.9 }
+      position: {x: chunkSize - 0.1, y: chunkSize - 0.1 }
     } as WorldPosition;
 
     for (let i = 0; i < 12; i++) {
@@ -146,6 +161,8 @@ describe("ColliderFunction", function() {
     }
 
     expect(ColliderTest.collide(a, point, 16)).is.true;
+    expect(Collide(a, point, 16)).is.true;
     expect(ColliderTest.collide(a, point, 32)).is.false;
+    expect(Collide(a, point, 32)).is.false;
   })
 });

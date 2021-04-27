@@ -54,8 +54,8 @@ describe("WorldSim", function() {
     expect(pkts['2'].asteroids.length).to.equal(0);
     expect(pkts['3'].asteroids.length).to.equal(0);
 
-    expect(pkts['2'].ships.length).to.equal(0);
-    expect(pkts['3'].ships.length).to.equal(0);
+    expect(pkts['2'].ships.length).to.equal(1);
+    expect(pkts['3'].ships.length).to.equal(1);
 
     expect(pkts['2'].deltas.length).to.equal(0);
     expect(pkts['3'].deltas.length).to.equal(0);
