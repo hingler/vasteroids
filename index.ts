@@ -5,7 +5,7 @@ import { SocketManager } from "./server/SocketManager";
 const app = express();
 const port = process.env.PORT || 8080;
 
-const mgr = new SocketManager(1, 100);
+const mgr = new SocketManager(16, 1024);
 
 const socketStorage : Set<WebSocket> = new Set();
 

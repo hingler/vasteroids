@@ -13,7 +13,7 @@
 
 namespace vasteroids {
 
-  constexpr float chunk_size { 64.0f };
+  constexpr float chunk_size { 32.0f };
 
   enum class InstanceType {
     ASTEROID,

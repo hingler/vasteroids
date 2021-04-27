@@ -91,7 +91,7 @@ export class VectorCanvas {
       return;
     }
 
-    if (startY > height && endY > width) {
+    if (startY > height && endY > height) {
       return;
     }
 

@@ -35,8 +35,11 @@ interface Instance {
 
   // used to update position
   last_delta: number;
+
+  // CLIENT SIDE ONLY -- tracks whether the instance should be hidden.
+  hidden: boolean;
 }
 
-const chunkSize = 64.0;
+const chunkSize = 32.0;
 
 export { InstanceType, Point2D, WorldPosition, Instance, chunkSize }

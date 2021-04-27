@@ -156,14 +156,19 @@ export class GameStateManager {
       // if already stored, replaces it
       // replace delta since we just received an update
       console.log("new asteroid :)");
+      console.log(a.position.chunk);
+      console.log(a.position.position);
       // asteroid contains its last delta
+      a.hidden = false;
       this.asteroids.set(a.id, a);
     }
 
     // new ships need to be handled here
     for (let s of packet.ships) {
       console.log("new ship :)");
+      s.hidden = false;
       this.ships.set(s.id, s);
+
     }
 
     // check to see if any packets resolved
@@ -180,6 +185,7 @@ export class GameStateManager {
     }
 
     for (let p of packet.projectiles) {
+      p.hidden = false;
       this.projectiles.set(p.id, p);
     }
 
@@ -194,6 +200,7 @@ export class GameStateManager {
         atDelta.velocity = d.velocity;
         atDelta.rotation_velocity = d.rotation_velocity;
         this.asteroidsPacket.set(atDelta.id, atDelta);
+        this.asteroids.get(atDelta.id).hidden = false;
         continue;
       }
 
@@ -208,6 +215,7 @@ export class GameStateManager {
         shDelta.rotation_velocity = d.rotation_velocity;
         // score info doesn't send here
         this.shipsPacket.set(shDelta.id, shDelta);
+        this.ships.get(shDelta.id).hidden = false;
         continue;
       }
 
@@ -221,6 +229,7 @@ export class GameStateManager {
         prDelta.velocity = d.velocity;
         prDelta.rotation_velocity = d.rotation_velocity;
         this.projectilesPacket.set(prDelta.id, prDelta);
+        this.projectiles.get(prDelta.id).hidden = false;
       }
     }
 
@@ -261,7 +270,28 @@ export class GameStateManager {
     p.id = 0;
     p.clientID = this.projectileID++;
     p.velocity = delta_v;
+
+    p.hidden = false;
     this.projectilesHot.set(p.clientID, p);
+  }
+
+  hideIfDistance(player: ClientShip, i: Instance) {
+    let chunkDist = {
+      x: Math.abs(player.position.chunk.x - i.position.chunk.x),
+      y: Math.abs(player.position.chunk.y - i.position.chunk.y)
+    };
+
+    if (chunkDist.x > this.dims / 2) {
+      chunkDist.x = this.dims - chunkDist.x;
+    }
+
+    if (chunkDist.y > this.dims / 2) {
+      chunkDist.y = this.dims - chunkDist.y;
+    }
+
+    if (Math.max(chunkDist.x, chunkDist.y) >= 2) {
+      i.hidden = true;
+    }
   }
 
   update() {
@@ -273,6 +303,9 @@ export class GameStateManager {
         this.generateProjectile_(this.ship.getShip());
       }
 
+      // calculate chunk dist between object and player
+      // if >= 2, hide it.
+
       // update all instances
       for (let a of this.asteroids.values()) {
         let packetInst = this.asteroidsPacket.get(a.id);
@@ -281,6 +314,8 @@ export class GameStateManager {
         } else {
           UpdateInstance(a, this.dims);
         }
+
+        this.hideIfDistance(this.ship.getShip(), a);
       }
   
       for (let s of this.ships.values()) {
@@ -290,6 +325,8 @@ export class GameStateManager {
         } else {
           UpdateInstance(s, this.dims);
         }
+
+        this.hideIfDistance(this.ship.getShip(), s);
       }
 
       for (let p of this.projectiles.values()) {
@@ -299,15 +336,19 @@ export class GameStateManager {
         } else {
           UpdateInstance(p, this.dims);
         }
+
+        this.hideIfDistance(this.ship.getShip(), p);
       }
 
       for (let pl of this.projectilesLocal.values()) {
         // no server side equiv yet!
         UpdateInstance(pl, this.dims);
+        this.hideIfDistance(this.ship.getShip(), pl);
       }
 
       for (let ph of this.projectilesHot.values()) {
         UpdateInstance(ph, this.dims);
+        this.hideIfDistance(this.ship.getShip(), ph);
       }
     }
   }

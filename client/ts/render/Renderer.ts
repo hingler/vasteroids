@@ -63,10 +63,19 @@ export class Renderer {
     this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
 
     for (let a of instances.asteroids) {
+      if (a.hidden) {
+        continue;
+      }
+
       this.drawGeometry(player.position, a.position, a.geometry, -a.rotation);
+      let k = this.toScreenPosition(player.position, a.position);
     }
 
     for (let s of instances.ships) {
+      if (s.hidden) {
+        continue;
+      }
+
       this.drawGeometry(player.position, s.position, shipGeom, -s.rotation);
       let shipPos = this.toScreenPosition(player.position, s.position);
       shipPos.x += 24;
@@ -86,6 +95,9 @@ export class Renderer {
     this.canvas.addText(16, 46, position, 2, [12, 12]);
 
     for (let p of instances.projectiles) {
+      if (p.hidden) {
+        continue;
+      }
       this.drawGeometry(player.position, p.position, [
         {
           x: -0.1,

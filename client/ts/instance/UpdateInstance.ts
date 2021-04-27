@@ -40,18 +40,22 @@ export function UpdateAndInterpolate(il: Instance, ip: Instance, chunkDims: numb
   // both are updated
   // nudge il by the difference
   let posDist = getDistance(il, ip);
+
+  if ((posDist.x * posDist.x + posDist.y * posDist.y) > 128) {
+    t = 1;
+  }
   
   // fix chunk boundary crossing if distance is massive
-  if (posDist.x > (chunkSize / 2)) {
+  if (posDist.x > ((chunkSize * chunkDims) / 2)) {
     posDist.x = posDist.x - (chunkSize * chunkDims);
-  } else if (posDist.x < -(chunkSize / 2)) {
+  } else if (posDist.x < -((chunkSize * chunkDims) / 2)) {
     posDist.x = posDist.x + (chunkSize * chunkDims);
   }
 
   // good money
-  if (posDist.y > (chunkSize / 2)) {
+  if (posDist.y > ((chunkSize * chunkDims) / 2)) {
     posDist.y = posDist.y - (chunkSize * chunkDims);
-  } else if (posDist.y < -(chunkSize / 2)) {
+  } else if (posDist.y < -((chunkSize * chunkDims) / 2)) {
     posDist.y = posDist.y + (chunkSize * chunkDims);
   }
 

@@ -50,15 +50,15 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
   gen = std::mt19937(dev());
   chunk_gen = std::normal_distribution<>(chunk_dims_ / 2.0, chunk_dims_ / 4.0);
   coord_gen = std::uniform_real_distribution<float>(0.0f, chunk_size);
-  velo_gen = std::uniform_real_distribution<float>(-3.0, 3.0);
+  velo_gen = std::uniform_real_distribution<float>(-1.8, 1.8);
 
   WorldPosition temp;
   for (int i = 0; i < asteroids; i++) {
-    while (temp.chunk.x < 0 || temp.chunk.x >= chunk_dims_
-        || temp.chunk.y < 0 || temp.chunk.y >= chunk_dims_) {
-      temp.chunk.x = static_cast<int>(chunk_gen(gen));
-      temp.chunk.y = static_cast<int>(chunk_gen(gen));
-    }
+    do {
+      temp.chunk.x = static_cast<int>(std::round(chunk_gen(gen)));
+      temp.chunk.y = static_cast<int>(std::round(chunk_gen(gen)));
+    } while (temp.chunk.x < 0 || temp.chunk.x >= chunk_dims_
+          || temp.chunk.y < 0 || temp.chunk.y >= chunk_dims_);
 
     temp.position.x = coord_gen(gen);
     temp.position.y = coord_gen(gen);
@@ -487,11 +487,11 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   // get name for this ship
   s.name = val.As<Napi::String>().Utf8Value();
   // add entries for our new ship
-  while (s.position.chunk.x < 0 || s.position.chunk.x >= chunk_dims_
-      || s.position.chunk.y < 0 || s.position.chunk.y >= chunk_dims_) {
+  do {
     s.position.chunk.x = static_cast<int>(chunk_gen(gen));
     s.position.chunk.y = static_cast<int>(chunk_gen(gen));
-  }
+  } while (s.position.chunk.x < 0 || s.position.chunk.x >= chunk_dims_
+        || s.position.chunk.y < 0 || s.position.chunk.y >= chunk_dims_);
 
   if (!chunks_.count(s.position.chunk)) {
     CreateChunk(s.position.chunk);
