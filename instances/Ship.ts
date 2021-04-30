@@ -9,6 +9,9 @@ interface ClientShip extends Instance {
 
   // true if the ship is destroyed
   destroyed: boolean;
+
+  // number of lives remaining on the ship.
+  lives: number;
 }
 
 export { ClientShip };

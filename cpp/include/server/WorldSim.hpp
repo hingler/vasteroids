@@ -31,12 +31,14 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   Napi::Value GetChunkDims(const Napi::CallbackInfo& info);
   Napi::Value HandleClientPacket(const Napi::CallbackInfo& info);
   Napi::Value UpdateSim(const Napi::CallbackInfo& info);
-  // Napi::Value RespawnShip(const Napi::CallbackInfo& info);
+  Napi::Value RespawnShip(const Napi::CallbackInfo& info);
   Napi::Value AddShip(const Napi::CallbackInfo& info);
   Napi::Value DeleteShip(const Napi::CallbackInfo& info);
   Napi::Value GetServerTime(const Napi::CallbackInfo& info);
   // Napi::Value GetLocalChunkActivity(const Napi::CallbackInfo& info);
  private:
+  // sets spawn coords for ship
+  void SpawnShip(Ship& s);
   // corrects for instances which go off the world boundary
   void CorrectChunk(Instance& inst);
 

@@ -28,6 +28,25 @@ wss.on("connection", (ws, req) => {
   socketStorage.add(ws);
 });
 
+app.use(express.json());
+
+app.post("/respawn", (req, res) => {
+  // request should contain only a token
+  let body = req.body;
+  if (!body.token) {
+    res.status(400);
+    res.send("Missing token field.");
+    console.log("missing token field :(");
+    return;
+  }
+
+  let ship = mgr.respawnShip(body.token);
+  res.json({
+    success: (!!ship),
+    ship: ship
+  });
+})
+
 app.get("/heroku", (req, res) => {
   res.header("Content-type", "text/plain");
   res.send("OK");

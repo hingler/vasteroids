@@ -9,6 +9,7 @@ struct Ship : public Instance {
   std::string name;
   int64_t score;
   bool destroyed;
+  int lives;
 
   Ship();
   Ship(Napi::Object obj);

@@ -26,6 +26,13 @@ Ship::Ship(Napi::Object obj) : Instance(obj) {
   }
 
   destroyed = destroyedObj.As<Napi::Boolean>().Value();
+
+  Napi::Value livesObj = obj.Get("lives");
+  if (!livesObj.IsNumber()) {
+    TYPEERROR(env, "lives field not present");
+  }
+
+  lives = livesObj.As<Napi::Number>().Int32Value();
 }
 
 Napi::Object Ship::ToNodeObject(Napi::Env env) const {
@@ -33,6 +40,7 @@ Napi::Object Ship::ToNodeObject(Napi::Env env) const {
   res.Set("name", name);
   res.Set("score", score);
   res.Set("destroyed", destroyed);
+  res.Set("lives", lives);
   return res;
 }
 

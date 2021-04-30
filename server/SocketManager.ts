@@ -6,6 +6,7 @@ import { ConnectionPacket } from "./ConnectionPacket";
 import { ClientPacket } from "./ClientPacket";
 import { BiMap } from "./BiMap";
 import now = require("performance-now");
+import { ClientShip } from "../instances/Ship";
 
 class SocketManager {
   game: WorldSim;
@@ -51,6 +52,21 @@ class SocketManager {
     // set up msg listener and close listener.
     socket.addEventListener("message", (e) => { this.socketOnMessage_(socket, e.data); });
     socket.addEventListener("close", () => { this.socketOnClose_(socket); });
+  }
+
+  respawnShip(token: string) : ClientShip | undefined {
+    // just respawn it! you asked after all :)
+    // we could place a respawn token on the ship -- that way, we can set "destroyed" to false
+    // and just place it.
+    let id = this.players.get(token);
+    if (!id) {
+      // invalid token
+      return;      
+    }
+
+    // respawn ship associated with the given token
+    console.log("respawn request: " + id);
+    return this.game.RespawnShip(id);
   }
 
   private socketOnMessage_(socket: WebSocket, message: any) {

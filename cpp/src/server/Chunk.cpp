@@ -111,7 +111,6 @@ void Chunk::UpdateChunk(ServerPacket& resid, double server_time) {
     while (itr != collisions_.end()) {
       if (server_time - itr->second.creation_time > COLLISION_LIFESPAN) {
         deleted_cur_.insert(itr->second.id);
-        std::cout << "deleted collision id " << itr->second.id << std::endl;
         itr = collisions_.erase(itr);
       } else {
         itr++;
@@ -158,7 +157,6 @@ void Chunk::InsertProjectile(Projectile& p) {
 }
 
 void Chunk::InsertCollision(Collision& c) {
-  std::cout << "added collision " << c.id << std::endl;
   collisions_.insert(std::make_pair(c.id, c));
 }
 

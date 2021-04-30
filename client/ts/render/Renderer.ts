@@ -199,7 +199,44 @@ export class Renderer {
       ], -p.rotation)
     }
 
+    // add lives
+    let basePoint = {
+      x: 48,
+      y: this.canvas.getHeight() - 48
+    };
+
+    for (let i = 0; i < player.lives; i++) {
+      this.DrawGeometryDirect(basePoint, shipGeom, [120, 120], -Math.PI / 2, 2);
+      basePoint.x += 32;
+    }
+
+    if (player.lives === 0 && player.destroyed) {
+      this.canvas.addText((this.canvas.getWidth() / 2) - 180, (this.canvas.getHeight() / 2) - 32, "GAME OVER", 2, [32, 32]);
+    }
+    
+
     this.canvas.drawToScreen();
+  }
+
+  // no funny world math, just draw the thing.
+  private DrawGeometryDirect(center: Point2D, geom: Array<Point2D>, scale: [number, number], rot: number, stroke: number, color?: [number, number, number, number]) {
+    let screenGeom : Array<Point2D> = [];
+    let c = Math.cos(rot);
+    let s = Math.sin(rot);
+    for (let pt of geom) {
+      let ptTx = {
+        x: center.x + scale[0] * pt.x * c - scale[0] * pt.y * s,
+        y: center.y + scale[1] * pt.x * s + scale[1] * pt.y * c
+      };
+
+      screenGeom.push(ptTx);
+    }
+
+    for (let i = 0; i < screenGeom.length; i++) {
+      let sx = screenGeom[i];
+      let ex = screenGeom[(i + 1) % screenGeom.length];
+      this.canvas.addLine(sx.x, sx.y, ex.x, ex.y, stroke, color);
+    }
   }
 
   private drawGrid(center: WorldPosition, step: number, speed: number, color: [number, number, number, number]) {
@@ -211,8 +248,6 @@ export class Renderer {
       x: this.canvas.getWidth() / 2,
       y: this.canvas.getHeight() / 2
     };
-
-    let gridColor : [number, number, number, number] = [0.3, 0.3, 0.3, 1.0];
 
     let gridLineX = shipCenter.x - widthOffV;
     while (gridLineX > 0) {

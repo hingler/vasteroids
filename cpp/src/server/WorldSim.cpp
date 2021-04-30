@@ -16,6 +16,7 @@ Napi::Function WorldSim::GetClassInstance(Napi::Env env) {
     InstanceMethod("GetChunkDims", &WorldSim::GetChunkDims),
     InstanceMethod("HandleClientPacket", &WorldSim::HandleClientPacket),
     InstanceMethod("UpdateSim", &WorldSim::UpdateSim),
+    InstanceMethod("RespawnShip", &WorldSim::RespawnShip),
     InstanceMethod("AddShip", &WorldSim::AddShip),
     InstanceMethod("DeleteShip", &WorldSim::DeleteShip),
     InstanceMethod("GetServerTime", &WorldSim::GetServerTime)
@@ -95,6 +96,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     Napi::Error::New(env, "Invariant not maintained -- ship does not exist in chunk!").ThrowAsJavaScriptException();
   }
 
+  // we update "destroyed" here.
   auto& ship_new = packet.client_ship;
 
   {
@@ -123,8 +125,6 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   chunks_.at(new_chunk).InsertShip(ship_new);
 
   if (destroyed) {
-    std::cout << "ship id " << ship_new.id << " destroyed :sade:" << std::endl;
-    std::cout << new_chunk.x << ", " << new_chunk.y << std::endl;
     Collision c;
     c.id = id_max_++;
     c.creation_time = GetServerTime_();
@@ -516,6 +516,58 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   return obj_ret;
 }
 
+Napi::Value WorldSim::RespawnShip(const Napi::CallbackInfo& info) {
+  // accept a ship ID
+  // return either a new ship, or undefined.
+  // former contains the new ship state if valid, latter indicates game over.
+  Napi::Env env = info.Env();
+  Napi::Value id = info[0];
+  if (!id.IsNumber()) {
+    TYPEERROR(env, "no ID given!");
+  }
+
+  uint64_t id_int = id.As<Napi::Number>().Int64Value();
+
+
+  if (!ships_.count(id_int)) {
+    // bad id!
+    return env.Undefined();
+  }
+
+  Point2D<int>& chunk = ships_.at(id_int);
+  Chunk& c = chunks_.at(chunk);
+  Ship s = *c.GetShip(id_int);
+  if (s.lives == 0) {
+    return env.Undefined();
+  }
+
+  s.lives--;
+  SpawnShip(s);
+  return s.ToNodeObject(env);
+}
+
+void WorldSim::SpawnShip(Ship& s) {
+  do {
+    s.position.chunk.x = static_cast<int>(chunk_gen(gen));
+    s.position.chunk.y = static_cast<int>(chunk_gen(gen));
+  } while (s.position.chunk.x < 0 || s.position.chunk.x >= chunk_dims_
+        || s.position.chunk.y < 0 || s.position.chunk.y >= chunk_dims_);
+
+  if (!chunks_.count(s.position.chunk)) {
+    CreateChunk(s.position.chunk);
+  }
+
+  s.position.position.x = coord_gen(gen);
+  s.position.position.y = coord_gen(gen);
+
+  s.velocity = {0.0f, 0.0f};
+  s.rotation = 0.0f;
+  s.rotation_velocity = 0.0f;
+  s.last_update = GetServerTime_();
+  // the client will un-destroy the ship
+  // if we fix it now, something will desync
+}
+
 Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   Napi::Env env =  info.Env();
   Napi::Value val = info[0];
@@ -547,6 +599,8 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   s.score = 0;
   s.last_update = GetServerTime_();
   s.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
+
+  s.lives = 3;
   s.destroyed = false;
   // create the new ship and give it an id
   // find a random position for it to roam

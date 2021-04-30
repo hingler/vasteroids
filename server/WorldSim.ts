@@ -27,6 +27,12 @@ interface WorldSim {
   UpdateSim() : any;
 
   /**
+   * Respawns she ship associated with a given ID, if it exists.
+   * @param id - the ID of the ship we are respawning.
+   */
+  RespawnShip(id: number) : ClientShip;
+
+  /**
    * Adds a new ship to the world sim.
    * @param name - the name associated with the new ship.
    * @returns a new object representing the current state of the ship.

@@ -126,6 +126,47 @@ export class GameStateManager {
     return a;
   }
 
+  private respawnShip_() {
+    fetch("/respawn", {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        'token': this.token
+      })
+    })
+      .then((r) => {
+        if (r.status < 200 || r.status >= 400) {
+          return Promise.reject("could not res ship!");
+        }
+
+        return r.text();        
+      })
+
+      .then((txt) => {
+        let pkt = JSON.parse(txt);
+        console.log(pkt);
+        if (pkt.success) {
+          let ship = pkt.ship;
+          this.ship.ship.destroyed = false;
+          this.ship.ship.position = ship.position;
+          this.ship.ship.velocity = ship.velocity;
+          this.ship.ship.rotation = ship.rotation;
+          this.ship.ship.rotation_velocity = ship.rotation_velocity;
+          this.ship.ship.lives = ship.lives;
+          this.ship.ship.last_delta = ship.last_delta;
+        } else {
+          return Promise.reject("game is over");
+        }
+      })
+
+      .catch((err) => {
+        console.error("GAME OVER :(");
+      });
+  }
+
   private socketInit_(event: MessageEvent) {
     let packet = JSON.parse(event.data) as ConnectionPacket;
     this.token = packet.playerToken;
@@ -362,6 +403,10 @@ export class GameStateManager {
 
         if (GetDistance(a, this.ship.getShip().position, this.dims) < 12) {
           if (Collide(a, this.ship.getShip().position, this.dims)) {
+            if (!this.ship.ship.destroyed) {
+              setTimeout(this.respawnShip_.bind(this), 3000);
+            }
+            
             this.ship.collide();
           }
         }

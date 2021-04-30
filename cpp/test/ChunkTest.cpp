@@ -44,9 +44,6 @@ void RunTest(const Napi::CallbackInfo& info) {
   sr = server::ServerPacket();
   ASSERT_E(0, sr.ships.size(), env, "Ship size should be 0!");
   c.UpdateChunk(sr, 0.5);
-  if (sr.ships.size() > 0) {
-    std::cout << sr.ships[0].position.position.x << ", " << sr.ships[0].position.position.y << std::endl;
-  }
 
   ASSERT_E(0, sr.ships.size(), env, "Ship size should be 0!");
   
