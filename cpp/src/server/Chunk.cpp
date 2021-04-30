@@ -4,7 +4,7 @@
 #include <cmath>
 
 #define PROJECTILE_LIFESPAN 5.0
-#define COLLISION_LIFESPAN 3.0
+#define COLLISION_LIFESPAN 2.0
 
 namespace vasteroids {
 namespace server {

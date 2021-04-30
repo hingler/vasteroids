@@ -181,10 +181,10 @@ export class GameStateManager {
       // for collisions: we don't care about updates, only deletions
       if (!this.collisions.has(cl.id)) {
         cl.particles = [];
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 32; i++) {
           let p = {} as Instance;
           let rot = Math.random() * Math.PI * 2;
-          let delta_v : Point2D = {x: (Math.random() / 2 + 1.2), y: 0};
+          let delta_v : Point2D = {x: (Math.random() / 2 + 0.4), y: 0};
           delta_v.y = -(delta_v.x * Math.sin(rot));
           delta_v.x = delta_v.x * Math.cos(rot);
           p.position = {} as WorldPosition;
@@ -404,7 +404,7 @@ export class GameStateManager {
           UpdateInstance(p, this.dims);
         }
 
-        if ((getOriginTime() + performance.now() / 1000) - c.creationTime > 3.0) {
+        if ((getOriginTime() + performance.now() / 1000) - c.creationTime > 2.0) {
           delColl.push(c.id);
         }
       }

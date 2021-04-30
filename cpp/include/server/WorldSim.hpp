@@ -31,6 +31,7 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   Napi::Value GetChunkDims(const Napi::CallbackInfo& info);
   Napi::Value HandleClientPacket(const Napi::CallbackInfo& info);
   Napi::Value UpdateSim(const Napi::CallbackInfo& info);
+  // Napi::Value RespawnShip(const Napi::CallbackInfo& info);
   Napi::Value AddShip(const Napi::CallbackInfo& info);
   Napi::Value DeleteShip(const Napi::CallbackInfo& info);
   Napi::Value GetServerTime(const Napi::CallbackInfo& info);

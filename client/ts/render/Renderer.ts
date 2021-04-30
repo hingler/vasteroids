@@ -2,6 +2,7 @@ import { chunkSize, Point2D, WorldPosition } from "../../../instances/GameTypes"
 import { ClientShip } from "../../../instances/Ship";
 import { ServerPacket } from "../../../server/ServerPacket";
 import { VectorCanvas } from "../gl/VectorCanvas";
+import { GetDistance, GetVector } from "../instance/AsteroidColliderJS";
 
 const GRIDSTEP = 2;
 
@@ -24,6 +25,33 @@ const shipGeom = [
   {
     x: -0.05,
     y: 0.075
+  }
+];
+
+const pointerGeom = [
+  {
+    y: -0.4,
+    x: -0.2
+  },
+
+  {
+    y: 0.4,
+    x: -0.2
+  },
+
+  {
+    y: 0.4,
+    x: 0.1
+  },
+
+  {
+    y: 0.0,
+    x: 0.3
+  },
+
+  {
+    y: -0.4,
+    x: 0.1
   }
 ];
 
@@ -64,13 +92,72 @@ export class Renderer {
       this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
     }
 
+    let astList = [];
+
     for (let a of instances.asteroids) {
       if (a.hidden) {
         continue;
       }
 
       this.drawGeometry(player.position, a.position, a.geometry, -a.rotation);
-      let k = this.toScreenPosition(player.position, a.position);
+
+      let pos = this.toScreenPosition(player.position, a.position);
+
+      if (pos.x > 0 && pos.x < this.canvas.getWidth() && pos.y > 0 && pos.y < this.canvas.getHeight()) {
+        // asteroid is on screen -- don't bother trying to point to it.
+        continue;
+      }
+
+      let vec = GetVector(a, player.position, this.dims);
+      let dist = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+
+      // dist bound from 6 to 30
+      if (dist < 6 || dist > 30) {
+        continue;
+      }
+
+      astList.push(a);
+
+
+      // awful fucking shit lol
+      astList.sort((a, b) => {
+        return (GetDistance(a, player.position, this.dims) < GetDistance(b, player.position, this.dims)) ? -1 : 1;
+      });
+
+      if (astList.length > 6) {
+        astList = astList.slice(0, 6);
+      }
+    }
+
+    for (let ast of astList) {
+      let vec = GetVector(ast, player.position, this.dims);
+      // returned vec from asteroid to ship -- convert to ship -> asteroid.
+      vec.x = -vec.x;
+      vec.y = -vec.y;
+      let dist = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+
+      let scaleFac = (dist - 6) / 24;
+      scaleFac = 1 - scaleFac;
+      
+      // normalize it
+      vec.x /= dist;
+      vec.y /= dist;
+
+      let arrowPos : WorldPosition = {
+        chunk: {
+          x: player.position.chunk.x,
+          y: player.position.chunk.y
+        },
+
+        position: {
+          x: player.position.position.x + vec.x * (2 + scaleFac),
+          y: player.position.position.y + vec.y * (2 + scaleFac)
+        }
+      };
+
+      let rot = Math.atan2(vec.y, vec.x);
+
+      this.drawGeometry(player.position, arrowPos, pointerGeom, rot, scaleFac / 1.8);
     }
 
     for (let s of instances.ships) {
@@ -203,7 +290,11 @@ export class Renderer {
   }
 
   // draws geom onto screen rel. to center point
-  private drawGeometry(center: WorldPosition, pos: WorldPosition, geom: Array<Point2D>, rot: number) {
+  private drawGeometry(center: WorldPosition, pos: WorldPosition, geom: Array<Point2D>, rot: number, scale?: number) {
+    if (scale === undefined) {
+      scale = 1.0;
+    }
+
     // find pos relative to center based on widthscale
     let widthStep = this.canvas.getWidth() / this.widthScale;
     let posScreen = this.toScreenPosition(center, pos);
@@ -216,8 +307,8 @@ export class Renderer {
         y: pt.y
       };
 
-      ptRot.x = pt.x * Math.cos(rot) - pt.y * Math.sin(rot);
-      ptRot.y = pt.x * Math.sin(rot) + pt.y * Math.cos(rot);
+      ptRot.x = scale * pt.x * Math.cos(rot) - scale * pt.y * Math.sin(rot);
+      ptRot.y = scale * pt.x * Math.sin(rot) + scale * pt.y * Math.cos(rot);
       // position relative to pos
       ptRot.x = posScreen.x + ptRot.x * widthStep;
       ptRot.y = posScreen.y + ptRot.y * widthStep;

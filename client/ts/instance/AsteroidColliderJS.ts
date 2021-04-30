@@ -37,8 +37,14 @@ export function GetDistance(a: Asteroid, pt: WorldPosition, dims: number) {
   return Math.sqrt(pointRel.x * pointRel.x + pointRel.y * pointRel.y);
 }
 
-// port of our cpp function for clients
-export function Collide(a: Asteroid, pt: WorldPosition, dims: number) : boolean {
+/**
+ * Returns a vector from asteroid to point.
+ * @param a - asteroid start point.
+ * @param pt - end point.
+ * @param dims - number of chunks in world per dim
+ * @returns - point2D vector representing distance between points.
+ */
+export function GetVector(a: Asteroid, pt: WorldPosition, dims: number) : Point2D {
   let chunkDist: Point2D = {
     x: pt.chunk.x - a.position.chunk.x,
     y: pt.chunk.y - a.position.chunk.y
@@ -69,6 +75,13 @@ export function Collide(a: Asteroid, pt: WorldPosition, dims: number) : boolean 
   } else if (pointRel.y < -(chunkSize * dims) / 2) {
     pointRel.y += (chunkSize * dims);
   }
+
+  return pointRel;
+}
+
+// port of our cpp function for clients
+export function Collide(a: Asteroid, pt: WorldPosition, dims: number) : boolean {
+  let pointRel = GetVector(a, pt, dims);
 
   let rc = Math.cos(-a.rotation);
   let rs = Math.sin(-a.rotation);
