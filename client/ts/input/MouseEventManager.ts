@@ -111,7 +111,7 @@ export class MouseInputManager implements InputManager {
       // handle rotation
       let center = {
         x: window.innerWidth / 2,
-        y: window.innerWidth / 2
+        y: window.innerHeight / 2
       };
 
       let angle = Math.atan2(-(this.mouse_pos.y - center.y), this.mouse_pos.x - center.x);
