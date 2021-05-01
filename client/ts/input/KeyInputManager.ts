@@ -1,4 +1,6 @@
-import { Input, InputManager } from "./InputManager";
+import { Point2D } from "../../../instances/GameTypes";
+import { ClientShip } from "../../../instances/Ship";
+import { Input, InputManager, MAX_ROT_THRUST, MAX_THRUST, SHOT_DELAY } from "./InputManager";
 
 /**
  * List of inputs we want to keep track of
@@ -6,7 +8,13 @@ import { Input, InputManager } from "./InputManager";
 export class KeyInputManager implements InputManager {
   keys: Map<string, Input>;
   inputState: Map<Input, boolean>;
-  constructor() {
+  origin_time: number;
+  shot: boolean;
+  shot_last: number;
+  constructor(origin_time: number) {
+    this.origin_time = origin_time;
+    this.shot_last = origin_time;
+    this.shot = false;
     // set up key map
     this.setDefaultBindings();
     // map from keycode to input
@@ -18,6 +26,78 @@ export class KeyInputManager implements InputManager {
     // modify input state to fit
     // we'll poll InputManager on a consistent interval to see what keys are pressed
     // update ShipManager accordingly
+  }
+
+  isShoot() {
+    let shot_delta = this.origin_time + (performance.now() / 1000) - this.shot_last;
+    if (this.getInputState(Input.SHOOT)) {
+      if (this.shot || shot_delta < SHOT_DELAY) {
+        return false;
+      }
+
+      this.shot = true;
+      return true;
+    } else {
+      this.shot = false;
+    }
+  }
+
+  updateShipState(ship: ClientShip) {
+    if (ship.destroyed) {
+      ship.velocity.x = ship.velocity.y = 0;
+    } else {
+      let accel = 0, accel_rot = 0;
+
+      if (this.getInputState(Input.THRUST_FWD)) {
+        accel += MAX_THRUST;
+      }
+
+      if (this.getInputState(Input.THRUST_BKD)) {
+        accel -= MAX_THRUST;
+      }
+
+      if (this.getInputState(Input.TURN_LEFT)) {
+        accel_rot += MAX_ROT_THRUST;
+      }
+
+      if (this.getInputState(Input.TURN_RIGHT)) {
+        accel_rot -= MAX_ROT_THRUST;
+      }
+
+      let update = this.origin_time + (performance.now() / 1000);
+      let delta = update - ship.last_delta;
+
+      let delta_v : Point2D = {x: 1, y: 0};
+      delta_v.x *= accel * delta;
+      let v_z = ship.velocity;
+
+      let damp = { x: -v_z.x / 0.4, y: -v_z.y / 0.4 };
+      // account for delta
+      damp.x *= Math.min(delta, 0.4);
+      damp.y *= Math.min(delta, 0.4);
+
+      delta_v.y = -(delta_v.x * Math.sin(ship.rotation));
+      delta_v.x = delta_v.x * Math.cos(ship.rotation);
+
+      // add velocity
+      ship.velocity.x += delta_v.x;
+      ship.velocity.y += delta_v.y;
+
+      // account for damping
+      ship.velocity.x += damp.x;
+      ship.velocity.y += damp.y;
+
+      // same for rotation
+      let delta_r = accel_rot * delta;
+
+      let rot = ship.rotation_velocity;
+      let rot_damp = -rot / 0.4;
+      rot_damp *= Math.min(delta, 0.4);
+
+      // push new rotation velocity
+      ship.rotation_velocity += delta_r;
+      ship.rotation_velocity += rot_damp;
+    }
   }
 
   getInputState(input: Input) : boolean {

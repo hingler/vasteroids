@@ -157,7 +157,7 @@ export class Renderer {
 
       let rot = Math.atan2(vec.y, vec.x);
 
-      this.drawGeometry(player.position, arrowPos, pointerGeom, rot, scaleFac / 1.8);
+      this.drawGeometry(player.position, arrowPos, pointerGeom, rot, scaleFac / 1.8, [0.5, 0.5, 0.5, 1.0]);
     }
 
     for (let s of instances.ships) {
@@ -325,7 +325,7 @@ export class Renderer {
   }
 
   // draws geom onto screen rel. to center point
-  private drawGeometry(center: WorldPosition, pos: WorldPosition, geom: Array<Point2D>, rot: number, scale?: number) {
+  private drawGeometry(center: WorldPosition, pos: WorldPosition, geom: Array<Point2D>, rot: number, scale?: number, color?: [number, number, number, number]) {
     if (scale === undefined) {
       scale = 1.0;
     }
@@ -353,7 +353,7 @@ export class Renderer {
     for (let i = 0; i < geomRot.length; i++) {
       let a = geomRot[i];
       let b = geomRot[(i + 1) % geomRot.length];
-      this.canvas.addLine(a.x, a.y, b.x, b.y, 2);
+      this.canvas.addLine(a.x, a.y, b.x, b.y, 2, color);
     }
   }
 }

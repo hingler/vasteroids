@@ -1,3 +1,5 @@
+import { ClientShip } from "../../../instances/Ship";
+
 export enum Input {
   THRUST_FWD = 1,
   THRUST_BKD = 2,
@@ -6,10 +8,20 @@ export enum Input {
   SHOOT = 5
 }
 
-export interface InputManager {
-  /**
-   * Fetches the state of a particular input.
-   * @param input - the input whose state we are fetching.
+export const MAX_THRUST = 8;
+export const MAX_ROT_THRUST = 18;
+export const DAMP_COEFF = 0.4;
+export const SHOT_DELAY = 0.05;
+
+export abstract class InputManager {
+
+  /** 
+   *  Calculates and updates the ship's movement based on inputs.
    */
-  getInputState(input: Input) : boolean;
+  abstract updateShipState(ship: ClientShip) : void;
+
+  /**
+   * True if the ship is shooting, false otherwise.
+   */
+  abstract isShoot() : boolean;
 }
