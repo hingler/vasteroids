@@ -5,7 +5,7 @@ module.exports = {
     index: "./client/ts/index.ts",
     drawtest: "./client/ts/drawtest.ts"
   },
-  mode: "development",
+  mode: "production",
   module: {
     rules: [
       {
