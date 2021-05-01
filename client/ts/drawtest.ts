@@ -81,6 +81,7 @@ import { Renderer } from "./render/Renderer";
       name = "dickmuncher";
     }
 
+    removeEventListener("mousedown", mouseInputSelection);
     removeEventListener("keydown", keyListener);
     removeEventListener("resize", nameFunc);
     let c = new VectorCanvas(document.getElementById("game-window") as HTMLCanvasElement);
