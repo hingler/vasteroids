@@ -186,6 +186,8 @@ void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
   proj.creation_time = GetServerTime_();
   // fudge a bit to ensure we don't send too much at once
   proj.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
+  // give ourselves a collision delta
+  proj.last_collision_delta = GetServerTime_();
   
   // inserted when the ship is added
   // we should have already guaranteed that the ship id is valid :)
@@ -291,6 +293,9 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
 
   for (auto p : simmed.projectiles) {
     cw_->AddProjectile(p);
+    // we need to update this collision delta :(
+    // we insert a copy though, so it's OK to do here.
+    chunks_.at(p.position.chunk).GetProjectile(p.id)->last_collision_delta = p.last_update;
   }
 
   std::unordered_map<uint64_t, Point2D<int>> deleted;

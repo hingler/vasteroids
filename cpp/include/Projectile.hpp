@@ -21,6 +21,9 @@ struct Projectile : public Instance {
 
   // CPP ONLY: used to delete projectiles that have overstayed their welcome
   double creation_time;
+
+  // CPP ONLY: used by collisionworld to calculate projectile collisions.
+  double last_collision_delta;
 };
 
 }

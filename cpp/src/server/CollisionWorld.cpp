@@ -39,56 +39,55 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
   std::unordered_map<uint64_t, std::unordered_set<uint32_t>> res;
   Point2D<int> chunk;
   for (auto& proj : projectiles_) {
-    chunk.x = static_cast<int>(proj.second.position.chunk.x * chunk_size + proj.second.position.position.x);
-    chunk.y = static_cast<int>(proj.second.position.chunk.y * chunk_size + proj.second.position.position.y);
-    if (!asteroid_chunks_.count(chunk)) {
-      continue;
-    }
+    bool collide = false;
+    double delta_lookback = proj.second.last_update - proj.second.last_collision_delta;
+    float delta_step = static_cast<float>(delta_lookback / 12);
+    proj.second.position.position += ((proj.second.velocity) * -static_cast<float>(delta_lookback));
     
-    auto& contents = asteroid_chunks_.at(chunk);
-    for (auto& id : contents) {
-      if (!asteroids_.count(id)) {
-        std::cout << "what the fuck" << std::endl;
-        std::cout << "asteroid stored in chunk was not retained" << std::endl;
+    for (int i = 0; i < 12; i++) {
+      chunk.x = static_cast<int>(proj.second.position.chunk.x * chunk_size + proj.second.position.position.x);
+      chunk.y = static_cast<int>(proj.second.position.chunk.y * chunk_size + proj.second.position.position.y);
+      if (!asteroid_chunks_.count(chunk)) {
         continue;
       }
 
-      Asteroid& ast = asteroids_.at(id);
-      bool collide = false;
-      // handle lookback -- back 20ms, forward 20ms
-      proj.second.position.position += ((proj.second.velocity) * -0.03f);
-      for (int i = 0; i < 7; i++) {
-        // collide at 0, +/-10, +/-20, +/-30
-        // if any of those hit, register a hit.
-        // we never re-sample asteroid chunks, so there may be something in a proximal chunk which we don't hit.
-        // nbd right now :)
+      auto& contents = asteroid_chunks_.at(chunk);
+      for (auto& id : contents) {
+        if (!asteroids_.count(id)) {
+          std::cout << "what the fuck" << std::endl;
+          std::cout << "asteroid stored in chunk was not retained" << std::endl;
+          continue;
+        }
+
+        Asteroid& ast = asteroids_.at(id);
         collide = (collide || Collide(ast, proj.second.position, chunk_count_));
         if (collide) {
+          // add the hit asteroid to our deleted IDs
+          deleted_insts.insert(std::make_pair(ast.id, ast.position.chunk));
+          // add the projectile to our deleted IDs as well
+          deleted_insts.insert(std::make_pair(proj.second.id, proj.second.position.chunk));
+          uint64_t ship_id = proj.second.ship_ID;
+          if (!res.count(ship_id)) {
+            res.insert(std::make_pair(ship_id, std::unordered_set<uint32_t>()));
+          }
+
+          res.at(ship_id).insert(proj.second.client_ID);
+          //  - get radius as max (radius) of all points in the asteroid
+          float radius = GetAsteroidRadius(ast);
+          radius *= 0.707f;
+          //  - if the radius is below some threshold, don't generate two new
+          if (radius >= 0.25) {
+            deleted_asteroids.push_back(std::make_pair(ast.position, radius));
+          }
           break;
         }
-
-        // note: we have a copy here, so this is ok.
-        proj.second.position.position += ((proj.second.velocity) * 0.01f);
       }
+
       if (collide) {
-        // add the hit asteroid to our deleted IDs
-        deleted_insts.insert(std::make_pair(ast.id, ast.position.chunk));
-        // add the projectile to our deleted IDs as well
-        deleted_insts.insert(std::make_pair(proj.second.id, proj.second.position.chunk));
-        uint64_t ship_id = proj.second.ship_ID;
-        if (!res.count(ship_id)) {
-          res.insert(std::make_pair(ship_id, std::unordered_set<uint32_t>()));
-        }
-
-        res.at(ship_id).insert(proj.second.client_ID);
-        //  - get radius as max (radius) of all points in the asteroid
-        float radius = GetAsteroidRadius(ast);
-        radius *= 0.707f;
-        //  - if the radius is below some threshold, don't generate two new
-        if (radius >= 0.25) {
-          deleted_asteroids.push_back(std::make_pair(ast.position, radius));
-        }
+        break;
       }
+
+      proj.second.position.position += ((proj.second.velocity) * delta_step);
     }
   }
   return res;

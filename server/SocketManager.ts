@@ -29,7 +29,7 @@ class SocketManager {
     this.sockets = new BiMap();
     this.timeouts = new Map();
     // start some regular update event
-    this.update = setInterval(this.handleUpdates.bind(this), 50);
+    this.update = setInterval(this.handleUpdates.bind(this), 30);
   }
 
   async addSocket(socket: WebSocket, name: string) : Promise<void> {
