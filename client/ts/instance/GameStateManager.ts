@@ -6,7 +6,7 @@ import { ClientShip } from "../../../instances/Ship";
 import { ClientPacket } from "../../../server/ClientPacket";
 import { ConnectionPacket } from "../../../server/ConnectionPacket";
 import { ServerPacket } from "../../../server/ServerPacket";
-import { Input } from "../input/InputManager";
+import { Input, InputManager, InputMethod } from "../input/InputManager";
 import { Collide, GetDistance } from "./AsteroidColliderJS";
 import { ShipManager } from "./ShipManager";
 import { getOriginTime, UpdateAndInterpolate, UpdateInstance } from "./UpdateInstance";
@@ -18,6 +18,8 @@ export class GameStateManager {
   socket: WebSocket;
   token: string;
   ship: ShipManager;
+
+  inputmethod: InputMethod;
 
   // local simulated results displayed to client.
   asteroids: Map<number, Asteroid>;
@@ -47,7 +49,8 @@ export class GameStateManager {
 
   dims: number;
 
-  constructor(name: string) {
+  constructor(name: string, inputmethod: InputMethod) {
+    this.inputmethod = inputmethod;
     let socketURL : string;
     if (window.location.protocol === "https:") {
       socketURL = "wss://";
@@ -172,7 +175,7 @@ export class GameStateManager {
     this.token = packet.playerToken;
     // create ship manager
     this.dims = packet.chunkDims;
-    this.ship = new ShipManager(packet.ship, packet.serverTime);
+    this.ship = new ShipManager(packet.ship, packet.serverTime, this.inputmethod);
     this.socket.onmessage = this.socketUpdate_.bind(this);
     // ~33.33 updates per second
     this.socketUpdate = setInterval(this.socketSend_.bind(this), 50);

@@ -1,6 +1,6 @@
 import { chunkSize, Point2D } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
-import { InputManager } from "../input/InputManager";
+import { InputManager, InputMethod } from "../input/InputManager";
 import { KeyInputManager } from "../input/KeyInputManager";
 import { MouseInputManager } from "../input/MouseEventManager";
 import { setUpdateOrigin, UpdateInstance } from "./UpdateInstance";
@@ -19,7 +19,7 @@ export class ShipManager {
   shootState: number;
   lastShot: number;
 
-  constructor(ship: ClientShip, serverOrigin: number) {
+  constructor(ship: ClientShip, serverOrigin: number, method: InputMethod) {
     this.ship = ship;
     this.origin_time = serverOrigin - (performance.now() / 1000);
     // offset
@@ -28,7 +28,14 @@ export class ShipManager {
     this.last_update = serverOrigin;
     this.accel = 0;
     this.accel_rot = 0;
-    this.inputmgr = new KeyInputManager(this.origin_time);
+    switch (method) {
+      case InputMethod.KEYBOARD:
+        this.inputmgr = new KeyInputManager(this.origin_time);
+        break;
+      case InputMethod.MOUSE:
+        this.inputmgr = new MouseInputManager(this.origin_time);
+        break;
+    }
     this.lastShot = performance.now() / 1000;
 
     setUpdateOrigin(serverOrigin);

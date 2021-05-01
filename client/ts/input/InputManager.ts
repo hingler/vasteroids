@@ -8,6 +8,11 @@ export enum Input {
   SHOOT = 5
 }
 
+export enum InputMethod {
+  MOUSE = 1,
+  KEYBOARD = 2
+}
+
 export const MAX_THRUST = 8;
 export const MAX_ROT_THRUST = 18;
 export const DAMP_COEFF = 0.4;

@@ -41,7 +41,7 @@ export class VectorCanvas {
     return this.canvas.height;
   }
 
-  addText(startX: number, startY: number, text: string, stroke: number, size: [number, number]) {
+  addText(startX: number, startY: number, text: string, stroke: number, size: [number, number], color?: [number, number, number, number]) {
     // multiply text size by scale
     let originX = startX;
     text = text.toLowerCase();
@@ -54,7 +54,7 @@ export class VectorCanvas {
       for (let line of coords) {
         this.addLine(originX + line[0] * size[0], startY + (2.0 - line[1]) * size[1],
                      originX + line[2] * size[0], startY + (2.0 - line[3]) * size[1],
-                     stroke);
+                     stroke, color);
       }
 
       originX += (1.25 * size[0] + stroke);
