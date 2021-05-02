@@ -2,6 +2,7 @@ import { chunkSize, Point2D, WorldPosition } from "../../../instances/GameTypes"
 import { ClientShip } from "../../../instances/Ship";
 import { ServerPacket } from "../../../server/ServerPacket";
 import { VectorCanvas } from "../gl/VectorCanvas";
+import { TouchInputManager } from "../input/TouchInputManager";
 import { GetDistance, GetVector } from "../instance/AsteroidColliderJS";
 
 const GRIDSTEP = 2;
@@ -70,7 +71,7 @@ export class Renderer {
     this.dims = dims;
   }
 
-  drawInstances(player: ClientShip, instances: ServerPacket) {
+  drawInstances(player: ClientShip, instances: ServerPacket, inputmgr?: TouchInputManager) {
     let screen = {
       x: this.canvas.getWidth(),
       y: this.canvas.getHeight()
@@ -89,7 +90,8 @@ export class Renderer {
 
     // draw ship
     if (!player.destroyed) {
-      this.drawGeometry(player.position, player.position, shipGeom, -player.rotation);
+      let scale = (inputmgr ? 2 : 1);
+      this.drawGeometry(player.position, player.position, shipGeom, -player.rotation, scale);
     }
 
     let astList = [];
@@ -213,9 +215,27 @@ export class Renderer {
     if (player.lives === 0 && player.destroyed) {
       this.canvas.addText((this.canvas.getWidth() / 2) - 180, (this.canvas.getHeight() / 2) - 32, "GAME OVER", 2, [32, 32]);
     }
+
+    if (inputmgr) {
+      this.DrawCircle({x: 160, y: screen.y - 192}, 128, 2, [1.0, 1.0, 1.0, 1.0]);
+      this.DrawCircle({x: screen.x - 160, y: screen.y - 192}, 128, 2, [1.0, 1.0, 1.0, 1.0]);
+    }
     
 
     this.canvas.drawToScreen();
+  }
+
+  private DrawCircle(center: Point2D, radius: number, stroke: number, color: [number, number, number, number]) {
+    let rot_step = Math.PI / 8;
+    let rot = 0;
+    for (let i = 0; i < 16; i++) {
+      let startX = Math.cos(rot) * radius + center.x;
+      let startY = Math.sin(rot) * radius + center.y;
+      rot += rot_step;
+      let endX = Math.cos(rot) * radius + center.x;
+      let endY = Math.sin(rot) * radius + center.y;
+      this.canvas.addLine(startX, startY, endX, endY, stroke, color);
+    }
   }
 
   // no funny world math, just draw the thing.

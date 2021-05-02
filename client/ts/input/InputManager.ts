@@ -10,7 +10,13 @@ export enum Input {
 
 export enum InputMethod {
   MOUSE = 1,
-  KEYBOARD = 2
+  KEYBOARD = 2,
+  TOUCH = 3
+}
+
+export enum Direction {
+  CW,
+  CCW
 }
 
 export const MAX_THRUST = 8;

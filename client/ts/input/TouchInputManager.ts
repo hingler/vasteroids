@@ -2,67 +2,41 @@ import { Point2D } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
 import { DAMP_COEFF, Direction, InputManager, MAX_ROT_THRUST, MAX_THRUST, SHOT_DELAY } from "./InputManager";
 
-export class MouseInputManager implements InputManager {
-  inputThrust: boolean;
-  inputShoot: boolean;
-
+export class TouchInputManager implements InputManager {
   origin_time: number;
   shot: boolean;
   shot_last: number;
 
-  mouse_pos: Point2D;
+  move_touch_id: number;
+
+  touch_dir: number;
 
   constructor(origin_time: number) {
     this.origin_time = origin_time;
-    this.shot_last = origin_time;
     this.shot = false;
+    this.shot_last = origin_time;
 
-    this.mouse_pos = {x: 0, y: 0};
+    this.move_touch_id = -1;
+    
+    this.touch_dir = 0;
 
-    window.addEventListener("mousedown", this.EventFuncOn_.bind(this));
-    window.addEventListener("mouseup", this.EventFuncOff_.bind(this));
-    window.addEventListener("mousemove", this.EventFuncMouseMove_.bind(this));
-
-    window.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-    });
+    window.addEventListener("touchstart", this.touchBegin_.bind(this));
+    window.addEventListener("touchend", this.touchEnd_.bind(this));
+    window.addEventListener("touchmove", this.touchUpdate_.bind(this));
   }
 
-  private EventFuncOn_(e: MouseEvent) {
-    switch (e.button) {
-      case 0:
-        this.inputThrust = true;
-        break;
-      case 2:
-        this.inputShoot = true;
-    }
-  }
-
-  private EventFuncOff_(e: MouseEvent) {
-    switch (e.button) {
-      case 0:
-        this.inputThrust = false;
-        break;
-      case 2:
-        this.inputShoot = false;
-    }
-  }
-
-  private EventFuncMouseMove_(e: MouseEvent) {
-    this.mouse_pos.x = e.x, this.mouse_pos.y = e.y;
+  getTouchState() : number {
+    return this.touch_dir;
   }
 
   isShoot() {
-    let shot_delta = this.origin_time + (performance.now() / 1000) - this.shot_last;
-    if (this.inputShoot) {
-      if (this.shot || shot_delta < SHOT_DELAY) {
-        return false;
-      }
-
-      this.shot = true;
-      return true;
-    } else {
+    let time = this.origin_time + (performance.now() / 1000)
+    let shot_delta = time - this.shot_last;
+    // triggered only for one frame when the user touches
+    if (this.shot && shot_delta > SHOT_DELAY) {
+      this.shot_last = time;
       this.shot = false;
+      return true;
     }
   }
 
@@ -75,7 +49,7 @@ export class MouseInputManager implements InputManager {
       // cap rot velocity at (rot thrust * damping force)
       // and then 3 * distance.
       let accel = 0;
-      if (this.inputThrust) {
+      if (this.move_touch_id >= 0) {
         accel += MAX_THRUST;
       }
 
@@ -109,11 +83,12 @@ export class MouseInputManager implements InputManager {
         y: window.innerHeight / 2
       };
 
-      let angle = Math.atan2(-(this.mouse_pos.y - center.y), this.mouse_pos.x - center.x);
+      let angle = this.touch_dir;
+
       if (angle < 0) {
         angle = Math.PI * 2 + angle;
       }
-      
+
       let d_angle = angle - ship.rotation;
       let d_abs = Math.abs(d_angle);
       let dir : Direction = ((d_angle > 0) !== (d_abs > Math.PI) ? Direction.CCW : Direction.CW);
@@ -124,6 +99,47 @@ export class MouseInputManager implements InputManager {
       }
       
       ship.rotation_velocity = thrust;
+    }
+  }
+
+  private touchBegin_(e: TouchEvent) {
+    let h = document.body.clientHeight;
+    let w = document.body.clientWidth;
+    for (let touch of e.changedTouches) {
+      if (touch.pageX > 32 && touch.pageX < 288
+       && touch.pageY < (h - 64) && touch.pageY > (h - 320)) {
+        if (this.move_touch_id < 0) {
+          this.move_touch_id = touch.identifier;
+          this.setTouchDir_(touch);
+        }
+      } else if (touch.pageX < (w - 32) && touch.pageX > (w - 288)
+              && touch.pageY < (h - 64) && touch.pageY > (h - 320)) {
+        this.shot = true;
+      }
+    }
+  }
+
+  private setTouchDir_(t: Touch) {
+    let x = t.pageX - 192;
+    let y = document.body.clientHeight - (t.pageY + 192);
+    let dir = Math.atan2(y, x);
+    this.touch_dir = dir;
+    console.log(this.touch_dir);
+  }
+
+  private touchEnd_(e: TouchEvent) {
+    for (let touch of e.changedTouches) {
+      if (touch.identifier === this.move_touch_id) {
+        this.move_touch_id = -1;
+      }
+    }
+  }
+
+  private touchUpdate_(e: TouchEvent) {
+    for (let touch of e.changedTouches) {
+      if (touch.identifier === this.move_touch_id) {
+        this.setTouchDir_(touch);
+      }
     }
   }
 }

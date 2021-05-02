@@ -3,6 +3,7 @@ import { ClientShip } from "../../../instances/Ship";
 import { InputManager, InputMethod } from "../input/InputManager";
 import { KeyInputManager } from "../input/KeyInputManager";
 import { MouseInputManager } from "../input/MouseEventManager";
+import { TouchInputManager } from "../input/TouchInputManager";
 import { setUpdateOrigin, UpdateInstance } from "./UpdateInstance";
 
 /**
@@ -34,6 +35,9 @@ export class ShipManager {
         break;
       case InputMethod.MOUSE:
         this.inputmgr = new MouseInputManager(this.origin_time);
+        break;
+      case InputMethod.TOUCH:
+        this.inputmgr = new TouchInputManager(this.origin_time);
         break;
     }
     this.lastShot = performance.now() / 1000;
