@@ -94,7 +94,15 @@ import { Renderer } from "./render/Renderer";
           if (x > 120 && x < (document.body.clientWidth - 120) && y > (h / 2 - 80) && y < (h / 2 + 32)) {
             let input = prompt("Enter ship name", name);
             if (input) {
-              name = input.toLowerCase();
+              input = input.toLowerCase();
+              let acc = "";
+              for (let char of input) {
+                if (letters.hasOwnProperty(char)) {
+                  acc += char;
+                }
+
+                name = acc;
+              }
               touchinput = true;
             }
             // don't prompt multiple times.
