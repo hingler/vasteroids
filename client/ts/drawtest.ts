@@ -103,7 +103,9 @@ import { Renderer } from "./render/Renderer";
 
                 name = acc;
               }
+              
               touchinput = true;
+              inputmethod = InputMethod.TOUCH;
             }
             // don't prompt multiple times.
             break;
