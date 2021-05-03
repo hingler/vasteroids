@@ -54,27 +54,21 @@ import { Renderer } from "./render/Renderer";
   }
 
   function touchInputSelection(e: TouchEvent) {
-    console.log("touch event!");
     for (let touch of e.touches) {
       map.set(touch.identifier, {
         x: touch.pageX,
         y: touch.pageY
       } as Point2D);
-
-      console.log(touch.identifier);
     }
 
     requestAnimationFrame(nameFunc);
   }
 
   function touchReleaseSelection(e: TouchEvent) {
-    console.log("touch release!");
     // remove from map
     // if we're in range: handle the event
     for (let touch of e.changedTouches) {
-      console.log(touch.identifier);
       let pt : Point2D = map.get(touch.identifier);
-      console.log(pt);
       if (pt) {
         let dist : Point2D = {
           x: pt.x - touch.pageX,
@@ -82,15 +76,11 @@ import { Renderer } from "./render/Renderer";
         };
 
         let x = touch.pageX, y = touch.pageY;
-        console.log(`${x}, ${y}`);
-
         let mag = dist.x * dist.x + dist.y * dist.y;
-        console.log(mag);
         if (mag < 729) { // 27px -- reasonable fudge for a tap
           // special case: click on dialogue box on mobile
           let x = touch.pageX, y = touch.pageY;
           let h = document.body.clientHeight;
-          console.log(`${x}, ${y}`);
           if (x > 120 && x < (document.body.clientWidth - 120) && y > (h / 2 - 80) && y < (h / 2 + 32)) {
             let input = prompt("Enter ship name", name);
             if (input) {

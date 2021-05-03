@@ -59,6 +59,10 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   // x/y dims of our world
   int chunk_dims_;
 
+  // number of asteroids in the world
+  int asteroid_count_;
+  int asteroid_min_;
+
   std::shared_ptr<CollisionWorld> cw_;
 
   // key: chunk coordinate -> chunk and all elements inside it

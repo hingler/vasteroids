@@ -66,6 +66,9 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 
     SpawnNewAsteroid(temp);
   }
+
+  asteroid_count_ = asteroids;
+  asteroid_min_ = asteroids;
 }
 
 Napi::Value WorldSim::GetChunkDims(const Napi::CallbackInfo& info) {
@@ -317,11 +320,28 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       }
     }
     chunks_.at(del.second).RemoveInstance(del.first);
+    asteroid_count_--;
   }
 
   for (auto& pos : collide_pos) {
     SpawnNewAsteroid(pos.first, pos.second, 12);
     SpawnNewAsteroid(pos.first, pos.second, 12);
+    asteroid_count_ += 2;
+  }
+
+  WorldPosition temp;
+  while (asteroid_count_ < asteroid_min_) {
+    do {
+      temp.chunk.x = static_cast<int>(std::round(chunk_gen(gen)));
+      temp.chunk.y = static_cast<int>(std::round(chunk_gen(gen)));
+    } while (temp.chunk.x < 0 || temp.chunk.x >= chunk_dims_
+          || temp.chunk.y < 0 || temp.chunk.y >= chunk_dims_);
+
+    temp.position.x = coord_gen(gen);
+    temp.position.y = coord_gen(gen);
+
+    SpawnNewAsteroid(temp);
+    asteroid_count_++;
   }
 
   // lastly, we need to figure out which entities to expose to which instances

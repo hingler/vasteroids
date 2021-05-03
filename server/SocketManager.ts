@@ -106,6 +106,8 @@ class SocketManager {
     }, 15000);
     this.timeouts.set(socket, timeout);
 
+    // to do: add some more error prevention pertaining to individual values here.
+
     this.game.HandleClientPacket(packet);
   }
 

@@ -10,13 +10,13 @@ export class VectorMesh2D {
     this.indexBuffer = new ManagedBuffer(new Uint32Vector());
   }
 
-  addVertex(point: [number, number], color?: [number, number, number, number]) {
+  addVertex(pointX: number, pointY: number, color?: [number, number, number, number]) {
     if (!color) {
       color = [1.0, 1.0, 1.0, 1.0];
     }
 
-    this.vertexBuffer.insertData(point[0]);
-    this.vertexBuffer.insertData(point[1]);
+    this.vertexBuffer.insertData(pointX);
+    this.vertexBuffer.insertData(pointY);
 
     this.vertexBuffer.insertData(color[0]);
     this.vertexBuffer.insertData(color[1]);
@@ -24,10 +24,10 @@ export class VectorMesh2D {
     this.vertexBuffer.insertData(color[3]);
   }
 
-  addTriangle(tri: [number, number, number]) {
-    this.indexBuffer.insertData(tri[0]);
-    this.indexBuffer.insertData(tri[1]);
-    this.indexBuffer.insertData(tri[2]);
+  addTriangle(vertA: number, vertB: number, vertC: number) {
+    this.indexBuffer.insertData(vertA);
+    this.indexBuffer.insertData(vertB);
+    this.indexBuffer.insertData(vertC);
   }
 
   draw(gl: WebGLRenderingContext, locationGeometry: number, locationColor: number) {

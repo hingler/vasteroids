@@ -65,6 +65,9 @@ export class Renderer {
   private canvas: VectorCanvas;
   private dims: number;
 
+  private w: number;
+  private h: number;
+
   constructor(widthScale: number, canvas: VectorCanvas, dims: number) {
     this.widthScaleBase = widthScale;
     this.canvas = canvas;
@@ -72,18 +75,14 @@ export class Renderer {
   }
 
   drawInstances(player: ClientShip, instances: ServerPacket, inputmgr?: TouchInputManager) {
-    let screen = {
-      x: this.canvas.getWidth(),
-      y: this.canvas.getHeight()
-    };
+    this.w = this.canvas.getWidth(), this.h = this.canvas.getHeight();
 
-    let ratio = screen.x / screen.y;
+    let ratio = this.w / this.h;
     if (ratio > 1) {
       this.widthScale = this.widthScaleBase * ratio;
     } else {
       this.widthScale = this.widthScaleBase;
     }
-
 
     this.drawGrid(player.position, 0.5, 0.5, [0.1, 0.1, 0.1, 1.0]);
     this.drawGrid(player.position, 1.0, 1.0, [0.2, 0.2, 0.2, 1.0]);
@@ -101,34 +100,39 @@ export class Renderer {
         continue;
       }
 
+      let vec = GetVector(a, player.position, this.dims);
+      let dist = vec.x * vec.x + vec.y * vec.y;
+      
+      // temp precaution against overdrawing
+      if (dist > 900) {
+        continue;
+      }
+      
       this.drawGeometry(player.position, a.position, a.geometry, -a.rotation);
 
       let pos = this.toScreenPosition(player.position, a.position);
 
-      if (pos.x > 0 && pos.x < this.canvas.getWidth() && pos.y > 0 && pos.y < this.canvas.getHeight()) {
+      if (pos.x > 0 && pos.x < this.w && pos.y > 0 && pos.y < this.h) {
         // asteroid is on screen -- don't bother trying to point to it.
         continue;
       }
 
-      let vec = GetVector(a, player.position, this.dims);
-      let dist = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
 
       // dist bound from 6 to 30
-      if (dist < 6 || dist > 30) {
+      if (dist < 36 || dist > 900) {
         continue;
       }
 
-      astList.push(a);
-
-
-      // awful fucking shit lol
-      astList.sort((a, b) => {
-        return (GetDistance(a, player.position, this.dims) < GetDistance(b, player.position, this.dims)) ? -1 : 1;
-      });
-
-      if (astList.length > 6) {
-        astList = astList.slice(0, 6);
-      }
+      astList.push(a); 
+    }
+    
+    // store distance info to avoid log complexity (soon)
+    astList.sort((a, b) => {
+      return (GetDistance(a, player.position, this.dims) < GetDistance(b, player.position, this.dims)) ? -1 : 1;
+    });
+    
+    if (astList.length > 6) {
+      astList = astList.slice(0, 6);
     }
 
     for (let ast of astList) {
@@ -177,7 +181,7 @@ export class Renderer {
 
     let score = player.score.toString();
     let len = score.length;
-    this.canvas.addText(screen.x - 40 - (len * 30), screen.y - 60, score, 2, [24, 24]);
+    this.canvas.addText(this.w - 40 - (len * 30), this.h - 60, score, 2, [24, 24]);
 
     let chunk = `chunk: ${player.position.chunk.x}, ${player.position.chunk.y}`;
     let position = `pos: ${player.position.position.x.toFixed(2)}, ${player.position.position.y.toFixed(2)}`;
@@ -204,7 +208,7 @@ export class Renderer {
     // add lives
     let basePoint = {
       x: 48,
-      y: this.canvas.getHeight() - 48
+      y: this.h - 48
     };
 
     for (let i = 0; i < player.lives; i++) {
@@ -213,12 +217,12 @@ export class Renderer {
     }
 
     if (player.lives === 0 && player.destroyed) {
-      this.canvas.addText((this.canvas.getWidth() / 2) - 180, (this.canvas.getHeight() / 2) - 32, "GAME OVER", 2, [32, 32]);
+      this.canvas.addText((this.w / 2) - 180, (this.h / 2) - 32, "GAME OVER", 2, [32, 32]);
     }
 
     if (inputmgr) {
-      this.DrawCircle({x: 160, y: screen.y - 192}, 128, 2, [1.0, 1.0, 1.0, 1.0]);
-      this.DrawCircle({x: screen.x - 160, y: screen.y - 192}, 128, 2, [1.0, 1.0, 1.0, 1.0]);
+      this.DrawCircle({x: 160, y: this.h - 192}, 128, 2, [1.0, 1.0, 1.0, 1.0]);
+      this.DrawCircle({x: this.w - 160, y: this.h - 192}, 128, 2, [1.0, 1.0, 1.0, 1.0]);
     }
     
 
@@ -260,45 +264,44 @@ export class Renderer {
   }
 
   private drawGrid(center: WorldPosition, step: number, speed: number, color: [number, number, number, number]) {
-    let widthStep = step * this.canvas.getWidth() / (this.widthScale);
+    let w = this.w, h = this.h;
+
+    let widthStep = step * w / (this.widthScale);
     let posCenter = center.position.x * speed / step;
+
 
     let widthOffV = (posCenter % GRIDSTEP) * widthStep;
     let shipCenter = {
-      x: this.canvas.getWidth() / 2,
-      y: this.canvas.getHeight() / 2
+      x: w / 2,
+      y: h / 2
     };
 
     let gridLineX = shipCenter.x - widthOffV;
-    while (gridLineX > 0) {
-      gridLineX -= widthStep;
-    }
-
+    gridLineX -= widthStep * Math.ceil(gridLineX / widthStep);
     gridLineX += widthStep;
-    while (gridLineX < this.canvas.getWidth()) {
-      this.canvas.addLine(gridLineX, -1, gridLineX, this.canvas.getHeight() + 1, 2, color);
+
+    while (gridLineX < w) {
+      this.canvas.addLine(gridLineX, -1, gridLineX, h + 1, 2, color);
       gridLineX += widthStep;
     }
 
     let widthOffH = ((center.position.y * speed / step) % GRIDSTEP) * widthStep;
     let gridLineY = shipCenter.y - widthOffH;
-    while (gridLineY > 0) {
-      gridLineY -= widthStep;
-    }
+    gridLineY -= widthStep * Math.ceil(gridLineY / widthStep);
 
     gridLineY += widthStep;
-    while (gridLineY < this.canvas.getHeight()) {
-      this.canvas.addLine(-1, gridLineY, this.canvas.getWidth() + 1, gridLineY, 2, color);
+    while (gridLineY < h) {
+      this.canvas.addLine(-1, gridLineY, w + 1, gridLineY, 2, color);
       gridLineY += widthStep;
     }
   }
 
   toScreenPosition(center: WorldPosition, pos: WorldPosition) : Point2D {
-    let widthStep = this.canvas.getWidth() / this.widthScale;
+    let widthStep = this.w / this.widthScale;
 
     let screenCenter = {
-      x: this.canvas.getWidth() / 2,
-      y: this.canvas.getHeight() / 2
+      x: this.w / 2,
+      y: this.h / 2
     };
 
     let wp = {} as WorldPosition;
@@ -351,10 +354,12 @@ export class Renderer {
     }
 
     // find pos relative to center based on widthscale
-    let widthStep = this.canvas.getWidth() / this.widthScale;
+    let widthStep = this.w / this.widthScale;
     let posScreen = this.toScreenPosition(center, pos);
 
     let geomRot : Array<Point2D> = [];
+
+    let s = Math.sin(rot), c = Math.cos(rot);
 
     for (let pt of geom) {
       let ptRot : Point2D = {
@@ -362,8 +367,8 @@ export class Renderer {
         y: pt.y
       };
 
-      ptRot.x = scale * pt.x * Math.cos(rot) - scale * pt.y * Math.sin(rot);
-      ptRot.y = scale * pt.x * Math.sin(rot) + scale * pt.y * Math.cos(rot);
+      ptRot.x = scale * pt.x * c - scale * pt.y * s;
+      ptRot.y = scale * pt.x * s + scale * pt.y * c;
       // position relative to pos
       ptRot.x = posScreen.x + ptRot.x * widthStep;
       ptRot.y = posScreen.y + ptRot.y * widthStep;

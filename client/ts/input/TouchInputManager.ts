@@ -124,7 +124,6 @@ export class TouchInputManager implements InputManager {
     let y = document.body.clientHeight - (t.pageY + 192);
     let dir = Math.atan2(y, x);
     this.touch_dir = dir;
-    console.log(this.touch_dir);
   }
 
   private touchEnd_(e: TouchEvent) {

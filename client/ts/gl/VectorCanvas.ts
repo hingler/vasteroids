@@ -116,13 +116,13 @@ export class VectorCanvas {
 
     let vertCount = this.mesh.getVertexCount();
 
-    this.mesh.addVertex([screenSX + strokeDX, screenSY + strokeDY], color);
-    this.mesh.addVertex([screenSX - strokeDX, screenSY - strokeDY], color);
-    this.mesh.addVertex([screenEX + strokeDX, screenEY + strokeDY], color);
-    this.mesh.addVertex([screenEX - strokeDX, screenEY - strokeDY], color);
+    this.mesh.addVertex(screenSX + strokeDX, screenSY + strokeDY, color);
+    this.mesh.addVertex(screenSX - strokeDX, screenSY - strokeDY, color);
+    this.mesh.addVertex(screenEX + strokeDX, screenEY + strokeDY, color);
+    this.mesh.addVertex(screenEX - strokeDX, screenEY - strokeDY, color);
 
-    this.mesh.addTriangle([vertCount,     vertCount + 1, vertCount + 2]);
-    this.mesh.addTriangle([vertCount + 1, vertCount + 3, vertCount + 2]);
+    this.mesh.addTriangle(vertCount,     vertCount + 1, vertCount + 2);
+    this.mesh.addTriangle(vertCount + 1, vertCount + 3, vertCount + 2);
   }
 
   drawToScreen() {
