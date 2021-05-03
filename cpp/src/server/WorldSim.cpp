@@ -176,7 +176,10 @@ void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
   proj.id = id_max_++;
   proj.ship_ID = ship_id;
   proj.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
-  proj.last_collision_delta = proj.creation_time;
+  // creation time is subject to client lag :(
+  // use origin position to figure out delta
+  Point2D<float> distFromOrigin = GetDistance(proj.position, proj.origin);
+  proj.last_collision_delta = GetServerTime_() - (distFromOrigin.x / proj.velocity.x);
   proj.creation_time = GetServerTime_();
   new_projectiles_.at(ship_id).insert(proj.client_ID);
   Point2D<int> new_chunk = proj.position.chunk;
@@ -185,6 +188,28 @@ void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
   }
 
   chunks_.at(new_chunk).InsertProjectile(proj);
+}
+
+Point2D<float> WorldSim::GetDistance(WorldPosition a, WorldPosition b) {
+  Point2D<int> chunkDist{b.chunk.x - a.chunk.x, b.chunk.y - a.chunk.y};
+  Point2D<float> posDist{b.position.x - a.position.x, b.position.y - a.position.y};
+
+  posDist.x += (chunkDist.x * chunk_size);
+  posDist.y += (chunkDist.y * chunk_size);
+
+  if (posDist.x > (chunk_size * chunk_dims_) / 2) {
+    posDist.x -= (chunk_size * chunk_dims_);
+  } else if (posDist.x < -(chunk_size * chunk_dims_) / 2) {
+    posDist.x += (chunk_size * chunk_dims_);
+  }
+
+  if (posDist.y > (chunk_size * chunk_dims_) / 2) {
+    posDist.y -= (chunk_size * chunk_dims_);
+  } else if (posDist.y < -(chunk_size * chunk_dims_) / 2) {
+    posDist.y += (chunk_size * chunk_dims_);
+  }
+
+  return posDist;
 }
 
 Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {

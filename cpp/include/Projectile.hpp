@@ -19,6 +19,9 @@ struct Projectile : public Instance {
   // used to delete projectiles that have overstayed their welcome
   double creation_time;
 
+  // the point at which this projectile was created.
+  WorldPosition origin;
+
   // CPP ONLY: id of the ship that created this projectile
   uint64_t ship_ID;
 

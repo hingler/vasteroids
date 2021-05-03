@@ -349,6 +349,16 @@ export class GameStateManager {
     p.position.chunk.y = ship.position.chunk.y;
     p.position.position.x = ship.position.position.x;
     p.position.position.y = ship.position.position.y;
+
+    // copy to origin field
+    p.origin = {} as WorldPosition;
+    p.origin.chunk = {} as Point2D;
+    p.origin.position = {} as Point2D;
+    p.origin.chunk.x = ship.position.chunk.x;
+    p.origin.chunk.y = ship.position.chunk.y;
+    p.origin.position.x = ship.position.position.x;
+    p.origin.position.y = ship.position.position.y;
+
     p.last_delta = getOriginTime() + (performance.now() / 1000);
     p.creationTime = p.last_delta;
     p.rotation = ship.rotation;
