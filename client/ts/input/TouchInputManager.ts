@@ -85,15 +85,23 @@ export class TouchInputManager implements InputManager {
 
       let angle = this.touch_dir;
 
-      if (angle < 0) {
-        angle = Math.PI * 2 + angle;
+      let ship_rot = ship.rotation;
+      ship_rot -= Math.floor(ship_rot / (2 * Math.PI)) * (2 * Math.PI);
+      if (ship_rot > Math.PI) {
+        ship_rot = ship_rot - (Math.PI * 2);
       }
 
-      let d_angle = angle - ship.rotation;
+      let d_angle = angle - ship_rot;
       let d_abs = Math.abs(d_angle);
-      let dir : Direction = ((d_angle > 0) !== (d_abs > Math.PI) ? Direction.CCW : Direction.CW);
+      let dir : Direction;
+      if (d_abs > Math.PI) {
+        dir = (angle > ship_rot ? Direction.CCW : Direction.CW);
+      } else {
+        dir = (angle > ship_rot ? Direction.CW : Direction.CCW);
+      }
+
       d_abs = Math.min(d_abs, (2 * Math.PI) - d_abs);
-      let thrust = (dir === Direction.CCW ? 6 * d_abs : -6 * d_abs);
+      let thrust = (dir === Direction.CCW ? -6 * d_abs : 6 * d_abs);
       if (Math.abs(thrust) > DAMP_COEFF * MAX_ROT_THRUST) {
         thrust *= (DAMP_COEFF * MAX_ROT_THRUST / Math.abs(thrust));
       }
