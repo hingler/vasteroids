@@ -103,11 +103,6 @@ export class Renderer {
       let vec = GetVector(a, player.position, this.dims);
       let dist = vec.x * vec.x + vec.y * vec.y;
       
-      // temp precaution against overdrawing
-      if (dist > 900) {
-        continue;
-      }
-      
       this.drawGeometry(player.position, a.position, a.geometry, -a.rotation);
 
       let pos = this.toScreenPosition(player.position, a.position);
