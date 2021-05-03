@@ -13,14 +13,9 @@ void CollisionWorld::AddAsteroid(const Asteroid& a) {
   asteroids_.insert(std::make_pair(a.id, a));
   Point2D<int> min, max;
   GetAsteroidBoundingBox(a, &min, &max);
-  // round down lower bound to floor
-  // round up upper bound to ceil
   for (int i = min.x; i < max.x; i++) {
     for (int j = min.y; j < max.y; j++) {
       Point2D<int> chunk_add;
-      // i or j might be greater than boundary, or less than 0
-      // account for this by rounding back
-      // collision func will handle the wrap, this just ensures the collision is considered properly
       chunk_add.x = (i + static_cast<int>(chunk_count_ * chunk_size)) % static_cast<int>(chunk_count_ * chunk_size);
       chunk_add.y = (j + static_cast<int>(chunk_count_ * chunk_size)) % static_cast<int>(chunk_count_ * chunk_size); 
       AddToCollisionChunk(a, chunk_add);
@@ -41,9 +36,13 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
   for (auto& proj : projectiles_) {
     bool collide = false;
     double delta_lookback = proj.second.last_update - proj.second.last_collision_delta;
-    float delta_step = static_cast<float>(delta_lookback / 12);
+    
+    // effective 200hz collision detection
+    int delta_count = static_cast<int>(std::ceil(delta_lookback / 0.005));
+    float delta_step = static_cast<float>(delta_lookback / delta_count);
     proj.second.position.position += ((proj.second.velocity) * -static_cast<float>(delta_lookback));
     
+
     for (int i = 0; i < 12; i++) {
       chunk.x = static_cast<int>(proj.second.position.chunk.x * chunk_size + proj.second.position.position.x);
       chunk.y = static_cast<int>(proj.second.position.chunk.y * chunk_size + proj.second.position.position.y);

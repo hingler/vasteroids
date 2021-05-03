@@ -172,33 +172,13 @@ void WorldSim::CorrectChunk(Instance& inst) {
 
 
 void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
-  // for each projectile
-  // store it in its respective chunk
-  // store a reference to its id in a temporary map
-  // when updating the sim:
-  //  - read from that map
-  //  - for a given ship, if a projectile's ID is in that map:
-  //  - place it in a special "registeredProjectiles" field
-  //  - this field will indicate to the client which of its generated projectiles
-  //    are where according to the server
-  //    and from there our client can let the server take over :)
   CorrectChunk(proj);
-  // generate a new ID for this projectile
   proj.id = id_max_++;
   proj.ship_ID = ship_id;
-  proj.creation_time = GetServerTime_();
-  // fudge a bit to ensure we don't send too much at once
   proj.origin_time = GetServerTime_() - coord_gen(gen) / 8.0f;
-  // give ourselves a collision delta
-  proj.last_collision_delta = GetServerTime_();
-  
-  // inserted when the ship is added
-  // we should have already guaranteed that the ship id is valid :)
+  proj.last_collision_delta = proj.creation_time;
+  proj.creation_time = GetServerTime_();
   new_projectiles_.at(ship_id).insert(proj.client_ID);
-  // assumption: it should be impossible for a ship to generate a projectile,
-  // and abandon it in the next update
-
-  // but we can account for this:)
   Point2D<int> new_chunk = proj.position.chunk;
   if (chunks_.find(new_chunk) == chunks_.end()) {
     CreateChunk(new_chunk);

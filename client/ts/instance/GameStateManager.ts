@@ -350,6 +350,7 @@ export class GameStateManager {
     p.position.position.x = ship.position.position.x;
     p.position.position.y = ship.position.position.y;
     p.last_delta = getOriginTime() + (performance.now() / 1000);
+    p.creationTime = p.last_delta;
     p.rotation = ship.rotation;
     p.rotation_velocity = 0;
     p.id = 0;

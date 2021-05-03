@@ -7,11 +7,19 @@ namespace vasteroids {
     }
 
     client_ID = id.As<Napi::Number>().Uint32Value();
+
+    Napi::Value creation = obj.Get("creationTime");
+    if (!creation.IsNumber()) {
+      TYPEERROR(obj.Env(), "'creationTime' field not present!");
+    }
+
+    creation_time = creation.As<Napi::Number>().Uint32Value();
   }
 
   Napi::Object Projectile::ToNodeObject(Napi::Env env) const {
     Napi::Object res = Instance::ToNodeObject(env);
     res.Set("clientID", Napi::Number::New(env, client_ID));
+    res.Set("creationTime", Napi::Number::New(env, creation_time));
     return res;
   }
 }
