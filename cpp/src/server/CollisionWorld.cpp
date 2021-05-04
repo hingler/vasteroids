@@ -65,6 +65,9 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
     
     // effective 200hz collision detection
     int delta_count = static_cast<int>(std::ceil(delta_lookback / 0.005));
+    if (delta_count > 10) {
+      std::cout << "delta count: " << delta_count << std::endl;
+    }
     float delta_step = static_cast<float>(delta_lookback / delta_count);
     proj.second.position.position += ((proj.second.velocity) * -static_cast<float>(delta_lookback));
     
