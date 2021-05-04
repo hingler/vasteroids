@@ -71,8 +71,9 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
     float delta_step = static_cast<float>(delta_lookback / delta_count);
     proj.second.position.position += ((proj.second.velocity) * -static_cast<float>(delta_lookback));
     
+    
 
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < delta_count; i++) {
       chunk.x = static_cast<int>(proj.second.position.chunk.x * chunk_size + proj.second.position.position.x);
       chunk.y = static_cast<int>(proj.second.position.chunk.y * chunk_size + proj.second.position.position.y);
       if (!asteroid_chunks_.count(chunk)) {
