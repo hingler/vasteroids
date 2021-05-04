@@ -179,6 +179,7 @@ void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
   // creation time is subject to client lag :(
   // use origin position to figure out delta
   Point2D<float> distFromOrigin = GetDistance(proj.origin, proj.position);
+  // doesn't account for ping!
   proj.last_collision_delta = GetServerTime_() - (distFromOrigin.x / proj.velocity.x);
   proj.creation_time = GetServerTime_();
   new_projectiles_.at(ship_id).insert(proj.client_ID);
@@ -304,6 +305,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     // we need to update this collision delta :(
     // we insert a copy though, so it's OK to do here.
     chunks_.at(p.position.chunk).GetProjectile(p.id)->last_collision_delta = p.last_update;
+    chunks_.at(p.position.chunk).GetProjectile(p.id)->origin = p.position;
   }
 
   std::unordered_map<uint64_t, Point2D<int>> deleted;

@@ -49,6 +49,7 @@ class CollisionWorld {
   void GetAsteroidBoundingBox(const Asteroid& a, Point2D<int>* min, Point2D<int>* max);
   float GetAsteroidRadius(const Asteroid& a);
   void AddToCollisionChunk(const Asteroid& a, Point2D<int> chunk);
+  Point2D<float> GetDistance(const WorldPosition& a, const WorldPosition& b);
 
   // places asteroids into chunks
   std::unordered_map<Point2D<int>, std::unordered_set<uint64_t>> asteroid_chunks_;

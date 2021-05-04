@@ -23,8 +23,34 @@ void CollisionWorld::AddAsteroid(const Asteroid& a) {
   }
 }
 
+Point2D<float> CollisionWorld::GetDistance(const WorldPosition& a, const WorldPosition& b) {
+  Point2D<int> chunkDist{b.chunk.x - a.chunk.x, b.chunk.y - a.chunk.y};
+  Point2D<float> posDist{b.position.x - a.position.x, b.position.y - a.position.y};
+
+  posDist.x += (chunkDist.x * chunk_size);
+  posDist.y += (chunkDist.y * chunk_size);
+
+  if (posDist.x > (chunk_size * chunk_count_) / 2) {
+    posDist.x -= (chunk_size * chunk_count_);
+  } else if (posDist.x < -(chunk_size * chunk_count_) / 2) {
+    posDist.x += (chunk_size * chunk_count_);
+  }
+
+  if (posDist.y > (chunk_size * chunk_count_) / 2) {
+    posDist.y -= (chunk_size * chunk_count_);
+  } else if (posDist.y < -(chunk_size * chunk_count_) / 2) {
+    posDist.y += (chunk_size * chunk_count_);
+  }
+
+  return posDist;
+}
+
 void CollisionWorld::AddProjectile(const Projectile& p) {
+  // fix origin
   projectiles_.insert(std::make_pair(p.id, p));
+  // delta will be determined by distance traveled
+  Point2D<float> distFromOrigin = GetDistance(p.origin, p.position);
+  projectiles_.at(p.id).last_collision_delta = p.last_update - (distFromOrigin.x / p.velocity.x);
 }
 
 std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>>& deleted_insts, std::vector<std::pair<WorldPosition, float>>& deleted_asteroids) {
