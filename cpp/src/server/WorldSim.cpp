@@ -179,9 +179,6 @@ void WorldSim::HandleNewProjectile(uint64_t ship_id, Projectile& proj) {
   // creation time is subject to client lag :(
   // use origin position to figure out delta
   Point2D<float> distFromOrigin = GetDistance(proj.origin, proj.position);
-  // doesn't account for ping!
-  proj.last_collision_delta = GetServerTime_();
-  proj.last_update = GetServerTime_();
   proj.creation_time = GetServerTime_();
   new_projectiles_.at(ship_id).insert(proj.client_ID);
   Point2D<int> new_chunk = proj.position.chunk;

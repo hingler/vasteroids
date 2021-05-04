@@ -7,6 +7,18 @@
 namespace vasteroids {
 namespace server {
 
+static void CorrectChunk(Instance& inst, int chunk_dims) {
+  Point2D<int> new_chunk = inst.position.chunk;
+  if (new_chunk.x < 0 || new_chunk.x >= chunk_dims
+  ||  new_chunk.y < 0 || new_chunk.y >= chunk_dims) {
+    // scoop it back around back in bounds
+    new_chunk.x -= (chunk_dims * static_cast<int>(std::floor(new_chunk.x / static_cast<double>(chunk_dims))));
+    new_chunk.y -= (chunk_dims * static_cast<int>(std::floor(new_chunk.y / static_cast<double>(chunk_dims))));
+  }
+
+  inst.position.chunk = new_chunk;
+}
+
 CollisionWorld::CollisionWorld(int chunk_dims) : chunk_count_(chunk_dims) {}
 
 void CollisionWorld::AddAsteroid(const Asteroid& a) {
@@ -50,7 +62,7 @@ void CollisionWorld::AddProjectile(const Projectile& p) {
   projectiles_.insert(std::make_pair(p.id, p));
   // delta will be determined by distance traveled
   Point2D<float> distFromOrigin = GetDistance(p.origin, p.position);
-  projectiles_.at(p.id).last_collision_delta = p.last_update - (distFromOrigin.x / p.velocity.x);
+  projectiles_.at(p.id).last_collision_delta = p.last_update - std::abs(distFromOrigin.x / p.velocity.x);
 }
 
 std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::ComputeCollisions(std::unordered_map<uint64_t, Point2D<int>>& deleted_insts, std::vector<std::pair<WorldPosition, float>>& deleted_asteroids) {
@@ -65,9 +77,6 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
     
     // effective 200hz collision detection
     int delta_count = static_cast<int>(std::ceil(delta_lookback / 0.005));
-    if (delta_count > 10) {
-      std::cout << "delta count: " << delta_count << std::endl;
-    }
     float delta_step = static_cast<float>(delta_lookback / delta_count);
     proj.second.position.position += ((proj.second.velocity) * -static_cast<float>(delta_lookback));
 
@@ -75,39 +84,37 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
       // issue when position modified without fixing chunk
       chunk.x = static_cast<int>(proj.second.position.chunk.x * chunk_size + proj.second.position.position.x);
       chunk.y = static_cast<int>(proj.second.position.chunk.y * chunk_size + proj.second.position.position.y);
-      if (!asteroid_chunks_.count(chunk)) {
-        continue;
-      }
-
-      auto& contents = asteroid_chunks_.at(chunk);
-      for (auto& id : contents) {
-        if (!asteroids_.count(id)) {
-          std::cout << "what the fuck" << std::endl;
-          std::cout << "asteroid stored in chunk was not retained" << std::endl;
-          continue;
-        }
-
-        Asteroid& ast = asteroids_.at(id);
-        collide = (collide || Collide(ast, proj.second.position, chunk_count_));
-        if (collide) {
-          // add the hit asteroid to our deleted IDs
-          deleted_insts.insert(std::make_pair(ast.id, ast.position.chunk));
-          // add the projectile to our deleted IDs as well
-          deleted_insts.insert(std::make_pair(proj.second.id, proj.second.position.chunk));
-          uint64_t ship_id = proj.second.ship_ID;
-          if (!res.count(ship_id)) {
-            res.insert(std::make_pair(ship_id, std::unordered_set<uint32_t>()));
+      if (asteroid_chunks_.count(chunk)) {
+        auto& contents = asteroid_chunks_.at(chunk);
+        for (auto& id : contents) {
+          if (!asteroids_.count(id)) {
+            std::cout << "what the fuck" << std::endl;
+            std::cout << "asteroid stored in chunk was not retained" << std::endl;
+            continue;
           }
 
-          res.at(ship_id).insert(proj.second.client_ID);
-          //  - get radius as max (radius) of all points in the asteroid
-          float radius = GetAsteroidRadius(ast);
-          radius *= 0.707f;
-          //  - if the radius is below some threshold, don't generate two new
-          if (radius >= 0.25) {
-            deleted_asteroids.push_back(std::make_pair(ast.position, radius));
+          Asteroid& ast = asteroids_.at(id);
+          collide = (collide || Collide(ast, proj.second.position, chunk_count_));
+          if (collide) {
+            // add the hit asteroid to our deleted IDs
+            deleted_insts.insert(std::make_pair(ast.id, ast.position.chunk));
+            // add the projectile to our deleted IDs as well
+            deleted_insts.insert(std::make_pair(proj.second.id, proj.second.position.chunk));
+            uint64_t ship_id = proj.second.ship_ID;
+            if (!res.count(ship_id)) {
+              res.insert(std::make_pair(ship_id, std::unordered_set<uint32_t>()));
+            }
+
+            res.at(ship_id).insert(proj.second.client_ID);
+            //  - get radius as max (radius) of all points in the asteroid
+            float radius = GetAsteroidRadius(ast);
+            radius *= 0.707f;
+            //  - if the radius is below some threshold, don't generate two new
+            if (radius >= 0.25) {
+              deleted_asteroids.push_back(std::make_pair(ast.position, radius));
+            }
+            break;
           }
-          break;
         }
       }
 
@@ -116,6 +123,9 @@ std::unordered_map<uint64_t, std::unordered_set<uint32_t>> CollisionWorld::Compu
       }
 
       proj.second.position.position += ((proj.second.velocity) * delta_step);
+      Point2D<float> test = proj.second.velocity * delta_step;
+
+      CorrectChunk(proj.second, chunk_count_);
     }
   }
   return res;
