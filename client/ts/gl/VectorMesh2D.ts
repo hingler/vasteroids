@@ -30,14 +30,16 @@ export class VectorMesh2D {
     this.indexBuffer.insertData(vertC);
   }
 
-  draw(gl: WebGLRenderingContext, locationGeometry: number, locationColor: number) {
+  draw(gl: WebGLRenderingContext, locationGeometry: number, locationColor?: number) {
     this.vertexBuffer.bindBuffer(gl, gl.ARRAY_BUFFER);
     this.indexBuffer.bindBuffer(gl, gl.ELEMENT_ARRAY_BUFFER);
 
     gl.vertexAttribPointer(locationGeometry, 2, gl.FLOAT, false, 6 * this.vertexBuffer.bytesPerElement(), 0);
     gl.enableVertexAttribArray(locationGeometry);
-    gl.vertexAttribPointer(locationColor, 4, gl.FLOAT, false, 6 * this.vertexBuffer.bytesPerElement(), 2 * this.vertexBuffer.bytesPerElement());
-    gl.enableVertexAttribArray(locationColor);
+    if (locationColor) {
+      gl.vertexAttribPointer(locationColor, 4, gl.FLOAT, false, 6 * this.vertexBuffer.bytesPerElement(), 2 * this.vertexBuffer.bytesPerElement());
+      gl.enableVertexAttribArray(locationColor);
+    }
 
     gl.drawElements(gl.TRIANGLES, this.indexBuffer.getElementCount(), gl.UNSIGNED_INT, 0);
   }

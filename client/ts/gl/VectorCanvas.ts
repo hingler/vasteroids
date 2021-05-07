@@ -26,7 +26,7 @@ export class VectorCanvas {
       console.error("what the fuck are you doing");
     }
 
-    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
   }
 
   getWidth() {

@@ -1,9 +1,14 @@
 import { chunkSize, Point2D, WorldPosition } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
 import { ServerPacket } from "../../../server/ServerPacket";
+import { AfterImage } from "../gl/material/AfterImage";
+import { AfterOverlay } from "../gl/material/AfterOverlay";
+import { TextureXfer } from "../gl/material/TextureXfer";
 import { VectorCanvas } from "../gl/VectorCanvas";
+import { VectorMesh2D } from "../gl/VectorMesh2D";
 import { TouchInputManager } from "../input/TouchInputManager";
 import { GetDistance, GetVector } from "../instance/AsteroidColliderJS";
+import { Framebuffer } from "./Framebuffer";
 
 const GRIDSTEP = 2;
 
@@ -64,6 +69,18 @@ export class Renderer {
   public widthScaleBase: number;
   private canvas: VectorCanvas;
   private dims: number;
+  private gl: WebGLRenderingContext;
+
+  private fb_obj: Framebuffer;
+  private fb_after_a: Framebuffer;
+  private fb_after_b: Framebuffer;
+  private framebuffer_phase: number;
+
+  // stores geometry for frame tex -> screen (no blitframebuffer in WGL)
+  private sexworld: VectorMesh2D;
+  private cumplanet: TextureXfer;
+  private aftrimage: AfterImage;
+  private aftrovlay: AfterOverlay;
 
   private w: number;
   private h: number;
@@ -72,10 +89,46 @@ export class Renderer {
     this.widthScaleBase = widthScale;
     this.canvas = canvas;
     this.dims = dims;
+
+    
+    this.w = this.canvas.getWidth();
+    this.h = this.canvas.getHeight();
+    
+    let gl = this.canvas.gl;
+    this.gl = gl;
+    
+    this.fb_obj = new Framebuffer(gl, this.w, this.h);
+    this.fb_after_a = new Framebuffer(gl, this.w, this.h);
+    this.fb_after_b = new Framebuffer(gl, this.w, this.h);
+
+    this.framebuffer_phase = 0;
+
+    this.w = this.canvas.getWidth(), this.h = this.canvas.getHeight();
+
+    this.sexworld = new VectorMesh2D();
+    this.sexworld.addVertex(-1, 1);
+    this.sexworld.addVertex(1, 1);
+    this.sexworld.addVertex(-1, -1);
+    this.sexworld.addVertex(1, -1);
+    this.sexworld.addTriangle(0, 1, 2);
+    this.sexworld.addTriangle(2, 1, 3);
+
+    this.cumplanet = new TextureXfer(this.gl);
+    this.aftrimage = new AfterImage(this.gl);
+    this.aftrovlay = new AfterOverlay(this.gl);
   }
 
   drawInstances(player: ClientShip, instances: ServerPacket, inputmgr?: TouchInputManager) {
-    this.w = this.canvas.getWidth(), this.h = this.canvas.getHeight();
+    let w = this.canvas.getWidth(), h = this.canvas.getHeight();
+    if (w != this.w || h != this.h) {
+      this.w = w, this.h = h;
+      this.fb_obj.setFramebufferDimensions(w, h);
+      this.fb_after_a.setFramebufferDimensions(w, h);
+      this.fb_after_b.setFramebufferDimensions(w, h);
+    }
+
+    let gl = this.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     let ratio = this.w / this.h;
     if (ratio > 1) {
@@ -220,8 +273,33 @@ export class Renderer {
       this.DrawCircle({x: this.w - 160, y: this.h - 192}, 128, 2, [1.0, 1.0, 1.0, 1.0]);
     }
     
-
+    this.fb_obj.bindFramebuffer(gl.FRAMEBUFFER);
     this.canvas.drawToScreen();
+
+    let fresh_fb : Framebuffer = (this.framebuffer_phase === 0 ? this.fb_after_b : this.fb_after_a);
+
+    if (this.aftrimage.isCompiled()) {
+      if (this.framebuffer_phase === 0) {
+        this.aftrimage.textureAfter = this.fb_after_a.getColorTexture();
+        this.fb_after_b.bindFramebuffer(gl.FRAMEBUFFER);
+      } else {
+        this.aftrimage.textureAfter = this.fb_after_b.getColorTexture();
+        this.fb_after_a.bindFramebuffer(gl.FRAMEBUFFER);
+      }
+
+      this.aftrimage.textureInit = this.fb_obj.getColorTexture();
+      this.aftrimage.drawMaterial(this.gl, this.sexworld);
+    }
+
+    this.framebuffer_phase = 1 - this.framebuffer_phase;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (this.aftrovlay.isCompiled()) {
+      this.aftrovlay.textureMain = this.fb_obj.getColorTexture();
+      this.aftrovlay.textureAfter = fresh_fb.getColorTexture();
+      this.aftrovlay.afterOpacity = 0.5;
+      this.aftrovlay.drawMaterial(this.gl, this.sexworld);
+    }
   }
 
   private DrawCircle(center: Point2D, radius: number, stroke: number, color: [number, number, number, number]) {

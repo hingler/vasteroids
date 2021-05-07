@@ -1,4 +1,3 @@
-import EventEmitter = require("node:events");
 import { VectorMesh2D } from "../VectorMesh2D";
 import { CompileShaders } from "./CompileShaders";
 
