@@ -137,8 +137,8 @@ export class Renderer {
       this.widthScale = this.widthScaleBase;
     }
 
-    this.drawGrid(player.position, 0.5, 0.5, [0.1, 0.1, 0.1, 1.0]);
-    this.drawGrid(player.position, 1.0, 1.0, [0.2, 0.2, 0.2, 1.0]);
+    this.drawGrid(player.position, 0.5, 0.5, [0.03, 0.03, 0.03, 1.0]);
+    this.drawGrid(player.position, 1.0, 1.0, [0.09, 0.09, 0.09, 1.0]);
 
     // draw ship
     if (!player.destroyed) {
@@ -211,7 +211,7 @@ export class Renderer {
 
       let rot = Math.atan2(vec.y, vec.x);
 
-      this.drawGeometry(player.position, arrowPos, pointerGeom, rot, scaleFac / 1.8, [0.5, 0.5, 0.5, 1.0]);
+      this.drawGeometry(player.position, arrowPos, pointerGeom, rot, scaleFac / 1.8, [0.3, 0.3, 0.3, 1.0]);
     }
 
     for (let s of instances.ships) {
@@ -297,7 +297,7 @@ export class Renderer {
     if (this.aftrovlay.isCompiled()) {
       this.aftrovlay.textureMain = this.fb_obj.getColorTexture();
       this.aftrovlay.textureAfter = fresh_fb.getColorTexture();
-      this.aftrovlay.afterOpacity = 0.5;
+      this.aftrovlay.afterOpacity = 0.161;
       this.aftrovlay.drawMaterial(this.gl, this.sexworld);
     }
   }

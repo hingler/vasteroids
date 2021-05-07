@@ -14,5 +14,5 @@ void main() {
   lookup.y = pow(lookup.y, 1.2);
   lookup.z = pow(lookup.z, 1.2);
   lookup.w = pow(lookup.w, 1.2);
-  gl_FragColor = texture2D(texMain, vCoord) + lookup * 0.2;
+  gl_FragColor = texture2D(texMain, vCoord) + lookup * afterOpac;
 }
