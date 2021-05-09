@@ -65,7 +65,8 @@ export class KeyInputManager implements InputManager {
       }
 
       let update = this.origin_time + (performance.now() / 1000);
-      let delta = update - ship.last_delta;
+      let delta = Math.min(update - ship.last_delta, 0.4);
+
 
       let delta_v : Point2D = {x: 1, y: 0};
       delta_v.x *= accel * delta;
@@ -73,8 +74,8 @@ export class KeyInputManager implements InputManager {
 
       let damp = { x: -v_z.x / 0.4, y: -v_z.y / 0.4 };
       // account for delta
-      damp.x *= Math.min(delta, 0.4);
-      damp.y *= Math.min(delta, 0.4);
+      damp.x *= delta;
+      damp.y *= delta;
 
       delta_v.y = -(delta_v.x * Math.sin(ship.rotation));
       delta_v.x = delta_v.x * Math.cos(ship.rotation);
