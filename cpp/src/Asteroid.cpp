@@ -27,7 +27,7 @@ Napi::Object Asteroid::ToNodeObject(Napi::Env env) const {
   Napi::Object res = Instance::ToNodeObject(env);
   Napi::Array arr = Napi::Array::New(env, geometry.size());
   
-  int i = 0;
+  uint32_t i = 0;
   for (const auto& point : this->geometry) {
     arr[i++] = point.ToNodeObject(env);
   }

@@ -152,7 +152,7 @@ namespace std {
 template<>
 struct hash<vasteroids::Point2D<int>> {
   std::size_t operator()(vasteroids::Point2D<int> const& p) const noexcept {
-    std::size_t base = static_cast<size_t>(p.x) << 32;
+    std::size_t base = static_cast<size_t>(p.x) << 31;
     base |= static_cast<size_t>(p.y);
     return base;
   }
