@@ -142,14 +142,14 @@ export class KeyInputManager implements InputManager {
   }
 
   private EventFuncOn_(e: KeyboardEvent) {
-    let input = this.keys.get(e.key);
+    let input = this.keys.get(e.key.toLowerCase());
     if (input) {
       this.inputState.set(input, true);
     }
   }
 
   private EventFuncOff_(e: KeyboardEvent) {
-    let input = this.keys.get(e.key);
+    let input = this.keys.get(e.key.toLowerCase());
     if (input) {
       this.inputState.set(input, false);
     }
