@@ -211,36 +211,24 @@ Point2D<float> WorldSim::GetDistance(WorldPosition a, WorldPosition b) {
   return posDist;
 }
 
-Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
-  // update all components
-  // figure out which chunks we need to update
-  double server_time = GetServerTime_();
-  Napi::Env env = info.Env();
-  Napi::Object obj_ret = Napi::Object::New(env);
-  std::unordered_set<Point2D<int>> update_chunks;
+std::unordered_set<Point2D<int>> WorldSim::GetActiveChunks() {
+  std::unordered_set<Point2D<int>> res;
   for (auto ship : ships_) {
     for (int x = ship.second.x - 1; x <= ship.second.x + 1; x++) {
       for (int y = ship.second.y - 1; y <= ship.second.y + 1; y++) {
         Point2D<int> chunk(x, y);
         FixChunkBoundaries(chunk);
 
-        update_chunks.insert(chunk);
+        res.insert(chunk);
       }
     }
   }
 
-  // update the chunks we have to update
-  ServerPacket collate;
-  for (auto point : update_chunks) {
-    if (!chunks_.count(point)) {
-      continue;
-    }
+  return res;
+}
 
-    chunks_.at(point).UpdateChunk(collate, server_time);
-  }
-
-  // collate now contains all of the elements which have been displaced, properly simulated.
-  // chunks may overflow -- handle here!
+void WorldSim::ReinsertInstances(ServerPacket& collate) {
+  double server_time = GetServerTime_();
   for (auto a : collate.asteroids) {
     FixChunkBoundaries(a.position.chunk);
     Point2D<int> chunk_coord = a.position.chunk;
@@ -279,9 +267,29 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     p.last_update = server_time;
     chunks_.at(chunk_coord).InsertProjectile(p);
   }
+}
 
-  // now, we would check relevant chunks for collisions
-  // poll our chunks again with a server packet
+Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
+  // update all components
+  // figure out which chunks we need to update
+  double server_time = GetServerTime_();
+  Napi::Env env = info.Env();
+  Napi::Object obj_ret = Napi::Object::New(env);
+  std::unordered_set<Point2D<int>> update_chunks = GetActiveChunks();
+
+  ServerPacket collate;
+
+  for (auto point : update_chunks) {
+    if (!chunks_.count(point)) {
+      // chunk currently contains no items -- do not update it.
+      continue;
+    }
+
+    chunks_.at(point).UpdateChunk(collate, server_time);
+  }
+
+  ReinsertInstances(collate);
+
   ServerPacket simmed;
   for (auto point : update_chunks) {
     if (!chunks_.count(point)) {
@@ -310,14 +318,9 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   std::vector<std::pair<WorldPosition, float>> collide_pos;
 
   auto client_map = cw_->ComputeCollisions(deleted, collide_pos);
-  // delete instances from relevant chunks
-  // add asteroids to relevant chunks
   for (auto& del : deleted) {
-    // should be valid -- if inst moved to new chunk, we would have created it in prev step
-    // projectiles are deleted by the time they get here
     Projectile* proj = chunks_.at(del.second).GetProjectile(del.first);
     if (proj) {
-      // del corresponds with a projectile
       uint64_t client = proj->ship_ID;
       if (ships_.count(client)) {
         Point2D<int> pt = ships_.at(client);
@@ -350,12 +353,6 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
   }
 
   // lastly, we need to figure out which entities to expose to which instances
-  
-  // for each chunk nearby:
-  // create a map to contain new knowns
-  // if known and old version: delta only
-  // if known and new version: send nothing
-  // if unknown: send full
 
   // note: we can really easily multithread this  
   for (auto& ship : ships_) {
@@ -370,10 +367,6 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       for (int y = ship.second.y - 1; y <= ship.second.y + 1; y++) {
         Point2D<int> chunk(x, y);
         FixChunkBoundaries(chunk);
-        // what do we do if world is smaller than 3x3?
-        // chunks will be re-counted.
-
-        // if the chunk has been handled, it will be in here.
         if (chunks_read.count(chunk)) {
           continue;
         }
@@ -403,10 +396,7 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
 
       knowns_new.insert(std::make_pair(itr_a->id, itr_a->ver));
       if (knowns.count(itr_a->id)) {
-        // known
         if (knowns.at(itr_a->id) != itr_a->ver) {
-          // known, but out of date
-          // remove from itr, add to delta
           delta_pkt.id = itr_a->id;
           delta_pkt.position = itr_a->position;
           delta_pkt.velocity = itr_a->velocity;
@@ -431,19 +421,10 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
       }
     }
 
-    // start by grabbing a reference to our thing
-    // for each projectile in the packet:
-    //  - if the projectile is in our set, move it to projectile local and remove it from the set
-    //  - otherwise, leave it in projectiles
     auto* proj_new = &new_projectiles_.at(id);
     auto itr_p = res.projectiles.begin();
     while (itr_p != res.projectiles.end()) {
       if (deleted.count(itr_p->id)) {
-        // odd workaround
-        // if a projectile collides on first tick, it is erased and the client doesn't notice
-        // we do this deleted check since our server sometimes can't keep up
-        // but if we skip it on the first tick, the projectile will exist for one additional tick
-        // and then be deleted -- this will give the client enough time to confirm its deletion
         res.deleted.insert(itr_p->id);
         if (proj_new->count(itr_p->client_ID) && itr_p->ship_ID == id) {
           res.deleted_local.insert(itr_p->client_ID);
@@ -452,9 +433,6 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
         continue;
       }
       if (proj_new->count(itr_p->client_ID) && itr_p->ship_ID == id) {
-        // does not handle clashing proj ids
-        // we just hit a projectile which is associated with this ship!
-        // handle it, then drop it.
         res.projectiles_local.push_back(*itr_p);
         proj_new->erase(itr_p->client_ID);
         itr_p = res.projectiles.erase(itr_p);
@@ -524,15 +502,10 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
     }
     known_ids_.erase(id);
     known_ids_.insert(std::make_pair(id, std::move(knowns_new)));
-    // res still contains our server packet for this ship
-    // map from ID to that packet!
-    // key: id -- value: server packet
     std::string id_str = std::to_string(id);
     obj_ret.Set(std::move(id_str), res.ToNodeObject(env));
   }
 
-  // obj_ret returns
-  // keys: IDs as strings -- values: serverpackets
   return obj_ret;
 }
 

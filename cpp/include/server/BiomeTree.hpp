@@ -13,6 +13,20 @@
 #include <memory>
 
 namespace vasteroids {
+namespace server {
+
+template <typename Key, typename Val>
+struct Node {
+  std::shared_ptr<Node<Key, Val>> left;
+  std::shared_ptr<Node<Key, Val>> right;
+
+  // V is probably very small, just store it plain
+  Key key;
+  Val val;
+
+  // cache last known height so we don't have to look it up again
+  int32_t height;
+};
 
 /**
  *  AVL tree which returns the largest stored element which is less than the requested value.
@@ -35,38 +49,28 @@ class BiomeTree {
    *  @param val - the new value being inserted.
    */ 
   void Insert(U key, V val) {
-    // this call should be recursive
-    // we send the new value down its respective subtree, or insert and return
-    // we need to make lengths consistent here too
-    // each node on the bubble up then does its rotation check
-    if (root_ == nullptr) {
-      root_ = std::make_shared<Node<U, V>>();
-      root_->left = nullptr;
-      root_->right = nullptr;
-    } else {
-      InsertRecursive(root_, val);
-    }
+    root_ = InsertRecursive(root_, key, val);
   }
 
   /**
    *  Look up the largest stored value which is less than val.
-   *  @param val - search query.
-   *  @returns pointer to stored value
+   *  @param key - search query.
+   *  @param value - return param for value.
+   *  @returns true if a valid entry could be found, false otherwise.
    */ 
-  const V* Lookup(U key) {
+  bool Lookup(U key, V* value) {
     // maintain largest lesser value seen thus far
     // once we hit a null: return the value in that key
-    V* max_value = nullptr;
 
     std::shared_ptr<Node<U, V>> active_node = root_;
 
     if (active_node == nullptr) {
       // idk what to do really
       // this should never be used though so we'll be OK
-      return max_value;
+      return false;
     }
 
-    max_value = active_node->value;
+    bool valid = false;
 
     while (active_node != nullptr) {
       if (key < active_node->key) {
@@ -75,12 +79,13 @@ class BiomeTree {
         // our key is greater than some found value.
         // as we descend, each time we go right we'll have a value closer to the key than the prior.
         // simply store this value and then move on.
-        max_value = &active_node->value;
+        valid = true;
+        *value = active_node->val;
         active_node = active_node->right;
       }
     }
 
-    return max_value;
+    return valid;
   }
   
  private:
@@ -140,6 +145,8 @@ class BiomeTree {
         }
       }
     }
+
+    return root;
   }
 
   // long/short
@@ -155,7 +162,7 @@ class BiomeTree {
 
     // fix height
     root->height = GetHeight(root->right) + 1;
-    left->height = std::max(GetHeight(root->height), GetHeight(left->left)) + 1;
+    left->height = std::max(GetHeight(root), GetHeight(left->left)) + 1;
     return left;
   }
 
@@ -167,7 +174,7 @@ class BiomeTree {
 
     // fix height
     root->height = GetHeight(root->left) + 1;
-    right->height = std::max(GetHeight(root->height), GetHeight(right->right)) + 1;
+    right->height = std::max(GetHeight(root), GetHeight(right->right)) + 1;
     return right;
   }
 
@@ -182,19 +189,7 @@ class BiomeTree {
   std::shared_ptr<Node<U, V>> root_;
 };
 
-template <typename Key, typename Val>
-struct Node {
-  std::shared_ptr<Node<Key, Val>> left;
-  std::shared_ptr<Node<Key, Val>> right;
-
-  // V is probably very small, just store it plain
-  Key key;
-  Val val;
-
-  // cache last known height so we don't have to look it up again
-  int32_t height;
-};
-
+}
 }
 
 #endif

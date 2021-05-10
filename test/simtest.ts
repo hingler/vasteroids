@@ -16,11 +16,8 @@ describe("WorldSim", function() {
     expect(ship.name).to.equal("dingusville");
     let id = ship.id;
     expect(id).to.equal(2);
-    console.log("beginning update...");
     let pkts = worldsim.UpdateSim();
 
-    console.log(pkts);
-    console.log(pkts['2'].asteroids);
 
     expect(pkts['2'].asteroids.length).to.equal(1);
     expect(pkts['2'].ships.length).to.equal(0);
@@ -31,7 +28,6 @@ describe("WorldSim", function() {
     expect(ship_two.id).to.equal(3);
 
     pkts = worldsim.UpdateSim();
-    console.log(pkts);
     expect(pkts['3']).to.not.be.undefined;
     expect(pkts['2']).to.not.be.undefined;
 
@@ -47,7 +43,6 @@ describe("WorldSim", function() {
     expect(pkts['3'].ships[0].name).to.equal("dingusville");
 
     pkts = worldsim.UpdateSim();
-    console.log(pkts);
     expect(pkts['3']).to.not.be.undefined;
     expect(pkts['2']).to.not.be.undefined;
 
@@ -76,14 +71,10 @@ describe("WorldSim", function() {
     testTwo.ship = ship_two;
     testTwo.projectiles = [];
 
-    console.log("one!");
-    console.log(testClientPacket.ship);
     worldsim.HandleClientPacket(testClientPacket);
-    console.log("two!");
     worldsim.HandleClientPacket(testTwo);
 
     let res = worldsim.UpdateSim();
-    console.log(res);
     expect(res[ship_one.id.toString()].ships.length).to.equal(1);
     expect(res[ship_two.id.toString()].ships.length).to.equal(1);
 
@@ -95,7 +86,6 @@ describe("WorldSim", function() {
     worldsim.HandleClientPacket(testTwo);
     
     res = worldsim.UpdateSim();
-    console.log(res);
     expect(res[ship_one.id.toString()].ships.length).to.equal(0);
     expect(res[ship_two.id.toString()].ships.length).to.equal(0);
 
@@ -107,13 +97,11 @@ describe("WorldSim", function() {
     worldsim.HandleClientPacket(testClientPacket);
 
     res = worldsim.UpdateSim();
-    console.log(res);
     expect(res[ship_one.id.toString()].ships.length).to.equal(1);
     expect(res[ship_two.id.toString()].ships.length).to.equal(1);
 
     worldsim.DeleteShip(ship_two.id);
     res = worldsim.UpdateSim();
-    console.log(res);
     expect(res[ship_two.id.toString()]).to.be.undefined;
     expect(res[ship_one.id.toString()].deleted.length).to.equal(1);
   })

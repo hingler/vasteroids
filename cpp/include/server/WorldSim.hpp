@@ -37,9 +37,28 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   Napi::Value GetServerTime(const Napi::CallbackInfo& info);
   // Napi::Value GetLocalChunkActivity(const Napi::CallbackInfo& info);
  private:
-  // sets spawn coords for ship
+
+  /**
+   *  @returns a set of all chunks which need to be updated.
+   */ 
+  std::unordered_set<Point2D<int>> GetActiveChunks();
+
+  /**
+   *  Reinserts elements which fell outside of their respective chunk.
+   *  @param collate - serverpacket containing all instances which need to be moved.
+   */ 
+  void ReinsertInstances(ServerPacket& collate);
+
+  /**
+   *  Sets the spawn coordinates for a new ship.
+   *  @param s - reference to our new ship.
+   */ 
   void SpawnShip(Ship& s);
-  // corrects for instances which go off the world boundary
+
+  /**
+   *  Corrects the position of a particular instance if its position/chunk are inconsistent with dims.
+   *  @param inst - the inst being corrected.
+   */ 
   void CorrectChunk(Instance& inst);
 
   // handles a single projectile (from a clientPacket)
@@ -47,10 +66,13 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
 
   // creates and populates a chunk.
   void CreateChunk(Point2D<int> chunk_coord);
+
   // generates a new asteroid at some worldposition and adds it to the world.
   void SpawnNewAsteroid(WorldPosition coord);
+
   // generates a new asteroid with a prespecified number of points and radius and adds it to the world.
   void SpawnNewAsteroid(WorldPosition coord, float radius, int points);
+
   // gets dist between two points
   Point2D<float> GetDistance(WorldPosition a, WorldPosition b);
 
@@ -58,6 +80,7 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   void FixChunkBoundaries(Point2D<int>& chunk);
 
   double GetServerTime_();
+
   // x/y dims of our world
   int chunk_dims_;
 
