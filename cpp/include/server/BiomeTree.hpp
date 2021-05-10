@@ -112,7 +112,6 @@ class BiomeTree {
 
     if (std::abs(height_l - height_r) > 1) {
       if (height_l > height_r) {
-        // not necc. nullptr
         if (root->left->right == nullptr) {
           // single right rotation wrt root
           return RotateRight(root);
