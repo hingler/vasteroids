@@ -1,6 +1,8 @@
 #include <server/WorldSim.hpp>
 #include <client/ClientPacket.hpp>
 
+#include <BiomeInfo.hpp>
+
 #include <AsteroidGenerator.hpp>
 
 #include <cmath>
@@ -19,7 +21,8 @@ Napi::Function WorldSim::GetClassInstance(Napi::Env env) {
     InstanceMethod("RespawnShip", &WorldSim::RespawnShip),
     InstanceMethod("AddShip", &WorldSim::AddShip),
     InstanceMethod("DeleteShip", &WorldSim::DeleteShip),
-    InstanceMethod("GetServerTime", &WorldSim::GetServerTime)
+    InstanceMethod("GetServerTime", &WorldSim::GetServerTime),
+    InstanceMethod("GetLocalBiomeInfo", &WorldSim::GetLocalBiomeInfo)
   });
 }
 
@@ -669,6 +672,37 @@ void WorldSim::FixChunkBoundaries(Point2D<int>& chunk) {
 
 Napi::Value WorldSim::GetServerTime(const Napi::CallbackInfo& info) {
   return Napi::Number::New(info.Env(), GetServerTime_());
+}
+
+Napi::Value WorldSim::GetLocalBiomeInfo(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+  // get each chunk in specified area
+  // append to big long array
+  // return that
+  Napi::Value origin = info[0];
+  Napi::Value dims = info[1];
+
+  if (!origin.IsObject() || !dims.IsObject()) {
+    TYPEERROR(env, "Arguments to `GetLocalBiomeInfo` not correct");
+  }
+
+  Point2D<int> pt_origin(origin.As<Napi::Object>());
+  Point2D<int> pt_dims(dims.As<Napi::Object>());
+
+  pt_dims.x = std::min(32, pt_dims.x);
+  pt_dims.y = std::min(32, pt_dims.y);
+
+  Napi::Array res = Napi::Array::New(env);
+  int chunks = 0;
+  BiomeInfo temp_info;
+  for (int i = 0; i < pt_dims.x; i++) {
+    for (int j = 0; j < pt_dims.y; j++) {
+      temp_info.chunk.x = i + pt_origin.x;
+      temp_info.chunk.y = j + pt_origin.y;
+      temp_info.biome = mgr->GetBiome(temp_info.chunk);
+      res[chunks++] = temp_info.ToNodeObject(env);
+    }
+  }
 }
 
 double WorldSim::GetServerTime_() {

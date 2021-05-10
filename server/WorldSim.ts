@@ -1,6 +1,8 @@
 
 import { ClientPacket } from "../server/ClientPacket"
 import { ClientShip } from "../instances/Ship";
+import { Point2D } from "../instances/GameTypes";
+import { BiomeInfo } from "../instances/Biome";
 
 const worldsim = require("bindings")("worldsim");
 /**
@@ -51,6 +53,13 @@ interface WorldSim {
    * @returns server time.
    */
   GetServerTime() : number;
+
+  /**
+   * Fetches information on localbiomes.
+   * @param origin - top left corner of fetched range.
+   * @param dims - number of chunks to return on x/y axis. cannot be greater than 32.
+   */
+  GetLocalBiomeInfo(origin: Point2D, dims: Point2D) : Array<BiomeInfo>;
 
   /**
    * Returns the relative amount of activity in nearby chunks.
