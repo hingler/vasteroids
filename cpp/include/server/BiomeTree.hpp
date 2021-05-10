@@ -85,7 +85,7 @@ class BiomeTree {
     }
 
     // check left/right
-    if (key < root->val) {
+    if (key < root->key) {
       root->left = InsertRecursive(root->left, key, val);
     } else {
       root->right = InsertRecursive(root->right, key, val);

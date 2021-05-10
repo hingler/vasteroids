@@ -6,6 +6,8 @@
 #include <server/CollisionWorld.hpp>
 #include <Projectile.hpp>
 
+#include <server/BiomeManager.hpp>
+
 #include <napi.h>
 
 #include <memory>
@@ -103,6 +105,8 @@ class WorldSim : public Napi::ObjectWrap<WorldSim> {
   std::unordered_map<uint64_t, std::unordered_set<uint64_t>> new_projectiles_;
 
   std::mt19937 gen;
+
+  std::shared_ptr<BiomeManager> mgr;
 
   std::normal_distribution<> chunk_gen;
   std::uniform_real_distribution<float> coord_gen;

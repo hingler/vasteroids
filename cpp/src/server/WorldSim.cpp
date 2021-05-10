@@ -34,6 +34,9 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 
   chunk_dims_ = chunks.As<Napi::Number>().Int32Value();
 
+  // pot. costly, but then again we only really have to do it once
+  mgr = std::make_shared<BiomeManager>(chunk_dims_, (chunk_dims_ * chunk_dims_ / 36));
+
   cw_ = std::make_shared<CollisionWorld>(chunk_dims_);
 
   Napi::Value asteroidsObj = info[1];
@@ -55,12 +58,7 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 
   WorldPosition temp;
   for (int i = 0; i < asteroids; i++) {
-    do {
-      temp.chunk.x = static_cast<int>(std::round(chunk_gen(gen)));
-      temp.chunk.y = static_cast<int>(std::round(chunk_gen(gen)));
-    } while (temp.chunk.x < 0 || temp.chunk.x >= chunk_dims_
-          || temp.chunk.y < 0 || temp.chunk.y >= chunk_dims_);
-
+    temp.chunk = mgr->GetRandomChunk();
     temp.position.x = coord_gen(gen);
     temp.position.y = coord_gen(gen);
 
@@ -649,6 +647,7 @@ void WorldSim::SpawnNewAsteroid(WorldPosition coord, float radius, int points) {
   auto& chunk = chunks_.at(coord.chunk);
   auto ast = GenerateAsteroid(radius, points);
   // random velocity
+  // TODO: we should look up chunks' biomes here
   ast.velocity = { (coord_gen(gen) - ((chunk_size) / 2)) / ((chunk_size) / 4), (coord_gen(gen) - ((chunk_size) / 2)) / ((chunk_size) / 4) };
   ast.rotation_velocity = (coord_gen(gen) - ((chunk_size) / 2)) / ((chunk_size) / 4);
   ast.position = coord;
