@@ -1,11 +1,3 @@
-// AVL tree which largest element less than entered value
-
-// reordering:
-
-// if a reorder is mandated, we go to the lowest element for which the invariant fails, rotate it, and then bubble up.
-
-
-
 #ifndef BIOME_TREE_H_
 #define BIOME_TREE_H_
 
