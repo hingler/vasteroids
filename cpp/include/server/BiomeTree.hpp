@@ -20,11 +20,9 @@ struct Node {
   std::shared_ptr<Node<Key, Val>> left;
   std::shared_ptr<Node<Key, Val>> right;
 
-  // V is probably very small, just store it plain
   Key key;
   Val val;
 
-  // cache last known height so we don't have to look it up again
   int32_t height;
 };
 
@@ -59,14 +57,9 @@ class BiomeTree {
    *  @returns true if a valid entry could be found, false otherwise.
    */ 
   bool Lookup(U key, V* value) {
-    // maintain largest lesser value seen thus far
-    // once we hit a null: return the value in that key
-
     std::shared_ptr<Node<U, V>> active_node = root_;
 
     if (active_node == nullptr) {
-      // idk what to do really
-      // this should never be used though so we'll be OK
       return false;
     }
 
@@ -76,9 +69,6 @@ class BiomeTree {
       if (key < active_node->key) {
         active_node = active_node->left;
       } else {
-        // our key is greater than some found value.
-        // as we descend, each time we go right we'll have a value closer to the key than the prior.
-        // simply store this value and then move on.
         valid = true;
         *value = active_node->val;
         active_node = active_node->right;
@@ -108,25 +98,29 @@ class BiomeTree {
     } else {
       root->right = InsertRecursive(root->right, key, val);
     }
-    // call insertrecursive with root as respective side
-    // assign myself to result
-    // fix height
+
     root->height = std::max(GetHeight(root->left), GetHeight(root->right)) + 1;
 
 
     // then rotate if necessary.
     return TryRotate(root);
   }
+
   // properly rotates the tree about `root`.
   // @param root - the root we wish to rotate.
   // @returns the new root of the passed subtree.
   std::shared_ptr<Node<U, V>> TryRotate(std::shared_ptr<Node<U, V>> root) {
+    if (root == nullptr) {
+      return nullptr;
+    }
+
     int32_t height_l, height_r;
     height_l = GetHeight(root->left);
     height_r = GetHeight(root->right);
 
     if (std::abs(height_l - height_r) > 1) {
       if (height_l > height_r) {
+        // not necc. nullptr
         if (root->left->right == nullptr) {
           // single right rotation wrt root
           return RotateRight(root);
@@ -157,24 +151,32 @@ class BiomeTree {
   std::shared_ptr<Node<U, V>> RotateRight(std::shared_ptr<Node<U, V>> root) {
     std::shared_ptr<Node<U, V>> left, right;
     left = root->left;
-    root->left = nullptr;
+    root->left = left->right;
     left->right = root;
 
-    // fix height
     root->height = GetHeight(root->right) + 1;
     left->height = std::max(GetHeight(root), GetHeight(left->left)) + 1;
+
+    left->right = TryRotate(left->right);
+    left = TryRotate(left);
+
+    // fix height
     return left;
   }
 
   std::shared_ptr<Node<U, V>> RotateLeft(std::shared_ptr<Node<U, V>> root) {
     std::shared_ptr<Node<U, V>> left, right;
     right = root->right;
-    root->right = nullptr;
+    root->right = right->left;
     right->left = root;
 
-    // fix height
     root->height = GetHeight(root->left) + 1;
     right->height = std::max(GetHeight(root), GetHeight(right->right)) + 1;
+    
+    right->left = TryRotate(right->left);
+    right = TryRotate(right);
+
+    // fix height
     return right;
   }
 
