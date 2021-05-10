@@ -178,7 +178,7 @@ export class GameStateManager {
     this.ship = new ShipManager(packet.ship, packet.serverTime, this.inputmethod);
     this.socket.onmessage = this.socketUpdate_.bind(this);
     // ~33.33 updates per second
-    this.socketUpdate = setInterval(this.socketSend_.bind(this), 50);
+    this.socketUpdate = setInterval(this.socketSend_.bind(this), 30);
     this.connectResolve();
     // call update manually as part of delta?
     // that would probably be better actually
