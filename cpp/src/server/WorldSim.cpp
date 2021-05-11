@@ -703,6 +703,8 @@ Napi::Value WorldSim::GetLocalBiomeInfo(const Napi::CallbackInfo& info) {
       res[chunks++] = temp_info.ToNodeObject(env);
     }
   }
+
+  return res;
 }
 
 double WorldSim::GetServerTime_() {

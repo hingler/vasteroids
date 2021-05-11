@@ -14,7 +14,7 @@ enum class Biome {
   INVALID = 5
 };
 
-Napi::String BiomeToString(const Biome& b, Napi::Env env);
+Napi::String BiomeToString(const Biome& b, const Napi::Env& env);
 
 }
 
