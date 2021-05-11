@@ -11,8 +11,12 @@ static std::string strings[6] = {
   "invalid"
 };
 
+
+const std::string& BiomeToString(const Biome& b) {
+  return strings[static_cast<int>(b)];
+}
 Napi::String BiomeToString(const Biome& b, const Napi::Env& env) {
-  return Napi::String::New(env, strings[static_cast<int>(b)]);
+  return Napi::String::New(env, BiomeToString(b));
 }
 
 }

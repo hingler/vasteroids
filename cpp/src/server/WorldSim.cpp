@@ -38,7 +38,7 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
   chunk_dims_ = chunks.As<Napi::Number>().Int32Value();
 
   // pot. costly, but then again we only really have to do it once
-  mgr = std::make_shared<BiomeManager>(chunk_dims_, (chunk_dims_ * chunk_dims_ / 36));
+  mgr = std::make_shared<BiomeManager>(chunk_dims_, ((chunk_dims_ * chunk_dims_) / 36));
 
   cw_ = std::make_shared<CollisionWorld>(chunk_dims_);
 

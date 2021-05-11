@@ -7,6 +7,8 @@ import { ClientPacket } from "./ClientPacket";
 import { BiMap } from "./BiMap";
 import now = require("performance-now");
 import { ClientShip } from "../instances/Ship";
+import { Point2D } from "../instances/GameTypes";
+import { BiomeInfo } from "../instances/Biome";
 
 class SocketManager {
   game: WorldSim;
@@ -67,6 +69,10 @@ class SocketManager {
     // respawn ship associated with the given token
     console.log("respawn request: " + id);
     return this.game.RespawnShip(id);
+  }
+
+  getBiomeInfo(origin: Point2D, dims: Point2D) : Array<BiomeInfo> {
+    return this.game.GetLocalBiomeInfo(origin, dims);
   }
 
   private socketOnMessage_(socket: WebSocket, message: any) {

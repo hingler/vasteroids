@@ -5,9 +5,9 @@
 namespace vasteroids {
 namespace server {
 
-BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_dims) {
-  chunks_ = std::uniform_int_distribution<int>(0, chunk_dims_);
-  biomes_ = std::uniform_int_distribution<int>(0, static_cast<int>(Biome::INVALID));
+BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_dims), generator_(std::rand()) {
+  chunks_ = std::uniform_int_distribution<int>(0, chunk_dims_ - 1);
+  biomes_ = std::uniform_int_distribution<int>(0, static_cast<int>(Biome::BLACKHOLE));
   biome_fudge_ = std::uniform_real_distribution<double>(0.8, 1.2);
   // scatter some number of "biome points" on our grid
   // use a simple algo to find closest one
@@ -25,7 +25,6 @@ BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_
     temp.x = chunks_(generator_);
     temp.y = chunks_(generator_);
     biome_origins[i] = temp;
-
     biomes[i] = static_cast<Biome>(biomes_(generator_));
   }
 
@@ -36,12 +35,13 @@ BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_
   float d_cur;
   for (int i = 0; i < chunk_dims_; i++) {
     for (int j = 0; j < chunk_dims_; j++) {
-      dist = chunk_dims_ * chunk_dims_;
+      dist = chunk_dims_ * chunk_dims_ * 4;
 
       for (int k = 0; k < biome_count; k++) {
         temp = biome_origins[k];
         d_cur = GetDistanceSquared(temp, {i, j});
         if (d_cur < dist) {
+          dist = d_cur;
           biome = biomes[k];
         }
       }
@@ -51,6 +51,32 @@ BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_
       biome_prob_tree_.Insert(prob_sum_, {i, j});
       prob_sum_ += GetBiomeWeight(biome);
     }
+  }
+
+  for (int i = 0; i < chunk_dims_; i++) {
+    for (int j = 0; j < chunk_dims_; j++) {
+      switch (biome_map_[i][j]) {
+        case Biome::NORMAL:
+          std::cout << "N";
+          break;
+        case Biome::BARREN:
+          std::cout << "B";
+          break;
+        case Biome::BLACKHOLE:
+          std::cout << "H";
+          break;
+        case Biome::NEBULA:
+          std::cout << "N";
+          break;
+        case Biome::ASTEROIDFIELD:
+          std::cout << "A";
+          break;
+        case Biome::INVALID:
+          std::cout << "?";
+          break;
+      }
+    }
+    std::cout << std::endl;
   }
 
   biome_picker_ = std::uniform_real_distribution<double>(0.0, prob_sum_);

@@ -1,11 +1,12 @@
 import * as express from "express";
 import * as WebSocket from "ws";
+import { Point2D } from "./instances/GameTypes";
 import { SocketManager } from "./server/SocketManager";
 
 const app = express();
 const port = process.env.PORT || 8080;
 
-const mgr = new SocketManager(16, 4096);
+const mgr = new SocketManager(64, 16384);
 
 const socketStorage : Set<WebSocket> = new Set();
 
@@ -44,6 +45,26 @@ app.post("/respawn", (req, res) => {
   res.json({
     success: (!!ship),
     ship: ship
+  });
+});
+
+app.post("/biome", (req, res) => {
+  let body = req.body;
+  if (!(body.origin && body.dims)) {
+    res.status(400);
+    res.send("Mising required fields!");
+  }
+
+  let origin = body.origin as Point2D;
+  let dims = body.dims as Point2D;
+
+  if (!(origin.x !== undefined && origin.y !== undefined && dims.x !== undefined && dims.y !== undefined)) {
+    res.status(400);
+    res.send("Data sent was not proper point data :(");
+  }
+
+  res.json({
+    data: mgr.getBiomeInfo(origin, dims)
   });
 })
 
