@@ -1,6 +1,7 @@
 import * as express from "express";
 import * as WebSocket from "ws";
 import { Point2D } from "./instances/GameTypes";
+import { BiomePacket } from "./packet/BiomePacket";
 import { SocketManager } from "./server/SocketManager";
 
 const app = express();
@@ -50,9 +51,11 @@ app.post("/respawn", (req, res) => {
 
 app.post("/biome", (req, res) => {
   let body = req.body;
+  console.log(body);
   if (!(body.origin && body.dims)) {
     res.status(400);
     res.send("Mising required fields!");
+    return;
   }
 
   let origin = body.origin as Point2D;
@@ -63,9 +66,12 @@ app.post("/biome", (req, res) => {
     res.send("Data sent was not proper point data :(");
   }
 
-  res.json({
-    data: mgr.getBiomeInfo(origin, dims)
-  });
+  let packet = new BiomePacket(mgr.getBiomeInfo(origin, dims));
+  res.send(Buffer.from(packet.encode()));
+
+  // res.json({
+  //   data: mgr.getBiomeInfo(origin, dims)
+  // });
 })
 
 app.get("/heroku", (req, res) => {

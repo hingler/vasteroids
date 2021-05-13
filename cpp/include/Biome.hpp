@@ -6,12 +6,12 @@
 namespace vasteroids {
 
 enum class Biome {
-  NORMAL = 0,
-  BARREN = 1,
-  ASTEROIDFIELD = 2,
-  NEBULA = 3,
-  BLACKHOLE = 4,
-  INVALID = 5
+  NORMAL = 1,
+  BARREN = 2,
+  ASTEROIDFIELD = 3,
+  NEBULA = 4,
+  BLACKHOLE = 5,
+  INVALID = 6
 };
 
 const std::string& BiomeToString(const Biome& b);

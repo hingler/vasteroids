@@ -1,12 +1,12 @@
 import { Point2D } from "./GameTypes";
 
 export enum Biome {
-  NORMAL = "normal",
-  BARREN = "barren",
-  ASTEROIDFIELD = "asteroidfield",
-  NEBULA = "nebula",
-  BLACKHOLE = "blackhole",
-  INVALID = "invalid"
+  NORMAL = 1,
+  BARREN = 2,
+  ASTEROIDFIELD = 3,
+  NEBULA = 4,
+  BLACKHOLE = 5,
+  INVALID = 6
 };
 
 export interface BiomeInfo {

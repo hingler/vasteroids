@@ -13,7 +13,7 @@ struct BiomeInfo {
   Napi::Object ToNodeObject(Napi::Env env) const {
     Napi::Object res = Napi::Object::New(env);
     res.Set("chunk", chunk.ToNodeObject(env));
-    res.Set("biome", BiomeToString(biome, env));
+    res.Set("biome", Napi::Number::New(env, static_cast<int>(biome)));
     return res;
   }
 

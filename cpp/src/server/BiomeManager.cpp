@@ -7,7 +7,7 @@ namespace server {
 
 BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_dims), generator_(std::rand()) {
   chunks_ = std::uniform_int_distribution<int>(0, chunk_dims_ - 1);
-  biomes_ = std::uniform_int_distribution<int>(0, static_cast<int>(Biome::BLACKHOLE));
+  biomes_ = std::uniform_int_distribution<int>(1, static_cast<int>(Biome::BLACKHOLE));
   biome_fudge_ = std::uniform_real_distribution<double>(0.8, 1.2);
   // scatter some number of "biome points" on our grid
   // use a simple algo to find closest one
@@ -66,7 +66,7 @@ BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_
           std::cout << "H";
           break;
         case Biome::NEBULA:
-          std::cout << "N";
+          std::cout << "E";
           break;
         case Biome::ASTEROIDFIELD:
           std::cout << "A";

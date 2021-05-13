@@ -1,5 +1,6 @@
 import { request } from "express";
 import { Point2D } from "../../instances/GameTypes";
+import { BiomePacket } from "../../packet/BiomePacket";
 import { VectorCanvas } from "./gl/VectorCanvas";
 import { InputManager, InputMethod } from "./input/InputManager";
 import { KeyInputManager } from "./input/KeyInputManager";
@@ -20,6 +21,38 @@ import { Renderer } from "./render/Renderer";
   window.addEventListener("load", main);
 
   function main() {
+    fetch("/biome", {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-type": "application/json"
+      },
+
+      body: JSON.stringify({
+        "origin": {
+          x: 0,
+          y: 0
+        },
+        
+        "dims": {
+          x: 32,
+          y: 32
+        }
+      })
+    })
+    
+
+    .then((r) => {
+      if (r.status < 200 || r.status >= 400) {
+        return Promise.reject("could not res ship!");
+      }
+
+      return r.arrayBuffer();
+    })
+    
+    .then((txt) => {
+      console.log(txt);
+    });
     map = new Map();
     c = new VectorCanvas(document.getElementById("game-window") as HTMLCanvasElement);
     c.waitUntilCompiled().then(() => {
