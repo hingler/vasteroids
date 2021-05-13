@@ -697,8 +697,8 @@ Napi::Value WorldSim::GetLocalBiomeInfo(const Napi::CallbackInfo& info) {
   BiomeInfo temp_info;
   for (int i = 0; i < pt_dims.x; i++) {
     for (int j = 0; j < pt_dims.y; j++) {
-      temp_info.chunk.x = i + pt_origin.x;
-      temp_info.chunk.y = j + pt_origin.y;
+      temp_info.chunk.x = (i + pt_origin.x) % chunk_dims_;
+      temp_info.chunk.y = (j + pt_origin.y) % chunk_dims_;
       temp_info.biome = mgr->GetBiome(temp_info.chunk);
       res[chunks++] = temp_info.ToNodeObject(env);
     }
