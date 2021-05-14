@@ -88,8 +88,8 @@ BiomeManager::BiomeManager(int chunk_dims, int biome_count) : chunk_dims_(chunk_
 Biome BiomeManager::GetBiome(Point2D<int> chunk) {
   // wrap handling
   if (chunk.x < 0 || chunk.x >= chunk_dims_ || chunk.y < 0 || chunk.y >= chunk_dims_) {
-    chunk.x += (std::floor(static_cast<float>(chunk.x) / chunk_dims_)) * chunk_dims_;
-    chunk.y += (std::floor(static_cast<float>(chunk.y) / chunk_dims_)) * chunk_dims_;
+    chunk.x -= (std::floor(static_cast<float>(chunk.x) / chunk_dims_)) * chunk_dims_;
+    chunk.y -= (std::floor(static_cast<float>(chunk.y) / chunk_dims_)) * chunk_dims_;
   }
 
   return biome_map_[chunk.x][chunk.y];
