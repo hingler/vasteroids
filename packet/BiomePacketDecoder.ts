@@ -7,7 +7,7 @@ const BIOME_SIZE = 5;
 /**
  * Data packet representing a series of biomes.
  */
-export class BiomePacket {
+export class BiomePacketDecoder {
   private biomes: Array<BiomeInfo>;
   /**
    * Constructs a new BiomePacket from data.

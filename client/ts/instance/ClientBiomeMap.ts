@@ -1,6 +1,6 @@
 import { Biome } from "../../../instances/Biome";
 import { Point2D } from "../../../instances/GameTypes";
-import { BiomePacket } from "../../../packet/BiomePacket";
+import { BiomePacketDecoder } from "../../../packet/BiomePacketDecoder";
 
 // number of chunks around ship whose biomes should be known
 const SAFE_RANGE = 8;
@@ -160,7 +160,7 @@ export class ClientBiomeMap {
 
       return r.arrayBuffer();
     }).then((buf) => {
-      let pkt: BiomePacket = new BiomePacket(buf);
+      let pkt: BiomePacketDecoder = new BiomePacketDecoder(buf);
       let biomeinfo = pkt.decode();
       for (let info of biomeinfo) {
         this.chunks[info.chunk.x][info.chunk.y] = info.biome;

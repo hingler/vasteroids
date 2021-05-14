@@ -1,6 +1,6 @@
 import { request } from "express";
 import { Point2D } from "../../instances/GameTypes";
-import { BiomePacket } from "../../packet/BiomePacket";
+import { BiomePacketDecoder } from "../../packet/BiomePacketDecoder";
 import { VectorCanvas } from "./gl/VectorCanvas";
 import { InputManager, InputMethod } from "./input/InputManager";
 import { KeyInputManager } from "./input/KeyInputManager";

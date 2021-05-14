@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { Biome, BiomeInfo } from "../instances/Biome";
-import { BiomePacket } from "../packet/BiomePacket";
+import { BiomePacketDecoder } from "../packet/BiomePacketDecoder";
 
-describe("BiomePacket", function() {
+describe("BiomePacketDecoder", function() {
   it("Should properly encode input", function() {
     let arr: Array<BiomeInfo> = [];
     arr.push({
@@ -14,7 +14,7 @@ describe("BiomePacket", function() {
       biome: Biome.BLACKHOLE
     });
 
-    let pkt = new BiomePacket(arr);
+    let pkt = new BiomePacketDecoder(arr);
     let buf = pkt.encode();
 
     let view = new DataView(buf);
@@ -32,7 +32,7 @@ describe("BiomePacket", function() {
     view.setUint16(6, 0, true);
     view.setUint8(8, Biome.NEBULA);
 
-    let pkt = new BiomePacket(buf);
+    let pkt = new BiomePacketDecoder(buf);
     let res = pkt.decode();
 
     expect(res.length).to.equal(1);
