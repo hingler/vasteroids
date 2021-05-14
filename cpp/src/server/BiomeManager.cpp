@@ -135,16 +135,16 @@ double BiomeManager::GetBiomeWeight(const Biome& b) {
       weight = 1.0;
       break;
     case Biome::BARREN:
-      weight = 0.4;
+      weight = 0.2;
       break;
     case Biome::ASTEROIDFIELD:
-      weight = 2.0;
+      weight = 2.5;
       break;
     case Biome::NEBULA:
       weight = 1.75;
       break;
     case Biome::BLACKHOLE:
-      weight = 2.5;
+      weight = 2.0;
       break;
   }
 
