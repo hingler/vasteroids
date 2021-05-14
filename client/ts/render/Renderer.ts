@@ -1,3 +1,4 @@
+import { biomeToString } from "../../../instances/Biome";
 import { chunkSize, Point2D, WorldPosition } from "../../../instances/GameTypes";
 import { ClientShip } from "../../../instances/Ship";
 import { ServerPacket } from "../../../server/ServerPacket";
@@ -8,6 +9,7 @@ import { VectorCanvas } from "../gl/VectorCanvas";
 import { VectorMesh2D } from "../gl/VectorMesh2D";
 import { TouchInputManager } from "../input/TouchInputManager";
 import { GetDistance, GetVector } from "../instance/AsteroidColliderJS";
+import { GameStateManager } from "../instance/GameStateManager";
 import { Framebuffer } from "./Framebuffer";
 
 const GRIDSTEP = 2;
@@ -118,7 +120,9 @@ export class Renderer {
     this.aftrovlay = new AfterOverlay(this.gl);
   }
 
-  drawInstances(player: ClientShip, instances: ServerPacket, inputmgr?: TouchInputManager) {
+  drawInstances(mgr: GameStateManager, inputmgr?: TouchInputManager) {
+    let player = mgr.getShip();
+    let instances = mgr.getInstances();
     let w = this.canvas.getWidth(), h = this.canvas.getHeight();
     if (w != this.w || h != this.h) {
       this.w = w, this.h = h;
@@ -233,9 +237,12 @@ export class Renderer {
 
     let chunk = `chunk: ${player.position.chunk.x}, ${player.position.chunk.y}`;
     let position = `pos: ${player.position.position.x.toFixed(2)}, ${player.position.position.y.toFixed(2)}`;
+    let biome = `biome: ${biomeToString(mgr.getCurrentBiome())}`;
+
 
     this.canvas.addText(16, 16, chunk, 2, [12, 12]);
     this.canvas.addText(16, 46, position, 2, [12, 12]);
+    this.canvas.addText(16, 76, biome, 2, [12, 12]);
 
     for (let p of instances.projectiles) {
       if (p.hidden) {

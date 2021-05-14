@@ -43,7 +43,7 @@ export class ClientBiomeMap {
       return;
     }
 
-    if (this.lastChunk = null) {
+    if (this.lastChunk === null) {
       this.lastChunk = {
         x: chunk.x,
         y: chunk.y
@@ -51,6 +51,9 @@ export class ClientBiomeMap {
 
       this.updateInit_(this.lastChunk);
     } else {
+      // create an array of promises and store them all in sequence
+      // set updatelock to true
+      // promise all and then set false.
       let chunk_delta_x = chunk.x - this.lastChunk.x;
       let x_sign = (chunk_delta_x >= 0 ? 1 : -1);
       let x_abs = Math.abs(chunk_delta_x);
@@ -68,6 +71,9 @@ export class ClientBiomeMap {
           this.visitRow(chunk.y + (y_sign * (SAFE_RANGE - i)), chunk.x);
         }
       }
+
+      this.lastChunk.x = chunk.x;
+      this.lastChunk.y = chunk.y;
     }
   }
 

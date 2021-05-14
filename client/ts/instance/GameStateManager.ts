@@ -1,4 +1,5 @@
 import { Asteroid } from "../../../instances/Asteroid";
+import { Biome } from "../../../instances/Biome";
 import { CollisionLocal } from "../../../instances/CollisionLocal";
 import { Instance, Point2D, WorldPosition } from "../../../instances/GameTypes";
 import { Projectile } from "../../../instances/Projectile";
@@ -8,6 +9,7 @@ import { ConnectionPacket } from "../../../server/ConnectionPacket";
 import { ServerPacket } from "../../../server/ServerPacket";
 import { Input, InputManager, InputMethod } from "../input/InputManager";
 import { Collide, GetDistance } from "./AsteroidColliderJS";
+import { ClientBiomeMap } from "./ClientBiomeMap";
 import { ShipManager } from "./ShipManager";
 import { getOriginTime, UpdateAndInterpolate, UpdateInstance } from "./UpdateInstance";
 
@@ -44,6 +46,8 @@ export class GameStateManager {
   connectPromise: Promise<void>;
   connectResolve: any;
 
+  biomemgr: ClientBiomeMap;
+
   // start time wrt performance now
   startTimeOffset: number;
 
@@ -78,7 +82,6 @@ export class GameStateManager {
     this.asteroidsPacket = new Map();
     this.shipsPacket = new Map();
     this.projectilesPacket = new Map();
-
 
     // on open: send message
     // on message (response containing data):
@@ -175,6 +178,7 @@ export class GameStateManager {
     this.token = packet.playerToken;
     // create ship manager
     this.dims = packet.chunkDims;
+    this.biomemgr = new ClientBiomeMap(this.dims);
     this.ship = new ShipManager(packet.ship, packet.serverTime, this.inputmethod);
     this.socket.onmessage = this.socketUpdate_.bind(this);
     // ~33.33 updates per second
@@ -390,9 +394,15 @@ export class GameStateManager {
     }
   }
 
+  getCurrentBiome() : Biome {
+    let chunk = this.ship.getShip().position.chunk;
+    return this.biomemgr.getChunkType(chunk.x, chunk.y);
+  }
+
   update() {
     if (this.ship) {
       this.ship.update(this.dims);
+      this.biomemgr.updateStoredChunks(this.ship.getShip().position.chunk);
 
       // poll input, see if we need to generate a projectile
       if (this.ship.isShoot()) {

@@ -21,38 +21,6 @@ import { Renderer } from "./render/Renderer";
   window.addEventListener("load", main);
 
   function main() {
-    fetch("/biome", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-type": "application/json"
-      },
-
-      body: JSON.stringify({
-        "origin": {
-          x: 0,
-          y: 0
-        },
-        
-        "dims": {
-          x: 32,
-          y: 32
-        }
-      })
-    })
-    
-
-    .then((r) => {
-      if (r.status < 200 || r.status >= 400) {
-        return Promise.reject("could not res ship!");
-      }
-
-      return r.arrayBuffer();
-    })
-    
-    .then((txt) => {
-      console.log(txt);
-    });
     map = new Map();
     c = new VectorCanvas(document.getElementById("game-window") as HTMLCanvasElement);
     c.waitUntilCompiled().then(() => {
@@ -206,7 +174,7 @@ import { Renderer } from "./render/Renderer";
       .then(async () => { await w.waitUntilConnected(); })
       .then(() => {
         let g = new Renderer(12, c, w.getDims());
-        requestAnimationFrame(() => { f(c, w, g) })
+        requestAnimationFrame(() => { f(c, w, g) }) 
       });
 
     // create this only after name is confirmed
@@ -223,7 +191,7 @@ import { Renderer } from "./render/Renderer";
   function f(c: VectorCanvas, w: GameStateManager, g: Renderer) {
     w.update();
     c.clearCanvas();
-    g.drawInstances(w.getShip(), w.getInstances(), (inputmethod === InputMethod.TOUCH ? w.ship.inputmgr as TouchInputManager : undefined));
+    g.drawInstances(w, (inputmethod === InputMethod.TOUCH ? w.ship.inputmgr as TouchInputManager : undefined));
     requestAnimationFrame(() => { f(c, w, g) });
   }
 

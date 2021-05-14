@@ -47,14 +47,8 @@ export class BiomePacket {
       view.setUint16(offset, biome.chunk.y, true);
       offset += 2;
       view.setUint8(offset, biome.biome);
-      console.log(biome.biome);
       offset += 1;
     }
-
-    console.log(bufferSize);
-    console.log(this.biomes.length);
-    console.log(offset);
-    console.log(buf);
 
     return buf;
   }
