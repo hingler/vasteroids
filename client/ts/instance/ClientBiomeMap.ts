@@ -83,8 +83,18 @@ export class ClientBiomeMap {
    * @param x - current occupied chunk in x -- used to scan local.
    */
   private visitRow(y: number, x: number) {
+    if (x < 0 || x >= this.dims) {
+      x = x - (Math.floor(x / this.dims) * this.dims);
+    }
+
+    if (y < 0 || y >= this.dims) {
+      y = y - (Math.floor(y / this.dims) * this.dims);
+    }
+
     for (let i = -(SAFE_RANGE); i <= SAFE_RANGE; i++) {
-      if (this.chunks[x + i][y] === Biome.INVALID) {
+      let x_offset: number = x + i;
+      x_offset = x_offset - (Math.floor(x_offset / this.dims) * this.dims);
+      if (this.chunks[x_offset + i][y] === Biome.INVALID) {
         this.updateBounds_(
           {
             'x': x - SAFE_RANGE,
@@ -107,6 +117,14 @@ export class ClientBiomeMap {
    * @param y - current occupied chunk in y -- used to scan local.
    */
   private visitColumn(x: number, y: number) {
+    if (x < 0 || x >= this.dims) {
+      x = x - (Math.floor(x / this.dims) * this.dims);
+    }
+
+    if (y < 0 || y >= this.dims) {
+      y = y - (Math.floor(y / this.dims) * this.dims);
+    }
+
     for (let i = -(SAFE_RANGE); i <= SAFE_RANGE; i++) {
       if (this.chunks[x][y + i] === Biome.INVALID) {
         this.updateBounds_(
