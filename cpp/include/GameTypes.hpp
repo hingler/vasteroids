@@ -5,9 +5,11 @@
 #include <chrono>
 #include <iostream>
 
+// throws a new type error, and returns.
 #define TYPEERROR(env, x) {\
   std::cout << x << std::endl;\
   Napi::TypeError::New(env, x).ThrowAsJavaScriptException();\
+  return;\
 }
 
 
@@ -37,7 +39,7 @@ namespace vasteroids {
     Point2D(Napi::Object obj) {
       Napi::Env env = obj.Env();
       if (!obj.Has("x") || !obj.Has("y")) {
-        Napi::TypeError::New(env, "point does not contain correct fields").ThrowAsJavaScriptException();
+        TYPEERROR(env, "point does not contain correct fields");
       }
 
       x = static_cast<T>(obj.Get("x").As<Napi::Number>().DoubleValue());

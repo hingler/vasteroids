@@ -8,14 +8,14 @@ Asteroid::Asteroid(Napi::Object obj) : Instance(obj) {
   Napi::Value geom = obj.Get("geometry");
   if (geom.IsUndefined() || !geom.IsArray()) {
     // something is wrong
-    Napi::TypeError::New(env, "'geometry' field of asteroid not present").ThrowAsJavaScriptException();
+    TYPEERROR(env, "'geometry' field of asteroid not present");
   }
 
   Napi::Array arr = geom.As<Napi::Array>();
   for (uint32_t i = 0; i < arr.Length(); i++) {
     Napi::Value val = arr[i];
     if (!val.IsObject()) {
-      Napi::TypeError::New(env, "indices of 'geometry' field are not object").ThrowAsJavaScriptException();
+      TYPEERROR(env, "indices of 'geometry' field are not object");
     }
 
     Napi::Object pt = val.As<Napi::Object>();

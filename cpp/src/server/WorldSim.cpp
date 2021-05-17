@@ -84,12 +84,16 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
     TYPEERROR(env, "argument to `HandleClientPacket` is not a ClientPacket!");
   }
 
+
   ClientPacket packet(packetObj.As<Napi::Object>());
+  if (env.IsExceptionPending()) {
+    return;
+  }
 
   // find old ship record
   auto ship_old = ships_.find(packet.client_ship.id);
   if (ship_old == ships_.end()) {
-    Napi::Error::New(env, "Updated ship does not exist!").ThrowAsJavaScriptException();
+    TYPEERROR(env, "Updated ship does not exist!");
   }
 
   Point2D<int> chunk = ship_old->second;
@@ -97,7 +101,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   // ships might enter chunks which have yet to be occupied
   auto c = chunks_.find(chunk);
   if (c == chunks_.end()) {
-    Napi::Error::New(env, "Invariant not maintained -- ship does not exist in chunk!").ThrowAsJavaScriptException();
+    TYPEERROR(env, "Invariant not maintained -- ship does not exist in chunk!");
   }
 
   // we update "destroyed" here.
@@ -280,6 +284,13 @@ Napi::Value WorldSim::UpdateSim(const Napi::CallbackInfo& info) {
 
   ServerPacket collate;
 
+  // it would be nice to keep these outskirt chunks updated, but there is no reliable way to do it
+  // maybe push it onto a separate thread?
+
+  // create a component which scours our chunk list and just updates one whenever it can
+  // aim for an update rate of ~1 / sec
+  // caveat: we have to put a lock on each chunk
+  // no collision testing, just updates.
   for (auto point : update_chunks) {
     if (!chunks_.count(point)) {
       // chunk currently contains no items -- do not update it.
@@ -624,7 +635,7 @@ Napi::Value WorldSim::DeleteShip(const Napi::CallbackInfo& info) {
   }
 
   if (!chunks_.at(ships_.at(id)).RemoveInstance(id)) {
-    Napi::Error::New(env, "invariant broken: ship not present in chunk!").ThrowAsJavaScriptException();
+    TYPEERROR(env, "invariant broken: ship not present in chunk!");
   }
 
   // remove from class
