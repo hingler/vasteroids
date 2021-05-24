@@ -147,7 +147,13 @@ export class Renderer {
     // draw ship
     if (!player.destroyed) {
       let scale = (inputmgr ? 2 : 1);
-      this.drawGeometry(player.position, player.position, shipGeom, -player.rotation, scale);
+      let color: [number, number, number, number] = [1.0, 1.0, 1.0, 1.0];
+      if (mgr.invuln()) {
+        let val = (Math.sin(performance.now() / 50) / 3.0) + 0.6666
+        color = [val, val, val, val]
+      }
+
+      this.drawGeometry(player.position, player.position, shipGeom, -player.rotation, scale, color);
     }
 
     let astList = [];

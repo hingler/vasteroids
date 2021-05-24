@@ -14,6 +14,8 @@ import { ClientBiomeMap } from "./ClientBiomeMap";
 import { ShipManager } from "./ShipManager";
 import { getOriginTime, UpdateAndInterpolate, UpdateInstance } from "./UpdateInstance";
 
+const INVULN_TIME = 3
+
 /**
  * Establishes a connection with the game server and interprets game updates.
  */
@@ -51,6 +53,8 @@ export class GameStateManager {
 
   // start time wrt performance now
   startTimeOffset: number;
+
+  lastSpawn: number;
 
   dims: number;
 
@@ -97,6 +101,10 @@ export class GameStateManager {
 
   getShip() : ClientShip {
     return this.ship.getShip();
+  }
+
+  invuln() : boolean {
+    return (this.getServerTime() - this.lastSpawn) < INVULN_TIME;
   }
 
   setDims(dims: number) : void {
@@ -164,6 +172,8 @@ export class GameStateManager {
           this.ship.ship.rotation_velocity = ship.rotation_velocity;
           this.ship.ship.lives = ship.lives;
           this.ship.ship.last_delta = ship.last_delta;
+
+          this.lastSpawn = this.getServerTime();
         } else {
           return Promise.reject("game is over");
         }
@@ -184,9 +194,15 @@ export class GameStateManager {
     this.socket.onmessage = this.socketUpdate_.bind(this);
     // ~33.33 updates per second
     this.socketUpdate = setInterval(this.socketSend_.bind(this), 30);
+
+    this.lastSpawn = this.getServerTime();
     this.connectResolve();
     // call update manually as part of delta?
     // that would probably be better actually
+  }
+
+  private getServerTime() : number {
+    return getOriginTime() + (performance.now() / 1000)
   }
 
   waitUntilConnected() : Promise<void> {
@@ -245,7 +261,7 @@ export class GameStateManager {
           p.position.chunk.y = c.position.chunk.y;
           p.position.position.x = c.position.position.x;
           p.position.position.y = c.position.position.y;
-          p.last_delta = getOriginTime() + (performance.now() / 1000);
+          p.last_delta = this.getServerTime();
           p.rotation = rot;
           p.rotation_velocity = 0;
           p.id = 0;
@@ -366,7 +382,7 @@ export class GameStateManager {
     p.origin.position.x = ship.position.position.x;
     p.origin.position.y = ship.position.position.y;
 
-    p.last_delta = getOriginTime() + (performance.now() / 1000);
+    p.last_delta = this.getServerTime();
     p.creationTime = p.last_delta;
     p.rotation = ship.rotation;
     p.rotation_velocity = 0;
@@ -429,7 +445,7 @@ export class GameStateManager {
         }
 
         if (GetDistance(a, this.ship.getShip().position, this.dims) < 12) {
-          if (Collide(a, this.ship.getShip().position, this.dims)) {
+          if (Collide(a, this.ship.getShip().position, this.dims) && !this.invuln()) {
             if (!this.ship.ship.destroyed) {
               setTimeout(this.respawnShip_.bind(this), 3000);
             }
@@ -476,7 +492,7 @@ export class GameStateManager {
           UpdateInstance(p, this.dims);
         }
 
-        if ((getOriginTime() + performance.now() / 1000) - c.creationTime > 2.0) {
+        if ((this.getServerTime() - c.creationTime) > 2.0) {
           delColl.push(c.id);
         }
       }

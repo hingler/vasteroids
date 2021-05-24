@@ -547,7 +547,7 @@ Napi::Value WorldSim::RespawnShip(const Napi::CallbackInfo& info) {
   }
 
   s.lives--;
-  SpawnShip(s);
+  s.last_update = GetServerTime_();
   return s.ToNodeObject(env);
 }
 
