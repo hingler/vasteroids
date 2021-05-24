@@ -26,7 +26,7 @@ export class BiomePacketDecoder {
    * Decode the contents of this BiomePacket to an array of BiomeInfos.
    */
   decode() : Array<BiomeInfo> {
-    return Array.from(this.biomes);
+    return this.biomes.slice();
   }
 
   /**

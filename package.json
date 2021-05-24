@@ -24,6 +24,7 @@
     "@types/express": "^4.17.11",
     "@types/ws": "^7.4.1",
     "bindings": "^1.5.0",
+    "chai-stats": "^0.3.0",
     "express": "^4.17.1",
     "node-addon-api": "^3.1.0",
     "node-gyp": "^8.0.0",

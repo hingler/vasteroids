@@ -4,6 +4,7 @@ import { CollisionLocal } from "../../../instances/CollisionLocal";
 import { Instance, Point2D, WorldPosition } from "../../../instances/GameTypes";
 import { Projectile } from "../../../instances/Projectile";
 import { ClientShip } from "../../../instances/Ship";
+import { ServerPacketDecoder } from "../../../packet/ServerPacketDecoder";
 import { ClientPacket } from "../../../server/ClientPacket";
 import { ConnectionPacket } from "../../../server/ConnectionPacket";
 import { ServerPacket } from "../../../server/ServerPacket";
@@ -207,8 +208,10 @@ export class GameStateManager {
     this.socket.send(JSON.stringify(a));
   }
 
-  private socketUpdate_(event: MessageEvent) {
-    let packet = JSON.parse(event.data) as ServerPacket;
+  private async socketUpdate_(event: MessageEvent) {
+    console.log(event.data)
+    let data = event.data as Blob;
+    let packet = new ServerPacketDecoder(await data.arrayBuffer()).decode() as ServerPacket;
     this.ship.ship.score = packet.score;
     // store local objects
     for (let a of packet.asteroids) {

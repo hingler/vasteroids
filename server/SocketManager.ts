@@ -9,6 +9,7 @@ import now = require("performance-now");
 import { ClientShip } from "../instances/Ship";
 import { Point2D } from "../instances/GameTypes";
 import { BiomeInfo } from "../instances/Biome";
+import { ServerPacketDecoder } from "../packet/ServerPacketDecoder";
 
 class SocketManager {
   game: WorldSim;
@@ -133,15 +134,23 @@ class SocketManager {
   }
 
   handleUpdates() {
-    let test = now();
-    let res = this.game.UpdateSim();
+    let res: { [x: string]: ServerPacket; };
+
+    try {
+      res = this.game.UpdateSim();
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+
     for (let socket of this.sockets) {
       let id = socket[1];
       let pkt = res[id.toString()] as ServerPacket;
       if (!pkt) {
         console.error("connected socket ID " + id + " not in server packet object!");
       } else {
-        socket[0].send(JSON.stringify(pkt));
+        let msg = new ServerPacketDecoder(pkt);
+        socket[0].send(msg.encode());
       }
     }
   }

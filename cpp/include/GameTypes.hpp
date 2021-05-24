@@ -12,6 +12,11 @@
   return;\
 }
 
+#define TYPEERROR_RETURN_UNDEF(env, x) {\
+  std::cout << x << std::endl;\
+  Napi::TypeError::New(env, x).ThrowAsJavaScriptException();\
+  return env.Undefined();\
+}
 
 namespace vasteroids {
 

@@ -57,7 +57,7 @@ WorldSim::WorldSim(const Napi::CallbackInfo& info) : ObjectWrap(info) {
   gen = std::mt19937(dev());
   chunk_gen = std::normal_distribution<>(chunk_dims_ / 2.0, chunk_dims_ / 4.0);
   coord_gen = std::uniform_real_distribution<float>(0.0f, chunk_size);
-  velo_gen = std::uniform_real_distribution<float>(-1.8, 1.8);
+  velo_gen = std::uniform_real_distribution<float>(-1.8f, 1.8f);
 
   WorldPosition temp;
   for (int i = 0; i < asteroids; i++) {
@@ -81,19 +81,19 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   Napi::Value packetObj = info[0];
   if (!packetObj.IsObject()) {
-    TYPEERROR(env, "argument to `HandleClientPacket` is not a ClientPacket!");
+    TYPEERROR_RETURN_UNDEF(env, "argument to `HandleClientPacket` is not a ClientPacket!");
   }
 
 
   ClientPacket packet(packetObj.As<Napi::Object>());
   if (env.IsExceptionPending()) {
-    return;
+    return env.Undefined();
   }
 
   // find old ship record
   auto ship_old = ships_.find(packet.client_ship.id);
   if (ship_old == ships_.end()) {
-    TYPEERROR(env, "Updated ship does not exist!");
+    TYPEERROR_RETURN_UNDEF(env, "Updated ship does not exist!");
   }
 
   Point2D<int> chunk = ship_old->second;
@@ -101,7 +101,7 @@ Napi::Value WorldSim::HandleClientPacket(const Napi::CallbackInfo& info) {
   // ships might enter chunks which have yet to be occupied
   auto c = chunks_.find(chunk);
   if (c == chunks_.end()) {
-    TYPEERROR(env, "Invariant not maintained -- ship does not exist in chunk!");
+    TYPEERROR_RETURN_UNDEF(env, "Invariant not maintained -- ship does not exist in chunk!");
   }
 
   // we update "destroyed" here.
@@ -528,7 +528,7 @@ Napi::Value WorldSim::RespawnShip(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   Napi::Value id = info[0];
   if (!id.IsNumber()) {
-    TYPEERROR(env, "no ID given!");
+    TYPEERROR_RETURN_UNDEF(env, "no ID given!");
   }
 
   uint64_t id_int = id.As<Napi::Number>().Int64Value();
@@ -577,7 +577,7 @@ Napi::Value WorldSim::AddShip(const Napi::CallbackInfo& info) {
   Napi::Env env =  info.Env();
   Napi::Value val = info[0];
   if (!val.IsString()) {
-    TYPEERROR(env, "`name` is not a string!");
+    TYPEERROR_RETURN_UNDEF(env, "`name` is not a string!");
   }
 
   Ship s;
@@ -625,7 +625,7 @@ Napi::Value WorldSim::DeleteShip(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   Napi::Value val = info[0];
   if (!val.IsNumber()) {
-    TYPEERROR(env, "param is not a number!");
+    TYPEERROR_RETURN_UNDEF(env, "param is not a number!");
   }
 
   uint64_t id = static_cast<uint64_t>(val.As<Napi::Number>().Int64Value());
@@ -635,7 +635,7 @@ Napi::Value WorldSim::DeleteShip(const Napi::CallbackInfo& info) {
   }
 
   if (!chunks_.at(ships_.at(id)).RemoveInstance(id)) {
-    TYPEERROR(env, "invariant broken: ship not present in chunk!");
+    TYPEERROR_RETURN_UNDEF(env, "invariant broken: ship not present in chunk!");
   }
 
   // remove from class
@@ -694,7 +694,7 @@ Napi::Value WorldSim::GetLocalBiomeInfo(const Napi::CallbackInfo& info) {
   Napi::Value dims = info[1];
 
   if (!origin.IsObject() || !dims.IsObject()) {
-    TYPEERROR(env, "Arguments to `GetLocalBiomeInfo` not correct");
+    TYPEERROR_RETURN_UNDEF(env, "Arguments to `GetLocalBiomeInfo` not correct");
   }
 
   Point2D<int> pt_origin(origin.As<Napi::Object>());
