@@ -146,7 +146,19 @@ import { Renderer } from "./render/Renderer";
     // 120, (h / 2 + 150) to 206, (h / 2 + 166)
     c.addText(120, h / 2 + 212, "mouse", 2, [16, 16], (inputmethod === InputMethod.MOUSE ? [1, 1, 1, 1] : [0.5, 0.5, 0.5, 1]));
     // 120, (h / 2 + 180) to 168, (h / 2 + 196)
-    c.addText(120, h / 2 + 252, "touch", 2, [16, 16], (inputmethod === InputMethod.TOUCH ? [1, 1, 1, 1] : [0.5, 0.5, 0.5, 1]))
+    c.addText(120, h / 2 + 252, "touch", 2, [16, 16], (inputmethod === InputMethod.TOUCH ? [1, 1, 1, 1] : [0.5, 0.5, 0.5, 1]));
+
+    // explain cointrols
+    switch (inputmethod) {
+      case InputMethod.KEYBOARD:
+        c.addText(w - 240, h/2 + 172, "wasd: move", 2, [16, 16], [1, 1, 1, 1]);
+        c.addText(w - 240, h/2 + 212, "space: shoot", 2, [16, 16], [1, 1, 1, 1]);
+        break;
+      case InputMethod.MOUSE:
+        c.addText(w - 240, h/2 + 172, "lclick: move", 2, [16, 16], [1, 1, 1, 1]);
+        c.addText(w - 240, h/2 + 212, "rclick: shoot", 2, [16, 16], [1, 1, 1, 1]);
+        break;
+    }
 
     if (touchinput) {
       c.addLine(120, 32, (w - 120), 32, 2);
@@ -160,7 +172,7 @@ import { Renderer } from "./render/Renderer";
 
   function startGame() {
     if (name === "") {
-      name = "dickmuncher";
+      name = "hingler";
     }
 
     removeEventListener("mousedown", mouseInputSelection);
